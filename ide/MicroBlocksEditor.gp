@@ -158,10 +158,10 @@ method addTopBarParts MicroBlocksEditor {
   add leftItems (addIconButton this (languageButtonIcon this) 'languageMenu' 'Language')
   add leftItems (addIconButton this (settingsButtonIcon this) 'settingsMenu' 'MicroBlocks')
   add leftItems (addIconButton this (projectButtonIcon this) 'projectMenu' 'File')
+  add leftItems (addIconButton this (projectButtonIcon this) 'LoadMenu' 'Load')
   add leftItems (addIconButton this (graphIcon this) 'showGraph' 'Graph')
   add leftItems (addIconButton this (connectButtonIcon this) 'connectToBoard' 'Connect')
   indicator = (last leftItems)
-
   if (isNil title) {
     // only add the logo and title the first time
     addLogo this
@@ -972,11 +972,13 @@ method isChineseWebapp MicroBlocksEditor {
 
 method applyUserPreferences MicroBlocksEditor {
 	prefs = (readUserPreferences this)
-	if (notNil (at prefs 'locale')) {
-		setLanguage this (at prefs 'locale')
-	} (isChineseWebapp this) {
-		setLanguage this '简体中文'
-	}
+  // 默认设置为中文
+	//if (notNil (at prefs 'locale')) {
+	//	setLanguage this (at prefs 'locale')
+	//} (isChineseWebapp this) {
+	//	setLanguage this '简体中文'
+	//}
+  setLanguage this '简体中文'
 	if (notNil (at prefs 'boardLibAutoLoadDisabled')) {
 		boardLibAutoLoadDisabled = (at prefs 'boardLibAutoLoadDisabled')
 	}
@@ -1360,22 +1362,31 @@ method stopHTTPServer MicroBlocksEditor {
   stop httpServer
 }
 
-// Language Button
-
+// Language Button, 初始化语言菜单
 method languageMenu MicroBlocksEditor {
   menu = (menu 'Language' this)
   if ('Browser' == (platform)) {
 	for fn (sorted (listFiles 'translations')) {
 	  fn = (withoutExtension fn)
 	  language = (withoutExtension fn)
-	  addItem menu language (action 'setLanguage' this language)
+	  print '' language
+  if (or 
+      (beginsWith language '简体中文')  
+      (beginsWith language 'English')) {
+      addItem menu language (action 'setLanguage' this language)
+    }
 	}
   } else {
 	for fn (sorted (listEmbeddedFiles)) {
 	  fn = (withoutExtension fn)
 	  if (beginsWith fn 'translations/') {
 		language = (withoutExtension (substring fn 14))
-		addItem menu language (action 'setLanguage' this language)
+		print 'language: ' language
+    if (or 
+      (beginsWith language '简体中文')  
+      (beginsWith language 'English')) {
+      addItem menu language (action 'setLanguage' this language)
+    }
 	  }
 	}
   }
