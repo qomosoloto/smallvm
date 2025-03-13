@@ -53,6 +53,10 @@ var GP = {
 	audioInReady: false,
 	audioInSource: null,
 	audioInCapture: null,
+	// 展示保存按钮
+	showSaveFileButton: "true",
+	// 展示发布按钮
+	showPublishButton: "true",
 };
 
 // Add the following to the meta tags in the header to suppress scaling of the GP canvas
@@ -68,6 +72,12 @@ GP.clipboard.style.position = 'absolute';
 GP.clipboard.style.right = '101%'; // placed just out of view
 GP.clipboard.style.top = '0px';
 document.body.appendChild(GP.clipboard);
+console.log("window.normalizeEditorParams", window.normalizeEditorParams);
+// 绑定是否展示保存文件、发布作品到 GP 变量
+console.log("绑定是否显示保存、发布按钮到GP编辑器中！");
+GP.showSaveFileButton = window.normalizeEditorParams && window.normalizeEditorParams.isEditButtonShow ? window.normalizeEditorParams.isEditButtonShow + "" : "true";
+GP.showPublishButton = window.normalizeEditorParams && window.normalizeEditorParams.isPublishButtonShow ? window.normalizeEditorParams.isPublishButtonShow + "" : "false";
+
 
 function isChromeOS() {
 	return (
@@ -1219,60 +1229,80 @@ function download(filename, text) {
     }
 }
 
-async function GP_writeFile(data, fName, id) {
+async function GP_writeFile(data, fName, id, cover) {
+	console.log("GP_writeFile, saving file to oss or backend by custom event that handled by frontend", data, fName, id, cover);
+	let i = fName.lastIndexOf(".");
+	let ext = (i >= 0) ? fName.substr(i + 1) : "";
+
+	i = fName.lastIndexOf(".");
+	if (i > 0) fName = fName.substr(0, i);
+	if (i === 0) fName = "Untitled";
+	let coverPng = null;
+	if (cover) {
+		// check if cover is Uint8Array
+		if (cover instanceof Uint8Array) {
+		// convert to Blob
+		coverPng = new Blob([cover], { type: "image/png" });
+		}
+	}
+
+	const fileContent = new Blob([data]);
+	let event = new CustomEvent("openSaveDialog", { detail: { data: fileContent, fName: fName, fExt: ext, id: id, coverPng } });
+	window.dispatchEvent(event);
+
 	// Write the given data to the given file. fName should include an extension.
 	// id is hint for the operation type (e.g. 'project' for saving a project file).
 	// The browser remembers the folder for the last save with that id.
 
-	function onFileSelected(entry) {
-		void chrome.runtime.lastError; // suppress error message
-		if (entry) entry.createWriter(function(writer) {
-			GP.lastSavedFileName = entry.name;
-			writer.write(new Blob([data], {type: 'text/plain'})); });
-	}
+	// function onFileSelected(entry) {
+	// 	void chrome.runtime.lastError; // suppress error message
+	// 	if (entry) entry.createWriter(function(writer) {
+	// 		GP.lastSavedFileName = entry.name;
+	// 		writer.write(new Blob([data], {type: 'text/plain'})); });
+	// }
 
-	i = fName.lastIndexOf('.');
-	ext = (i >= 0) ? fName.substr(i + 1) : '';
+	// i = fName.lastIndexOf('.');
+	// ext = (i >= 0) ? fName.substr(i + 1) : '';
 
-	i = fName.lastIndexOf('.');
-	if (i > 0) fName = fName.substr(0, i);
-	if (i == 0) fName = 'Untitled';
+	// i = fName.lastIndexOf('.');
+	// if (i > 0) fName = fName.substr(0, i);
+	// if (i == 0) fName = 'Untitled';
 
-	if (hasChromeFilesystem()) {
-		// extract the extension from fName
-		const options = {
-			type: 'saveFile',
-			suggestedName: fName + '.' + ext,
-			accepts: [{ description: 'MicroBlocks', extensions: [ext] }]
-		};
-		chrome.fileSystem.chooseEntry(options, onFileSelected);
-	} else if (typeof window.showSaveFilePicker != 'undefined') { // Native Filesystem API
-		if (/(CrOS)/.test(navigator.userAgent)) {
-			// On Chromebooks, the extension is not automatically appended.
-			fName = fName + '.' + ext;
-		}
-		options = { suggestedName: fName, id: id };
-		if ('' != ext) {
-			if ('.' != ext[0]) ext = '.' + ext;
-			if (('.hex' == ext) || ('.uf2' == ext)) {
-				options.types = [{ accept: { 'application/octet-stream': [ext] } }];
-			} else {
-				options.types = [{ accept: { 'text/plain': [ext] } }];
-			}
-		}
+	// if (hasChromeFilesystem()) {
+	// 	// extract the extension from fName
+	// 	const options = {
+	// 		type: 'saveFile',
+	// 		suggestedName: fName + '.' + ext,
+	// 		accepts: [{ description: 'MicroBlocks', extensions: [ext] }]
+	// 	};
+	// 	chrome.fileSystem.chooseEntry(options, onFileSelected);
+	// } else if (typeof window.showSaveFilePicker != 'undefined') { // Native Filesystem API
+	// 	if (/(CrOS)/.test(navigator.userAgent)) {
+	// 		// On Chromebooks, the extension is not automatically appended.
+	// 		fName = fName + '.' + ext;
+	// 	}
+	// 	options = { suggestedName: fName, id: id };
+	// 	if ('' != ext) {
+	// 		if ('.' != ext[0]) ext = '.' + ext;
+	// 		if (('.hex' == ext) || ('.uf2' == ext)) {
+	// 			options.types = [{ accept: { 'application/octet-stream': [ext] } }];
+	// 		} else {
+	// 			options.types = [{ accept: { 'text/plain': [ext] } }];
+	// 		}
+	// 	}
 
-		const fileHandle = await window.showSaveFilePicker(options).catch((e) => { console.log(e); });
-		if (!fileHandle) {
-			GP.lastSavedFileName = '_no_file_selected_';
-			return; // no file selected
-		}
-		const writable = await fileHandle.createWritable();
-		await writable.write(new Blob([data]));
-		await writable.close().catch(() => {});
-		GP.lastSavedFileName = fileHandle.name;
-	} else {
-		saveAs(new Blob([data]), fName + '.' + ext);
-	}
+	// 	const fileHandle = await window.showSaveFilePicker(options).catch((e) => { console.log(e); });
+	// 	if (!fileHandle) {
+	// 		GP.lastSavedFileName = '_no_file_selected_';
+	// 		return; // no file selected
+	// 	}
+	// 	const writable = await fileHandle.createWritable();
+	// 	await writable.write(new Blob([data]));
+	// 	await writable.close().catch(() => {});
+	// 	GP.lastSavedFileName = fileHandle.name;
+	// } else {
+	// 	saveAs(new Blob([data]), fName + '.' + ext);
+	// }
 }
 
 // On ChromeOS, read the file opened to launch the application, if any
