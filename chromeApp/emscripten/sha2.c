@@ -350,7 +350,7 @@ void SHA256_Init(SHA256_CTX* context) {
 #define ROUND256_0_TO_15(a,b,c,d,e,f,g,h)	\
 	REVERSE32(*data++, W256[j]); \
 	T1 = (h) + Sigma1_256(e) + Ch((e), (f), (g)) + \
-             K256[j] + W256[j]; \
+		K256[j] + W256[j]; \
 	(d) += T1; \
 	(h) = T1 + Sigma0_256(a) + Maj((a), (b), (c)); \
 	j++
@@ -360,7 +360,7 @@ void SHA256_Init(SHA256_CTX* context) {
 
 #define ROUND256_0_TO_15(a,b,c,d,e,f,g,h)	\
 	T1 = (h) + Sigma1_256(e) + Ch((e), (f), (g)) + \
-	     K256[j] + (W256[j] = *data++); \
+		K256[j] + (W256[j] = *data++); \
 	(d) += T1; \
 	(h) = T1 + Sigma0_256(a) + Maj((a), (b), (c)); \
 	j++
@@ -373,7 +373,7 @@ void SHA256_Init(SHA256_CTX* context) {
 	s1 = W256[(j+14)&0x0f]; \
 	s1 = sigma1_256(s1); \
 	T1 = (h) + Sigma1_256(e) + Ch((e), (f), (g)) + K256[j] + \
-	     (W256[j&0x0f] += s1 + W256[(j+9)&0x0f] + s0); \
+		(W256[j&0x0f] += s1 + W256[(j+9)&0x0f] + s0); \
 	(d) += T1; \
 	(h) = T1 + Sigma0_256(a) + Maj((a), (b), (c)); \
 	j++
@@ -486,7 +486,7 @@ void SHA256_Transform(SHA256_CTX* context, const sha2_word32* data) {
 
 		/* Apply the SHA-256 compression function to update a..h */
 		T1 = h + Sigma1_256(e) + Ch(e, f, g) + K256[j] +
-		     (W256[j&0x0f] += s1 + W256[(j+9)&0x0f] + s0);
+			(W256[j&0x0f] += s1 + W256[(j+9)&0x0f] + s0);
 		T2 = Sigma0_256(a) + Maj(a, b, c);
 		h = g;
 		g = f;
@@ -666,7 +666,7 @@ void SHA512_Init(SHA512_CTX* context) {
 	}
 	MEMCPY_BCOPY(context->state, sha512_initial_hash_value, SHA512_DIGEST_LENGTH);
 	MEMSET_BZERO(context->buffer, SHA512_BLOCK_LENGTH);
-	context->bitcount[0] = context->bitcount[1] =  0;
+	context->bitcount[0] = context->bitcount[1] = 0;
 }
 
 #ifdef SHA2_UNROLL_TRANSFORM
@@ -677,7 +677,7 @@ void SHA512_Init(SHA512_CTX* context) {
 #define ROUND512_0_TO_15(a,b,c,d,e,f,g,h)	\
 	REVERSE64(*data++, W512[j]); \
 	T1 = (h) + Sigma1_512(e) + Ch((e), (f), (g)) + \
-             K512[j] + W512[j]; \
+		K512[j] + W512[j]; \
 	(d) += T1, \
 	(h) = T1 + Sigma0_512(a) + Maj((a), (b), (c)), \
 	j++
@@ -687,7 +687,7 @@ void SHA512_Init(SHA512_CTX* context) {
 
 #define ROUND512_0_TO_15(a,b,c,d,e,f,g,h)	\
 	T1 = (h) + Sigma1_512(e) + Ch((e), (f), (g)) + \
-             K512[j] + (W512[j] = *data++); \
+		K512[j] + (W512[j] = *data++); \
 	(d) += T1; \
 	(h) = T1 + Sigma0_512(a) + Maj((a), (b), (c)); \
 	j++
@@ -700,7 +700,7 @@ void SHA512_Init(SHA512_CTX* context) {
 	s1 = W512[(j+14)&0x0f]; \
 	s1 = sigma1_512(s1); \
 	T1 = (h) + Sigma1_512(e) + Ch((e), (f), (g)) + K512[j] + \
-             (W512[j&0x0f] += s1 + W512[(j+9)&0x0f] + s0); \
+		(W512[j&0x0f] += s1 + W512[(j+9)&0x0f] + s0); \
 	(d) += T1; \
 	(h) = T1 + Sigma0_512(a) + Maj((a), (b), (c)); \
 	j++
@@ -804,11 +804,11 @@ void SHA512_Transform(SHA512_CTX* context, const sha2_word64* data) {
 		s0 = W512[(j+1)&0x0f];
 		s0 = sigma0_512(s0);
 		s1 = W512[(j+14)&0x0f];
-		s1 =  sigma1_512(s1);
+		s1 = sigma1_512(s1);
 
 		/* Apply the SHA-512 compression function to update a..h */
 		T1 = h + Sigma1_512(e) + Ch(e, f, g) + K512[j] +
-		     (W512[j&0x0f] += s1 + W512[(j+9)&0x0f] + s0);
+			(W512[j&0x0f] += s1 + W512[(j+9)&0x0f] + s0);
 		T2 = Sigma0_512(a) + Maj(a, b, c);
 		h = g;
 		g = f;

@@ -55,7 +55,7 @@ forever {
 
 module 'LED Display' Output
 author MicroBlocks
-version 1 8 
+version 1 9 
 choices led_imageMenu heart 'small heart' yes no happy sad confused angry asleep surprised silly fabulous meh 't-shirt' 'roller skate' duck house tortoise butterfly 'stick figure' ghost sword giraffe skull umbrella snake rabbit cow 'quarter note' 'eight note' pitchfork target triangle 'left triangle' 'chess board' diamond 'small diamond' square 'small square' scissors 
 description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) support these primitives with a simulated "fat pixel" display.'
 variables _stop_scrolling_text 
@@ -71,11 +71,10 @@ variables _stop_scrolling_text
   spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
   spec ' ' 'stopScrollingText' 'stop scrolling'
   space
-  spec ' ' '_set display color' 'set display color _' 'color'
-  space
   spec 'r' '_led_image' 'led image _' 'microbitDisplay' 15237440
   spec 'r' '_led_namedImage' '_led_namedImage _' 'menu.led_imageMenu' 'happy'
   spec 'r' '_led_imageData' '_led_imageData'
+  spec ' ' 'set display color' 'set display color _' 'color'
 
 to '_led_image' twentyFiveBitInt {
   comment 'An LED image is a 25-bit integer'
@@ -96,10 +95,6 @@ to '_led_namedImage' name {
   local 'start' (('[data:find]' ':' data i) + 1)
   local 'end' (('[data:find]' ',' data i) - 1)
   return ('[data:convertType]' ('[data:copyFromTo]' data start end) 'number')
-}
-
-to '_set display color' color {
-  callCustomCommand '[display:mbSetColor]' ('[data:makeList]' color)
 }
 
 to displayCharacter s {
@@ -142,6 +137,10 @@ to scroll_text text optionalDelay {
       waitMillis delay
     }
   }
+}
+
+to 'set display color' color {
+  callCustomCommand '[display:mbSetColor]' ('[data:makeList]' color)
 }
 
 to stopScrollingText {
@@ -240,7 +239,7 @@ wait for it to settle down.'
 
 module NeoPixel Output
 author MicroBlocks
-version 1 9 
+version 1 11 
 description 'Control NeoPixel (WS2812) RGB LED strips and rings.
 '
 variables _np_pixels 
@@ -251,6 +250,7 @@ variables _np_pixels
   spec ' ' 'neoPixelSetAllToColor' 'set all NeoPixels color _' 'color'
   spec ' ' 'setNeoPixelColor' 'set NeoPixel _ color _' 'num color' 1
   space
+  spec 'r' 'neoPixel_colorSwatch' '_' 'color'
   spec 'r' 'colorFromRGB' 'color r _ g _ b _ (0-255)' 'num num num' 0 100 100
   spec 'r' 'randomColor' 'random color'
   space
@@ -292,13 +292,11 @@ to NeoPixel_shift_color i delta {
 }
 
 to '_NeoPixel_ensureInitialized' {
-  if (_np_pixels == 0) {if ((boardType) == 'M5Atom-Matrix') {
+  if (_np_pixels == 0) {if (or ((boardType) == 'M5Atom-Matrix') (or ((boardType) == 'Mbits') ((boardType) == 'micro:STEAMakers'))) {
     neoPixelAttach 25 '' false
   } ((boardType) == 'D1-Mini') {
     comment 'D1 mini kit'
     neoPixelAttach 7 15 false
-  } ((boardType) == 'Mbits') {
-    neoPixelAttach 25 '' false
   } else {
     neoPixelAttach 10 '' false
   }}
@@ -379,6 +377,10 @@ to neoPixelSetAllToColor color {
   '_NeoPixel_ensureInitialized'
   atPut 'all' _np_pixels color
   '_NeoPixel_update'
+}
+
+to neoPixel_colorSwatch color {
+  return color
 }
 
 to randomColor {

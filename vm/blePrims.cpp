@@ -217,8 +217,9 @@ static int isOctoName(const uint8_t *sixteenBytes) {
 	for (int i = 0; i < 16; i++) {
 		int ch = sixteenBytes[i];
 		if (!((('0' <= ch) && (ch <= '9')) ||
-			  (('A' <= ch) && (ch <= 'F')))) {
-			 	return false;
+			(('A' <= ch) && (ch <= 'F')))
+		) {
+			return false;
 		}
 	}
 	return true;
@@ -326,9 +327,7 @@ NimBLEUUID ANDROID_OCTO_UUID	= NimBLEUUID(ANDROID_OCTO_UUID_STRING);
 NimBLEUUID iOS_OCTO_UUID		= NimBLEUUID(iOS_OCTO_UUID_STRING);
 
 static void stopBeaming() {
-	BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
-	if (pAdvertising->isAdvertising()) pAdvertising->stop();
-	pAdvertising->removeServiceUUID(iOS_OCTO_UUID);
+	BLE_pauseAdvertising();
 	BLE_resumeAdvertising();
 }
 
@@ -336,8 +335,7 @@ static void startOctoBeam(char *msg) {
 	// Mimic iOS beam; data is encoded in name
 
 	BLE_pauseAdvertising();
-	BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
-	pAdvertising->reset();
+	NimBLEAdvertising *pAdvertising = NimBLEDevice::getAdvertising();
 	pAdvertising->addServiceUUID(iOS_OCTO_UUID);
 	pAdvertising->setName(msg);
 	pAdvertising->setMinInterval(32);
@@ -356,8 +354,7 @@ static void startRadioBeam(uint8 *msg, int msgByteCount) {
 	memcpy(&adv_data[6], msg, msgByteCount);
 
 	BLE_pauseAdvertising();
-	BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
-	pAdvertising->reset();
+	NimBLEAdvertising *pAdvertising = NimBLEDevice::getAdvertising();
 
 	// advertise using manufacturer data with msg payload
 	NimBLEAdvertisementData advertData;
@@ -368,8 +365,8 @@ static void startRadioBeam(uint8 *msg, int msgByteCount) {
 	pAdvertising->start();
 }
 
-class BLEScannerCallbacks : public BLEAdvertisedDeviceCallbacks {
-	void onResult(BLEAdvertisedDevice* advertisedDevice) {
+class ScannerCallbacks : public BLEAdvertisedDeviceCallbacks {
+	void onResult(BLEAdvertisedDevice* advertisedDevice) override {
 		if (advertisedDevice->haveServiceUUID()) {
 			// iOS
 			BLEUUID uuid = advertisedDevice->getServiceUUID();
@@ -433,8 +430,8 @@ static void startBLEScanner() {
 		// initialize allZeroMessageID; ignore messages with that ID sent by iOS OctoStudio
 		memcpy(&allZeroMessageID, "00000000", 8);
 
-		BLEScan *pScanner = BLEDevice::getScan();
-		pScanner->setAdvertisedDeviceCallbacks(new BLEScannerCallbacks());
+		NimBLEScan *pScanner = NimBLEDevice::getScan();
+		pScanner->setAdvertisedDeviceCallbacks(new ScannerCallbacks());
 		pScanner->setMaxResults(0); // don't save results; use callback only
 		pScanner->setActiveScan(true); // required by Octo
 		pScanner->setDuplicateFilter(false); // good ???
@@ -445,7 +442,7 @@ static void startBLEScanner() {
 
 static void stopBLEScanner() {
 	if (bleScannerRunning) {
-		BLEDevice::getScan()->stop();
+		NimBLEDevice::getScan()->stop();
 		bleScannerRunning = false;
 	}
 }

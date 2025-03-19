@@ -55,7 +55,7 @@ static void updateConfiguration() {
 		esp_camera_fb_return(fb);
 		fb = NULL;
 	}
- 	if (cameraIsInitialized) {
+	if (cameraIsInitialized) {
 		esp_camera_deinit(); // stop camera
 		gpio_uninstall_isr_service();
 

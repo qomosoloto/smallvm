@@ -96,9 +96,7 @@ static OBJ primOpen(int argCount, OBJ *args) {
 	if (!fileName[0]) return falseObj;
 
 	int i = entryFor(fileName);
-	if (i >= 0) { // found an existing entry; close and reopen
-		fileEntry[i].file.close();
-		fileEntry[i].file = myFS.open(fileName, "a+");
+	if (i >= 0) { // use the existing entry
 		fileEntry[i].file.seek(0, SeekSet); // read from start of file
 		return falseObj;
 	}
@@ -352,7 +350,7 @@ static void nextFileName(char *fileName) {
 			if (file) strncat(fileName, file.name(), 31);
 		}
 	#else
- 		if (rootDir.next()) strncat(fileName, rootDir.fileName().c_str(), 31);
+		if (rootDir.next()) strncat(fileName, rootDir.fileName().c_str(), 31);
 	#endif
 }
 

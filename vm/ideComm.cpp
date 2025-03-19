@@ -36,6 +36,10 @@ static char bleDeviceName[32];
 // Generic helper functions
 
 void BLE_initThreeLetterID() {
+	#if defined(BLE_PICO)
+		memset(BLE_ThreeLetterID, 0, sizeof(BLE_ThreeLetterID));
+		if (!__isPicoW) return;
+	#endif
 	unsigned char mac[6] = {0, 0, 0, 0, 0, 0};
 	getMACAddress(mac);
 	int machineNum = (mac[4] << 8) | mac[5]; // 16 least signifcant bits
@@ -105,13 +109,13 @@ static void flashUserLED() {
 #define BLE_SEND_MAX 250
 #define INTER_SEND_TIME 20
 
-static BLEServer *pServer = NULL;
-static BLEService *pService = NULL;
-static BLEService *pUARTService = NULL;
-static BLECharacteristic *pTxCharacteristic;
-static BLECharacteristic *pRxCharacteristic;
-static BLECharacteristic *pUARTTxCharacteristic;
-static BLECharacteristic *pUARTRxCharacteristic;
+static NimBLEServer *pServer = NULL;
+static NimBLEService *pService = NULL;
+static NimBLEService *pUARTService = NULL;
+static NimBLECharacteristic *pTxCharacteristic;
+static NimBLECharacteristic *pRxCharacteristic;
+static NimBLECharacteristic *pUARTTxCharacteristic;
+static NimBLECharacteristic *pUARTRxCharacteristic;
 
 static bool bleRunning = false;
 static uint16_t connID = -1;
@@ -137,6 +141,7 @@ static void updateConnectionState() {
 			connID = -1;
 		}
 		BLE_connected_to_IDE = false;
+		BLE_resumeAdvertising();
 	}
 	if (!USB_connected_to_IDE) { // either not connected or connected via BLE
 		if (Serial.available()) {
@@ -149,6 +154,7 @@ static void updateConnectionState() {
 			// tell runtime that we've gotten a ping
 			lastRcvTime = microsecs();
 			USB_connected_to_IDE = true;
+			BLE_pauseAdvertising();
 		}
 	}
 }
@@ -187,27 +193,27 @@ static int bleSendData(uint8_t *data, int byteCount) {
 	return byteCount;
 }
 
-class MyServerCallbacks: public BLEServerCallbacks {
-	void onConnect(BLEServer* pServer, ble_gap_conn_desc* desc) {
+class ConnectionCallbacks: public NimBLEServerCallbacks {
+	void onConnect(NimBLEServer* pServer, ble_gap_conn_desc* desc) override {
 		connID = desc->conn_handle;
 		lastRcvTime = microsecs();
 		BLE_connected_to_IDE = true;
 	}
-	void onDisconnect(BLEServer* pServer, ble_gap_conn_desc* desc) {
+	void onDisconnect(NimBLEServer* pServer, ble_gap_conn_desc* desc) override {
 		connID = -1;
 		BLE_connected_to_IDE = false;
 		BLE_resumeAdvertising();
 	}
 };
 
-class MyCallbacks: public BLECharacteristicCallbacks {
-	void onWrite(BLECharacteristic *pCharacteristic, ble_gap_conn_desc* desc) {
+class IDECallbacks: public NimBLECharacteristicCallbacks {
+	void onWrite(NimBLECharacteristic *pCharacteristic, ble_gap_conn_desc* desc) override {
 		// Handle incoming BLE data.
 
 		NimBLEAttValue value = pCharacteristic->getValue();
 		bleReceiveData(value.data(), value.length());
 	}
-	void onStatus(NimBLECharacteristic* pCharacteristic, Status s, int code) {
+	void onStatus(NimBLECharacteristic* pCharacteristic, Status s, int code) override {
 		// Record the last return code. This is used to tell when a notify() has failed
 		// (because there are no buffers) so that it can be re-tried later.
 
@@ -217,8 +223,8 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 
 // BLE UART Support (NimBLE)
 
-class UARTCallbacks: public BLECharacteristicCallbacks {
-	void onWrite(BLECharacteristic *pCharacteristic, ble_gap_conn_desc* desc) {
+class UARTCallbacks: public NimBLECharacteristicCallbacks {
+	void onWrite(NimBLECharacteristic *pCharacteristic, ble_gap_conn_desc* desc) override {
 		int byteCount = pCharacteristic->getDataLength();
 		BLE_UART_ReceiveCallback((uint8 *) pCharacteristic->getValue().c_str(), byteCount);
 	}
@@ -239,21 +245,21 @@ void BLE_start() {
 	initBLEDeviceName("MicroBlocks");
 
 	// Create BLE Device
-	BLEDevice::init(bleDeviceName);
+	NimBLEDevice::init(bleDeviceName);
 
 	// Create BLE Server
-	pServer = BLEDevice::createServer();
-	pServer->setCallbacks(new MyServerCallbacks());
+	pServer = NimBLEDevice::createServer();
+	pServer->setCallbacks(new ConnectionCallbacks());
 
 	// Create IDE Service
 	pService = pServer->createService(MB_SERVICE_UUID);
 	pTxCharacteristic = pService->createCharacteristic(MB_CHARACTERISTIC_UUID_TX, NIMBLE_PROPERTY::NOTIFY);
-	pTxCharacteristic->setCallbacks(new MyCallbacks());
+	pTxCharacteristic->setCallbacks(new IDECallbacks());
 	pRxCharacteristic = pService->createCharacteristic(MB_CHARACTERISTIC_UUID_RX, NIMBLE_PROPERTY::WRITE_NR);
-	pRxCharacteristic->setCallbacks(new MyCallbacks());
+	pRxCharacteristic->setCallbacks(new IDECallbacks());
 
 	// Create Nordic UART Service
-	BLEService *pUARTService = BLEDevice::getServer()->createService(UART_SERVICE_UUID);
+	NimBLEService *pUARTService = NimBLEDevice::getServer()->createService(UART_SERVICE_UUID);
 	pUARTTxCharacteristic = pUARTService->createCharacteristic(UART_UUID_TX, NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ);
 	pUARTTxCharacteristic->setCallbacks(new UARTCallbacks());
 	pUARTRxCharacteristic = pUARTService->createCharacteristic(UART_UUID_RX, NIMBLE_PROPERTY::WRITE_NR | NIMBLE_PROPERTY::WRITE);
@@ -276,9 +282,9 @@ void BLE_stop() {
 	connID = -1;
 	BLE_connected_to_IDE = false;
 
-	BLEDevice::getAdvertising()->reset();
+	NimBLEDevice::getAdvertising()->stop();
 	if (pServer) pServer->removeService(pService);
-	BLEDevice::deinit();
+	NimBLEDevice::deinit();
 
 	pServer = NULL;
 	pService = NULL;
@@ -291,25 +297,28 @@ void BLE_stop() {
 // Stop and resume advertising (for use by Octo primitives)
 
 void BLE_pauseAdvertising() {
+	// Stop advertising and remove all service UUID's.
+
 	if (!bleRunning) return;
 
-	NimBLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+	NimBLEAdvertising *pAdvertising = NimBLEDevice::getAdvertising();
 	pAdvertising->reset();
-	pAdvertising->removeServiceUUID(NimBLEUUID(MB_SERVICE_UUID));
+	pAdvertising->removeServices();
 }
 
 void BLE_resumeAdvertising() {
 	if (!bleRunning) return;
 
-	NimBLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
-	pAdvertising->reset();
 	if (BLE_connected_to_IDE || USB_connected_to_IDE) {
 		return; // don't advertise if connected to IDE
 	}
+
+	NimBLEAdvertising *pAdvertising = NimBLEDevice::getAdvertising();
+	pAdvertising->removeServices();
 	pAdvertising->addServiceUUID(MB_SERVICE_UUID);
 	pAdvertising->setName(bleDeviceName);
-	pAdvertising->setMinInterval(50);
-	pAdvertising->setMaxInterval(100);
+	pAdvertising->setMinInterval(32); // 20 msecs (minumum allowable interval)
+	pAdvertising->setMaxInterval(40); // 25 msecs
 	pAdvertising->start();
 }
 
@@ -386,10 +395,10 @@ void setAdvertisingInterval(int minInterval, int maxInterval) {
 	if (minInterval < 32) minInterval = 32;
 	if (maxInterval < 32) minInterval = 32;
 
-    uint8_t adv_type = 0;
-    bd_addr_t null_addr;
-    memset(null_addr, 0, 6);
-    gap_advertisements_set_params(minInterval, maxInterval, adv_type, 0, null_addr, 0x07, 0x00);
+	uint8_t adv_type = 0;
+	bd_addr_t null_addr;
+	memset(null_addr, 0, 6);
+	gap_advertisements_set_params(minInterval, maxInterval, adv_type, 0, null_addr, 0x07, 0x00);
 }
 
 // Stop and resume advertising (for use by Octo primitives)
@@ -398,11 +407,14 @@ void BLE_pauseAdvertising() {
 	if (!__isPicoW) return;
 
 	BTstack.stopAdvertising();
-	setAdvertisingInterval(32, 32); // set mimimal advertising interval for Octo
 }
 
 void BLE_resumeAdvertising() {
 	if (!__isPicoW) return;
+
+	if (BLE_connected_to_IDE || USB_connected_to_IDE) {
+		return; // don't advertise if connected to IDE
+	}
 
 	BTstack.stopAdvertising();
 	BLE_setPicoAdvertisingData(bleDeviceName, MB_SERVICE_UUID); // resume BLE advertisting
@@ -423,8 +435,8 @@ static void deviceConnectedCallback(BLEStatus status, BLEDevice *device) {
 
 static void deviceDisconnectedCallback(BLEDevice *device) {
 	connectionHandle = 0;
-	BLE_resumeAdvertising();
 	BLE_connected_to_IDE = false;
+	BLE_resumeAdvertising();
 }
 
 void bleDisconnect() {
@@ -454,6 +466,14 @@ static int gattWriteCallback(uint16_t attribute_handle, uint8_t *data, uint16_t 
 }
 
 static void updateConnectionState() {
+	if (!__isPicoW) return;
+
+	if ((USB_connected_to_IDE || BLE_connected_to_IDE) && !ideConnected()) {
+		// lost connection to IDE; resume advertisting
+		USB_connected_to_IDE = false;
+		BLE_connected_to_IDE = false;
+		BLE_resumeAdvertising();
+	}
 	if (!USB_connected_to_IDE) { // either not connected or connected via BLE
 		if (Serial.available()) {
 			// new serial connection; disconnect BLE if it is connected

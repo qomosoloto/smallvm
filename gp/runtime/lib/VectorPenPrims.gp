@@ -14,8 +14,8 @@ method beginPathFromCurrentPostion VectorPenPrims { pathBeginPathFromHere }
 method lineTo VectorPenPrims x y { pathLineTo x y }
 
 method goto VectorPenPrims x y {
-  // For compatability with Pen
-  pathLineTo x y
+	// For compatability with Pen
+	pathLineTo x y
 }
 
 method forward VectorPenPrims dist curvature {

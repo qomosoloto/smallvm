@@ -142,8 +142,6 @@ OBJ primFillList(int argCount, OBJ *args) {
 		int count = obj2int(FIELD(obj, 0));
 		if (count >= WORDS(obj))count = WORDS(obj) - 1;
 		for (int i = 0; i < count; i++) FIELD(obj, i + 1) = value;
-		int end = WORDS(obj) + HEADER_WORDS;
-		for (int i = HEADER_WORDS + 1; i < end; i++) ((OBJ *) obj)[i] = value;
 	} else if (IS_TYPE(obj, ByteArrayType)) {
 		if (!isInt(value)) return fail(byteArrayStoreError);
 		int byteValue = obj2int(value);
@@ -1126,6 +1124,28 @@ OBJ primConvertType(int argCount, OBJ *args) {
 	return result;
 }
 
+OBJ primToString(int argCount, OBJ *args) {
+	if (argCount < 1) return fail(notEnoughArguments);
+	OBJ srcObj = args[0];
+	char s[32]; // buffer for number-to-string conversion
+	const char *s2 = NULL;
+
+	switch (objType(srcObj)) {
+	case BooleanType:
+		return newStringFromBytes(((srcObj == trueObj) ? "1" : "0"), 1);
+	case IntegerType:
+		sprintf(s, "%d", obj2int(srcObj));
+		return newStringFromBytes(s, strlen(s));
+	case StringType:
+		return srcObj;
+	case ListType:
+	case ByteArrayType:
+		s2 = obj2str(srcObj);
+		return newStringFromBytes(s2, strlen(s2));
+	}
+	return newString(0);
+}
+
 // Primitives
 
 static PrimEntry entries[] = {
@@ -1144,6 +1164,7 @@ static PrimEntry entries[] = {
 	{"asByteArray", primAsByteArray},
 	{"freeMemory", primFreeMemory},
 	{"convertType", primConvertType},
+	{"toString", primToString},
 };
 
 void addDataPrims() {

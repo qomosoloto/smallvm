@@ -84,8 +84,10 @@ typedef enum {
 
 #ifdef GNUBLOCKS
 	#define STACK_LIMIT 10000 // Task size is 6 + STACK_LIMIT words
-#else
+#elif (defined(NRF51) || defined(ESP8266))
 	#define STACK_LIMIT 54 // Task size is 6 + STACK_LIMIT words
+#else
+	#define STACK_LIMIT 100 // Task size is 6 + STACK_LIMIT words
 #endif
 
 typedef struct {
@@ -94,7 +96,7 @@ typedef struct {
 	uint8 currentChunkIndex; // chunk index when inside a function
 	uint32 wakeTime;
 	OBJ code;
-	int ip;
+	int ip; // ip offset in code
 	int sp;
 	int fp;
 	OBJ stack[STACK_LIMIT];
@@ -147,6 +149,7 @@ extern int extraByteDelay;
 #define varNameMsg				29
 #define extendedMsg				30
 #define enableBLEMsg			31
+#define chunkCode16Msg			32
 
 // Serial Protocol Messages: CRC Exchange
 
@@ -204,6 +207,8 @@ extern int extraByteDelay;
 #define bad8BitBitmap			51	// Needs an 8-bit bitmap: a list containing the bitmap width and contents (a byte array)
 #define badColorPalette			52	// Needs a color palette: a list of positive 24-bit integers representing RGB values
 #define encoderNotStarted		53	// Encoder not started; pin may not support interrupts
+#define scriptTooLarge			54	// Script too large
+#define udpPortNotOpen			55	// UDP port not open
 #define sleepSignal				255	// Not a real error; used to make current task sleep
 
 // Runtime Operations
@@ -435,8 +440,7 @@ typedef const struct {
 } PrimEntry;
 
 void addPrimitiveSet(PrimitiveSetIndex primSetIndex, const char *setName, int entryCount, PrimEntry *entries);
-OBJ callPrimitive(int argCount, OBJ *args);
-OBJ newPrimitiveCall(PrimitiveSetIndex setIndex, const char *primName, int argCount, OBJ *args);
+OBJ doPrimitiveCall(PrimitiveSetIndex setIndex, const char *primName, int argCount, OBJ *args);
 void primsInit();
 
 #ifdef __cplusplus

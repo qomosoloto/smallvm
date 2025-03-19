@@ -31,7 +31,7 @@ script 408 324 {
 comment 'graph script'
 '[file:open]' 'launch data'
 repeat 1000 {
-  printIt ('[file:readLine]' 'launch data')
+  graphIt ('[file:readLine]' 'launch data')
 }
 '[file:close]' 'launch data'
 }

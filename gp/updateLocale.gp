@@ -10,22 +10,28 @@
 // Update missing strings in locale files
 
 to startup {
+	specs = (authoringSpecs)
 	langName = (last (commandLine))
-	setLanguage (authoringSpecs) langName
+	setLanguage specs langName
 
-        // Backup previous locale file before updating it
-	oldLocale = (readFile (join '../translations/' langName '.txt'))
+	// Backup previous locale file before updating it
+	oldLocale = (readFile (join '../translations/' langName '.po'))
 	if (notNil oldLocale) {
-		(writeFile (join (tmpPath) langName '.txt') oldLocale)
+		(writeFile (join (tmpPath) langName '.po') oldLocale)
 	}
 
 	updatedLocale = ''
-	allLocales = (readFile '../Locales.txt')
+	allLocales = (readFile '../translations/template.pot')
 
 	// Check whether it's an RTL language, and keep the tag if so
 	if ((localized 'RTL') == 'true') {
 		updatedLocale = (join
-			'RTL' (newline) 'true' (newline) (newline))
+			'msgid = "RTL"'
+			(newline)
+			'msgstr = "true"'
+			(newline)
+			(newline)
+		)
 	}
 
 	lines = (toList (lines allLocales))
@@ -35,21 +41,40 @@ to startup {
 			// Copy comments. We should be smarter about it and get
 			// them from the original file somehow.
 			updatedLocale = (join updatedLocale original (newline))
-		} else {
+		} (beginsWith original 'msgid') {
+			original = (parseGetText specs original true)
 			translation = (localizedOrNil original)
+			if (isNil translation) {
+				// Maybe this translation has now been prefixed?
+				prefixIdx = (findFirst original ';')
+				if (prefixIdx > 0) {
+					translation = (localizedOrNil (substring original (prefixIdx + 1)))
+				}
+			}
 			if (or (isNil translation) (isNil oldLocale)) {
-				translation = '--MISSING--'
+				translation = ''
 			}
 			updatedLocale = (join
 				updatedLocale
-				original
+				'msgid "' (quoteEscaped original) '"'
 				(newline)
-				translation
-				(newline))
+				'msgstr "' (quoteEscaped translation) '"'
+				(newline)
+			)
 		}
 	}
 
-	writeFile (join '../translations/' langName '.txt') updatedLocale
+	writeFile (join '../translations/' langName '.po') updatedLocale
+}
+
+to quoteEscaped aString {
+	escaped = ''
+	for i (count aString) {
+		char = (at aString i)
+		if (char == '"') { escaped = (join escaped '\') } //"make highlighter happy
+		escaped = (join escaped char)
+	}
+	return escaped
 }
 
 to tmpPath {

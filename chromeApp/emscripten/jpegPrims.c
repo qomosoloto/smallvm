@@ -177,7 +177,7 @@ static OBJ primJPEGDecode(int nargs, OBJ args[]) {
 
 	// decompress one scanline at a time
 	int *base = (int *) &FIELD(bitmapData, 0);
-	int *limit =  base + (w * h);
+	int *limit = base + (w * h);
 	while (cinfo.output_scanline < cinfo.output_height) {
 		(void) jpeg_read_scanlines(&cinfo, buffer, 1);
 		unsigned char *src = buffer[0];

@@ -44,7 +44,7 @@ forever {
 
 module MQTT Comm
 author wwj718
-version 1 6 
+version 1 7 
 depends WiFi 
 tags mqtt network 
 description 'A simple MQTT client.
@@ -85,7 +85,7 @@ to 'MQTT connected' {
 }
 
 to 'MQTT disconnect' {
-  callCustomCommand '[net:MQTTdisconnect]'
+  callCustomCommand '[net:MQTTDisconnect]'
 }
 
 to 'MQTT event payload' event {

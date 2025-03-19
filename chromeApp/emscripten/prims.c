@@ -1018,11 +1018,11 @@ OBJ primWriteFile(int nargs, OBJ args[]) {
 		saveAs(blob, fileName);
 	}, fileName, &FIELD(data, 0), isBinary, byteCount);
 #else
-  #ifdef _WIN32
+	#ifdef _WIN32
 	FILE *f = _wfopen(utf82wide(fileName), L"wb");
-  #else
+	#else
 	FILE *f = fopen(fileName, "wb");
-  #endif
+	#endif
 
 	if (!f) {
 		char err[1000];
@@ -1234,20 +1234,20 @@ OBJ primAbsolutePath(int nargs, OBJ args[]) {
 	WCHAR wideResult[ABS_PATH_SIZE];
 	int len = GetFullPathNameW(utf82wide(obj2str(args[0])), 500, wideResult, NULL);
 	if ((len == 0) || (len >= ABS_PATH_SIZE)) {
-		return newString("");  // ignore error and return empty string
+		return newString(""); // ignore error and return empty string
 	}
 	char *result = wide2utf8(wideResult);
 
 	// replace backslashes with GP-standard forward slashes
 	len = strlen(result);
 	for (int i = 0; i < len; i++) {
-	  int ch = result[i];
-	  if ('\\' == ch) result[i] = '/';
-	  if (ch == 0) break;
+		int ch = result[i];
+		if ('\\' == ch) result[i] = '/';
+		if (ch == 0) break;
 	}
 	return newString(result);
 #elif defined(EMSCRIPTEN)
-	return args[0];  // EMSCRIPTEN doesn't support realpath(); return the original path
+	return args[0]; // EMSCRIPTEN doesn't support realpath(); return the original path
 #elif defined(IOS)
 	return ios_absolutePath(obj2str(args[0]));
 #else
@@ -2094,7 +2094,7 @@ OBJ primFloodFill(int nargs, OBJ args[]) {
 			if ((adjacentY < 0) || (adjacentY >= h)) continue; // adjacentY out of range
 			lineStart = adjacentY * w;
 			int run = false;
-			for (i = (left + (offset * w)); i <= (right  + (offset * w)); i++) {
+			for (i = (left + (offset * w)); i <= (right + (offset * w)); i++) {
 				if (!processed[i] && ((pixels[i] & mask) == matchRGB)) {
 					if (!run) { // start of a new run of matching pixels
 						// push a new x,y on the todo list
@@ -2840,7 +2840,7 @@ OBJ primExecStatus(int nargs, OBJ args[]) {
 	unsigned long status = 0;
 	GetExitCodeProcess(procHndl, &status);
 	if (STILL_ACTIVE == status) return nilObj;
-	winProcHandle[pid] = NULL;  // process has completed, so recycle the winProcHandle slot
+	winProcHandle[pid] = NULL; // process has completed, so recycle the winProcHandle slot
 	return int2obj(status);
 #else
 	int pid = obj2int(args[0]);
@@ -2906,8 +2906,8 @@ OBJ primObjectAfter(int nargs, OBJ args[]) {
 	OBJ prevObj = (nargs) ? args[0] : nilObj;
 	int classID = 0; // all objects
 	if (nargs > 1) {
-	  if (!isInt(args[1])) return primFailed("Second argument (class index) must be an integer");
-	  classID = obj2int(args[1]);
+		if (!isInt(args[1])) return primFailed("Second argument (class index) must be an integer");
+		classID = obj2int(args[1]);
 	}
 	return objectAfter(prevObj, classID);
 }
@@ -3320,7 +3320,7 @@ PrimEntry corePrimList[] = {
 	{">=",			primGreaterEqual,	"Ex. (3 >= 4) -> false"},
 	{">",			primGreater,		"Ex. (3 > 3) -> false"},
 	{"===",			primIdentical,		"Identity test. Return true if the two arguments are the exact same object. Ex. ((array) === (array)) -> false"},
-	{"compareFloats", primCompareFloats, "Compare two numbers, a and b, as floats using all bits of the mantissa (normal comparisons ignore some of the least significant bits). Return -1 if a < b, 0 if a == b, and 1 if a > b. Eg. (compareFloats  (13 * (1 / 1000)) (13 / 1000))"},
+	{"compareFloats", primCompareFloats, "Compare two numbers, a and b, as floats using all bits of the mantissa (normal comparisons ignore some of the least significant bits). Return -1 if a < b, 0 if a == b, and 1 if a > b. Eg. (compareFloats (13 * (1 / 1000)) (13 / 1000))"},
 	{"isNil",		(void*) IS_NIL,		"Return true if the argument is nil. Ex. (isNil nil)"},
 	{"notNil",		(void*) NOT_NIL,	"Return true if the argument is not nil. Ex. (notNil nil)"},
 
@@ -3668,9 +3668,9 @@ void initPrimitiveTable() {
 #endif // EMSCRIPTEN
 
 #ifndef NO_HTTP
-    PrimEntry* httpPrimitives(int *count);
-    entries = httpPrimitives(&count);
-    addPrimitiveSet(entries, count);
+	PrimEntry* httpPrimitives(int *count);
+	entries = httpPrimitives(&count);
+	addPrimitiveSet(entries, count);
 #endif // NO_HTTP
 
 	initPrimitiveDictionary();

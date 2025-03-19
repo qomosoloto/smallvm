@@ -33,6 +33,8 @@ void closeAndDeleteFile(char *fileName) {
 		var origin = window.useSessionStorage ? 'session' : 'local';
 		delete(window[origin + 'Storage'][fileName]);
 		delete(window.fileCharPositions[fileName]);
+		// also ask the IDE to remove this file from its local cache
+		window.parent.postMessage(['boardieDeleteFile', fileName], '*');
 	}, fileName);
 }
 
@@ -50,7 +52,7 @@ int openFile(char *fileName, int createIfNotExists) {
 		}
 
 		// some file ops take a _long_ time to run so we yield after max_cycles
-		window.max_cycles = 512;
+		window.max_cycles = 50000;
 
 		if (!window.fileCharPositions) { window.fileCharPositions = {}; }
 		if (!window.fileCharPositions[fileName] || $1) {
@@ -273,7 +275,15 @@ static OBJ primAppendLine(int argCount, OBJ *args) {
 		var origin = window.useSessionStorage ? 'session' : 'local';
 
 		window[origin + 'Storage'][fileName] += line + '\n';
-
+		// update IDE cache
+		window.parent.postMessage(
+			[
+				'boardieGetFile',
+				fileName,
+				window[origin + 'Storage'][fileName]
+			],
+			'*'
+		);
 	}, fileName, line);
 
 	return falseObj;
@@ -298,6 +308,15 @@ static OBJ primAppendBytes(int argCount, OBJ *args) {
 				newContents += String.fromCharCode(data[i]);
 			}
 			window[origin + 'Storage'][fileName] = newContents;
+			// update IDE cache
+			window.parent.postMessage(
+				[
+					'boardieGetFile',
+					fileName,
+					window[origin + 'Storage'][fileName]
+				],
+				'*'
+			);
 		}, fileName, (uint8 *) &FIELD(data, 0), BYTES(data));
 	} else if (IS_TYPE(data, StringType)) {
 		EM_ASM_({
@@ -305,6 +324,15 @@ static OBJ primAppendBytes(int argCount, OBJ *args) {
 			var fileName = UTF8ToString($0);
 			if (fileName === 'user-prefs') return;
 			window[origin + 'Storage'][fileName] += UTF8ToString($1);
+			// update IDE cache
+			window.parent.postMessage(
+				[
+					'boardieGetFile',
+					fileName,
+					window[origin + 'Storage']
+				],
+				'*'
+			);
 		}, fileName, (uint8 *) obj2str(data));
 	}
 

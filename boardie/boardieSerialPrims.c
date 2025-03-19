@@ -22,26 +22,38 @@ static OBJ primSerialClose(int argCount, OBJ *args) { return falseObj; }
 static OBJ primSerialRead(int argCount, OBJ *args) { return falseObj; }
 static OBJ primSerialReadInto(int argCount, OBJ *args) { return falseObj; }
 static OBJ primSerialWrite(int argCount, OBJ *args) { return falseObj; }
-static OBJ primSetPins(int argCount, OBJ *args) { return falseObj; }
 static OBJ primSerialWriteBytes(int argCount, OBJ *args) { return falseObj; }
 
 // WebMIDI
 
+static OBJ primSetPins(int argCount, OBJ *args) {
+	if (argCount < 1) return fail(notEnoughArguments);
+	EM_ASM_({
+		// try to open output
+		if (typeof navigator.requestMIDIAccess !== 'undefined') {
+			navigator.requestMIDIAccess().then(
+				function (midiAccess) {
+					var outputs = Array.from(midiAccess.outputs);
+					var index = $0;
+					if (outputs.length > 0) {
+						// if pin num is too high, just pick the last output
+						index = Math.min(index, outputs.length - 1);
+						window.midiOutput = outputs[index][1];
+						console.log('midi output:', window.midiOutput);
+					}
+				}
+			);
+		}
+	},
+	obj2int(args[0]) // pin number
+	);
+	return trueObj;
+};
+
 static OBJ primMIDISend(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
 	EM_ASM_({
-			if (typeof window.midiOutput === 'undefined') {
-				// try to open output
-				if (typeof navigator.requestMIDIAccess !== 'undefined') {
-					navigator.requestMIDIAccess().then(
-						function (midiAccess) {
-							window.midiOutput = Array.from(midiAccess.outputs)[0][1];
-						}
-					);
-				}
-			}
-			if (typeof window.midiOutput === 'undefined') return; // no midi output
-
+			if (typeof window.midiOutput === 'undefined') { console.log('no midi output'); return; } // no midi output
 			try {
 				// Yes, really. If someone knows of a *fast* and *elegant*
 				// way to get emscripten params by their index, I'll gladly

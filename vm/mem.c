@@ -38,52 +38,52 @@
 // update (forward) references of objects that move during compaction and object resizing.
 
 #if defined(NRF51)
-  #define OBJSTORE_BYTES 1200
+	#define OBJSTORE_BYTES 1200
 #elif defined(ARDUINO_BBC_MICROBIT_V2) || defined(ARDUINO_CALLIOPE_MINI_V3)
-  #define OBJSTORE_BYTES 48000
+	#define OBJSTORE_BYTES 46000
 #elif defined(ARDUINO_NRF52_PRIMO)
-  #define OBJSTORE_BYTES 16000
+	#define OBJSTORE_BYTES 14000
 #elif defined(NRF52)
-  #define OBJSTORE_BYTES 160000 // max is 219000
+	#define OBJSTORE_BYTES 160000 // max is 219000
 #elif defined(ARDUINO_ARCH_SAMD)
-  #define OBJSTORE_BYTES 14000
+	#define OBJSTORE_BYTES 12000
 #elif defined(ARDUINO_M5Stick_C2)
   #define OBJSTORE_BYTES 160000
 #elif defined(ARDUINO_M5STACK_FIRE) || defined(ARDUINO_M5STACK_Core2) || defined(HALOCODE) || defined(XESGAME)
   #define OBJSTORE_BYTES 200000 // will be allocated from PSRAM
 #elif defined(HAS_CAMERA)
-  #define OBJSTORE_BYTES 240000 // will be allocated from PSRAM
+	#define OBJSTORE_BYTES 240000 // will be allocated from PSRAM
 #elif defined(ESP32_S3) || defined(ESP32_C3)
-  #define OBJSTORE_BYTES 80000
+	#define OBJSTORE_BYTES 78000
 #elif defined(ARDUINO_ARCH_ESP32)
-  // object store is allocated from heap on ESP32
-  #if defined(USE_NIMBLE)
-	#define OBJSTORE_BYTES 48000 // max that allows both BLE and WiFi is 59000
-  #else
-    #define OBJSTORE_BYTES 80000
-  #endif
+	// object store is allocated from heap on ESP32
+	#if defined(USE_NIMBLE)
+		#define OBJSTORE_BYTES 46000 // max that allows both BLE and WiFi is 59000
+	#else
+		#define OBJSTORE_BYTES 78000
+	#endif
 #elif defined(GNUBLOCKS)
-  #define OBJSTORE_BYTES 262100 // max number of bytes that we can allocate for now
+	#define OBJSTORE_BYTES 262100 // max number of bytes that we can allocate for now
 #elif defined(ARDUINO_ARCH_RP2040)
-  #define OBJSTORE_BYTES 100000
+	#define OBJSTORE_BYTES 58000
 #elif defined(ARDUINO_SAM_DUE)
-  #define OBJSTORE_BYTES 80000
+	#define OBJSTORE_BYTES 76000
 #elif defined(CONFIG_BOARD_BEAGLECONNECT_FREEDOM)
-  #define OBJSTORE_BYTES 40000
+	#define OBJSTORE_BYTES 38000
 #else
-  #define OBJSTORE_BYTES 4000
-  // max that works on Wemos D1 mini (ESP8266) is 11000
-  // however, WiFi is unreliable for 4 concurrent requestions even down to 7200
-  // 5000 seems stable for up to 10 concurrent requests
-  // max that compiles for all boards is 16886 (17624 NodeMCU)
+	#define OBJSTORE_BYTES 4000
+	// max that works on Wemos D1 mini (ESP8266) is 11000
+	// however, WiFi is unreliable for 4 concurrent requestions even down to 7200
+	// 5000 seems stable for up to 10 concurrent requests
+	// max that compiles for all boards is 16886 (17624 NodeMCU)
 #endif
 
 #define OBJSTORE_WORDS ((OBJSTORE_BYTES / 4) + 4)
 
 #if defined(ARDUINO_ARCH_ESP32)
-  static OBJ *objstore = NULL; // allocated from heap on ESP32
+	static OBJ *objstore = NULL; // allocated from heap on ESP32
 #else
-  static OBJ objstore[OBJSTORE_WORDS];
+	static OBJ objstore[OBJSTORE_WORDS];
 #endif
 
 static OBJ memStart = NULL;

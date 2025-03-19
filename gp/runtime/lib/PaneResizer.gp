@@ -23,38 +23,39 @@ method drawOn PaneResizer ctx {
 	}
 }
 
-method handEnter PaneResizer aHand {
-	if (isBusy aHand) { return }
+method setResizeCursor PaneResizer {
 	if (orientation == 'horizontal') {
 		setCursor 'ew-resize'
 	} (orientation == 'vertical') {
 		setCursor 'ns-resize'
 	}
+}
+
+method handEnter PaneResizer aHand {
+	if (isBusy aHand) { return }
+	setResizeCursor this
 	isHighlit = true
 	changed morph
 }
+
 method handLeave PaneResizer aHand {
 	setCursor 'default'
 	isHighlit = false
 	changed morph
 }
 
-method clicked PaneResizer { return true }
-method rightClicked PaneResizer { return true }
-
 method handDownOn PaneResizer aHand {
+	handEnter this aHand
 	focusOn aHand this
 	offsetX = ((x aHand) - (left morph))
 	offsetY = ((y aHand) - (top morph))
-
-	scripter = (ownerThatIsA morph 'MicroBlocksScripter')
-	if (notNil scripter) { hideScrollbars (handler scripter) }
 	return true
 }
 
 method handUpOn PaneResizer aHand {
+	handLeave this aHand
 	scripter = (ownerThatIsA morph 'MicroBlocksScripter')
-	if (notNil scripter) { showScrollbars (handler scripter) }
+	if (notNil scripter) { fixScrollbars (handler scripter) }
 	return true
 }
 

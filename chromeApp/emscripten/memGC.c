@@ -191,11 +191,11 @@ static OBJ survivorAfter(OBJ obj) {
 	while (ptr < freeStart) {
 		if (isMarked(ptr)) return ptr;
 		if (ExternalReferenceClass == CLASS(ptr)) {
-		  ADDR field = &FIELD(ptr, 0);
-		  Finalizer f = (Finalizer)(*(((ADDR*)field) + 1));
-		  if (f && *((ADDR*)field)) {
-		    f(ptr); // call the finalizer function on reference
-		  }
+			ADDR field = &FIELD(ptr, 0);
+			Finalizer f = (Finalizer)(*(((ADDR*)field) + 1));
+			if (f && *((ADDR*)field)) {
+				f(ptr); // call the finalizer function on reference
+			}
 		}
 		ptr = nextChunk(ptr);
 	}
@@ -212,7 +212,7 @@ static void sweepAndSetForwardFields() {
 			if (DEBUG) printf("survivor\n");
 			O2A(ptr)[FORWARD_PTR] = wordShift ? (ptr / sizeof(OBJ) - wordShift) : 0;
 #ifdef _LP64
-			O2A(ptr)[FORWARD_PTR+1] = 0;  //hack for 64-bit
+			O2A(ptr)[FORWARD_PTR+1] = 0; //hack for 64-bit
 #endif
 		} else {
 			nextPtr = survivorAfter(ptr); // find next survivor
@@ -265,7 +265,7 @@ static void moveSurvivors() {
 	OBJ dstPtr = ptr;
 	while (ptr < freeStart) {
 		int chunkWords = HEADER_WORDS + WORDS(ptr);
-		clearMarkBits(ptr);  // ?
+		clearMarkBits(ptr); // ?
 		if (notFreeChunk(ptr)) {
 			O2A(ptr)[FORWARD_PTR] = 0; // clear forwarding pointer
 #ifdef _LP64

@@ -26,7 +26,7 @@ if test -n "$help"; then
     echo "                              will be embedded into the IDE."
     echo "--tools                       Automatically try to install missing tools needed"
     echo "                              by the build process."
-    echo "--locale=[LANGUAGE-NAME]      Update locales for the specified language. To print"
+    echo "--locale=[LANGUAGE-CODE]      Update locales for the specified language. To print"
     echo "                              all currently available languages, run it without"
     echo "                              an argument. If language does not exist, a new"
     echo "                              locale file will be created for it. If it does, a"
@@ -61,14 +61,14 @@ if test -n "$locale"; then
     if [ $locale == '--locale' ]; then
         echo "Currently available locales:"
         echo
-        for lang in translations/*; do
+        for lang in translations/*.po; do
             echo $lang | cut -c14- | cut -f1 -d.
         done
         echo
     elif [ $locale == 'all' ]; then
         echo "Updating all available locales:"
         echo
-        for lang in translations/*; do
+        for lang in translations/*.po; do
             ./build.sh --locale=`echo $lang | cut -c14- | cut -f1 -d.`
         done
         echo
@@ -76,9 +76,9 @@ if test -n "$locale"; then
         echo "Updating locale file for $locale..."
         (cd gp; ./$gp runtime/lib/* loadIDE.gp updateLocale.gp -- $locale)
         echo "Done."
-        echo "Please edit the updated locale file at translations/$locale.txt"
-        missing=`grep "^--MISSING--" translations/$locale.txt | wc -l`
-        echo "A total of $missing missing strings have been marked with the \"--MISSING--\" tag."
+        echo "Please edit the updated locale file at translations/$locale.po"
+        missing=`grep "^msgstr \"\"" translations/$locale.po | wc -l`
+        echo "A total of $missing missing strings have been found."
     fi
     exit 0
 fi

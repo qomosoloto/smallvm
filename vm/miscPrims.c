@@ -27,7 +27,8 @@ OBJ primBLE_ID(int argCount, OBJ *args) {
 	if (strlen(BLE_ThreeLetterID) == 3) {
 		result = newStringFromBytes(BLE_ThreeLetterID, 3);
 	} else {
-		result = newString(0);
+		const char bleNotSupported[] = "BLE not supported";
+		result = newStringFromBytes(bleNotSupported, strlen(bleNotSupported));
 	}
 	if (!result) return fail(insufficientMemoryError);
 	return result;
@@ -98,7 +99,7 @@ static void extractHSV(int rgb, float *hue, float *sat, float *bri) {
 	*hue = fmod(60.0 * (i - (((float) f) / (max - min))), 360.0);
 	*sat = 0.0;
 	if (max > 0) *sat = ((float) (max - min)) / max;
-  	*bri = max / 255.0;
+	*bri = max / 255.0;
 }
 
 OBJ primHSVColor(int argCount, OBJ *args) {
@@ -234,6 +235,12 @@ static OBJ primConnectedToIDE(int argCount, OBJ *args) {
 	return ideConnected() ? trueObj : falseObj;
 }
 
+static OBJ primScriptTooLarge(int argCount, OBJ *args) {
+	// Used by IDE to report scriptTooLarge errors.
+
+	return fail(scriptTooLarge);
+}
+
 static OBJ primJSONGet(int argCount, OBJ *args) {
 	// Return the value at the given path in a JSON string or the empty string
 	// if the path doesn't refer to anything. The optional third argument returns
@@ -359,6 +366,7 @@ static PrimEntry entries[] = {
 	{"bme680GasResistance", primBMP680GasResistance},
 	{"connectedToIDE", primConnectedToIDE},
 	{"broadcastToIDE", primBroadcastToIDEOnly},
+	{"scriptTooLarge", primScriptTooLarge},
 	{"jsonGet", primJSONGet},
 	{"jsonCount", primJSONCount},
 	{"jsonValueAt", primJSONValueAt},

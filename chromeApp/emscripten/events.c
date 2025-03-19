@@ -135,11 +135,7 @@ static void initialize() {
 #define TOUCH_DOWN		8
 #define TOUCH_UP		9
 #define TOUCH_MOVE		10
-#define WINDOW_SHOWN    11
-
-// position of last touchmove event used for the touchup event
-int lastTouchX = 0;
-int lastTouchY = 0;
+#define WINDOW_SHOWN	11
 
 static void codePointToUTF8(int unicode, char *utf8) {
 	// Write the UTF8 encoding of the given Unicode character into utf8, followed by
@@ -246,7 +242,7 @@ OBJ getEvent() {
 			dictAtPut(dict, key(_type), key((evtType == MOUSE_DOWN) ? type_mousedown : type_mouseup));
 			dictAtPut(dict, key(_x), int2obj(evt[1]));
 			dictAtPut(dict, key(_y), int2obj(evt[2]));
-			dictAtPut(dict, key(_button), int2obj(evt[3] ? 3 : 0)); // non-zero is right button
+			dictAtPut(dict, key(_button), int2obj(evt[3] + 1)); // buttons in browser are 0-based
 			dictAtPut(dict, key(_keymodifiers), int2obj(evt[4]));
 			break;
 		case MOUSE_MOVE:
@@ -278,15 +274,6 @@ OBJ getEvent() {
 			if (TOUCH_MOVE == evtType) evtType = type_mousemove;
 			else if (TOUCH_DOWN == evtType) evtType = type_mousedown;
 			else evtType = type_mouseup;
-
-			// use last known position for touchup event
-			if (evtType == type_mouseup) {
-				evt[1] = lastTouchX;
-				evt[2] = lastTouchY;
-			} else {
-				lastTouchX = evt[1];
-				lastTouchY = evt[2];
-			}
 			dictAtPut(dict, key(_type), key(evtType));
 			dictAtPut(dict, key(_x), int2obj(evt[1]));
 			dictAtPut(dict, key(_y), int2obj(evt[2]));

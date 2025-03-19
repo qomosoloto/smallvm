@@ -1,5 +1,6 @@
 reload '../ide/MicroBlocksAppMaker.gp'
 reload '../ide/MicroBlocksCompiler.gp'
+reload '../ide/MicroBlocksConnectWidget.gp'
 reload '../ide/MicroBlocksDataGraph.gp'
 reload '../ide/MicroBlocksDecompiler.gp'
 reload '../ide/MicroBlocksEditor.gp'

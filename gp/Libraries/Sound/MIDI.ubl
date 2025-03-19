@@ -1,11 +1,11 @@
 module MIDI Output
 author MicroBlocks
-version 1 11 
+version 1 17 
 choices druminst 'Acoustic Bass Drum' 'Bass Drum 1' 'Side Stick' 'Acoustic Snare' 'Hand Clap' 'Electric Snare' 'Low Floor Tom' 'Closed Hi-Hat' 'High Floor Tom' 'Pedal Hi-Hat' 'Low Tom' 'Open Hi-Hat' 'Low-Mid Tom' 'Hi-Mid Tom' 'Crash Cymbal 1' 'High Tom' 'Ride Cymbal 1' 'Chinese Cymbal' 'Ride Bell' Tambourine 'Splash Cymbal' Cowbell 'Crash Cymbal 2' Vibraslap 'Ride Cymbal 2' 'Hi Bongo' 'Low Bongo' 'Mute Hi Conga' 'Open Hi Conga' 'Low Conga' 'High Timbale' 'Low Timbale' 'High Agogo' 'Low Agogo' Cabasa Maracas 'Short Whistle' 'Long Whistle' 'Short Guiro' 'Long Guiro' Claves 'Hi Wood Block' 'Low Wood Block' 'Mute Cuica' 'Open Cuica' 'Mute Triangle' 'Open Triangle' 
 choices _midiPin USB 
-choices instrument piano 'chromatic percussion' organ guitar bass strings ensemble brass reed pipe 'synth lead' 'synth pad' 'synth SFX' ethnic percussive SFX 
+choices instrument piano 'chromatic percussion' organ guitar bass strings ensemble brass reed pipe 'synth lead' 'synth pad' 'synth SFX' ethnic percussive 'gm;SFX' 
 choices sfx 'guitar fret noise' 'guitar cut noise' 'string slap' 'flute key click' seashore rain thunder wind stream bubble bird dog horse 'telephone 1' 'telephone 2' 'door creaking' door scratch windchime helicopter 'car engine' 'car stop' 'car pass' 'car crash' siren train 'jet plane' starship 'burst noise' applause laughing screaming punch 'heart beat' footstep 'gun shot' 'machine gun' 'laser gun' explosion 
-choices drumkits standard room power electronic 'TR-808' jazz brush orchestra SFX 'CM-64/CM-32L' 
+choices drumkits standard room power electronic 'TR-808' jazz brush orchestra 'drumkit;SFX' 'CM-64/CM-32L' 
 choices controls 'bank select 1' 'bank select 2' modulation 'portamento time' volume pan expression hold portamento sostenuto soft resonance 'release time' 'attack time' cutoff 'decay time' 'vibrato rate' 'vibrato depth' 'vibrato delay' 'portamento control' 'effect 1' 'effect 2' 
 description 'Control MIDI devices. By default, it interfaces the hardware serial port, but it also supports software serial and USB MIDI.
 
@@ -17,16 +17,16 @@ USB MIDI
 --------
 Alternatively, if you want to use the MIDI library to control a USB MIDI device -or a virtual synth running in your PC, even while MicroBlocks is running- you can do so by setting the `use USB MIDI` flag to true in the `set MIDI pin` block.
 '
-variables _MIDI_initialized _MIDI_pin _MIDI_drums 
+variables _MIDI_initialized _MIDI_pin _MIDI_drums _MIDI_clock_on 
 
   spec ' ' 'MIDI_play MIDI note' 'play MIDI note _ for _ ms on channel _ volume _' 'auto auto auto auto' 60 500 1 127
   spec ' ' 'MIDI_send note' 'set MIDI note _ to _ on channel _ volume _' 'auto bool auto auto' 60 true 1 127
-  spec ' ' 'MIDI_stop all notes in channel' 'stop all notes on channel _' 'auto' 1
+  spec ' ' 'MIDI_stop all notes in channel' 'stop all notes on channel _ in _ ms' 'auto auto' 1 1000
   space
   spec 'r' 'MIDI_note to MIDI' 'note _ octave _ to MIDI key' 'auto auto' 'c' 0
   space
   spec ' ' 'MIDI_select MIDI instrument' 'select MIDI instrument _ number _ for channel _ : variation _' 'menu.instrument menu.range:1-8 num num' 'bass' 2 1 127
-  spec ' ' 'MIDI_raw select MIDI instrument' 'select MIDI instrument _ for channel _ ' 'num num' 23 2
+  spec ' ' 'MIDI_raw select MIDI instrument' 'select MIDI instrument _ for channel _ : variation _' 'num num num' 23 2 8
   spec 'r' 'MIDI_instrument' 'instrument _ number _' 'menu.instrument menu.range:1-8' 'piano' 1
   spec ' ' 'MIDI_select MIDI drum kit' 'select MIDI drum kit _' 'menu.drumkits' 'brush'
   space
@@ -41,6 +41,8 @@ variables _MIDI_initialized _MIDI_pin _MIDI_drums
   spec ' ' 'MIDI_send MIDI start playing' 'send MIDI start playing'
   spec ' ' 'MIDI_send MIDI stop playing' 'send MIDI stop playing'
   spec ' ' 'MIDI_send MIDI continue playing' 'send MIDI continue playing'
+  spec ' ' 'MIDI_start MIDI clock' 'start MIDI clock'
+  spec ' ' 'MIDI_stop MIDI clock' 'stop MIDI clock'
   space
   spec ' ' 'MIDI_set MIDI pin' 'set MIDI signal to pin _' 'auto._midiPin' 8
   space
@@ -50,6 +52,7 @@ variables _MIDI_initialized _MIDI_pin _MIDI_drums
   spec ' ' '_MIDI send bytes' '_MIDI send bytes _' 'auto' ''
   spec ' ' '_MIDI_NRPN' '_set MIDI NRPN MSB _ LSB _ on channel _ to _' 'auto auto auto auto auto auto' 1 33 1 100
   spec ' ' '_MIDI_Roland_control' '_set Roland control _ to _ on channel _' 'auto auto auto' 72 64 1
+  spec ' ' '_MIDI clock loop' '_MIDI clock loop'
   space
   spec 'r' '_trimmedLowercase' '_trimmedLowercase _' 'str' 'A. b C...'
 
@@ -67,7 +70,7 @@ to 'MIDI_drum note' instrument {
 }
 
 to MIDI_instrument instrument number {
-  local 'categories' ('[data:split]' 'piano,chromatic percussion,organ,guitar,bass,strings,ensemble,brass,reed,pipe,synth lead,synth pad,synth SFX,ethnic,percussive,SFX' ',')
+  local 'categories' ('[data:split]' 'piano,chromatic percussion,organ,guitar,bass,strings,ensemble,brass,reed,pipe,synth lead,synth pad,synth SFX,ethnic,percussive,gm;SFX' ',')
   return (((('[data:find]' instrument categories) - 1) * 8) + number)
 }
 
@@ -102,20 +105,21 @@ to 'MIDI_play MIDI note' 'midi note' duration channel volume {
   }
 }
 
+to 'MIDI_raw select MIDI instrument' 'instrument number' channel variation {
+  local 'programChangeCmd' 12
+  'MIDI_change MIDI control' 'bank select 1' channel variation
+  '_MIDI command' programChangeCmd channel (v 'instrument number')
+}
+
 to 'MIDI_select MIDI drum kit' drumkit {
   local 'programChangeCmd' 12
-  '_MIDI command' programChangeCmd 10 ((at ('[data:find]' drumkit ('[data:split]' 'standard,room,power,electronic,TR-808,jazz,brush,orchestra,SFX,CM-64/CM-32L' ',')) ('[data:split]' '1,9,17,25,26,33,41,49,57,128' ',')) - 1)
+  '_MIDI command' programChangeCmd 10 ((at ('[data:find]' drumkit ('[data:split]' 'standard,room,power,electronic,TR-808,jazz,brush,orchestra,drumkit;SFX,CM-64/CM-32L' ',')) ('[data:split]' '1,9,17,25,26,33,41,49,57,128' ',')) - 1)
 }
 
 to 'MIDI_select MIDI instrument' 'instrument type' 'instrument number' channel variation {
   local 'programChangeCmd' 12
   'MIDI_change MIDI control' 'bank select 1' channel variation
-  '_MIDI command' programChangeCmd channel (MIDI_instrument (v 'instrument type') (v 'instrument number'))
-}
-
-to 'MIDI_raw select MIDI instrument' 'instrument number' channel {
-  local 'programChangeCmd' 12
-  '_MIDI command' programChangeCmd channel ((v 'instrument number') - 1)
+  '_MIDI command' programChangeCmd channel ((MIDI_instrument (v 'instrument type') (v 'instrument number')) - 1)
 }
 
 to 'MIDI_send MIDI continue playing' {
@@ -162,7 +166,7 @@ to 'MIDI_set MIDI pin' pin {
   if ('USB' == pin) {
     _MIDI_pin = 'USB'
   } else {
-    if (isType pin 'list') {
+    if (or (isType pin 'list') ((boardType) == 'Boardie')) {
       _MIDI_pin = pin
     } else {
       _MIDI_pin = ('[data:makeList]' ('[data:makeList]' pin ('[data:range]' 1 16)))
@@ -172,9 +176,35 @@ to 'MIDI_set MIDI pin' pin {
   '_MIDI init'
 }
 
-to 'MIDI_stop all notes in channel' channel {
-  for i 127 {
-    'MIDI_send note' i false channel 0
+to 'MIDI_start MIDI clock' {
+  if (_rhy_beat_duration == 0) {'rhy_set tempo' 250 4 4}
+  _MIDI_clock_on = (booleanConstant true)
+  sendBroadcast '_MIDI clock loop'
+}
+
+to 'MIDI_stop MIDI clock' {
+  _MIDI_clock_on = (booleanConstant false)
+}
+
+to 'MIDI_stop all notes in channel' channel ms {
+  for v 9 {
+    'MIDI_change MIDI control' 'volume' channel (100 - (10 * v))
+    waitMillis ((ms - 50) / (1 << v))
+  }
+  'MIDI_change MIDI control' 'volume' channel 0
+  waitMillis ((ms - 50) / (1 << 8))
+  '_MIDI command' 11 channel 123 0
+  waitMillis 50
+  'MIDI_change MIDI control' 'volume' channel 100
+}
+
+to '_MIDI clock loop' {
+  repeatUntil (_MIDI_clock_on != (booleanConstant true)) {
+    'rhy wait until beat' (('rhy_current beat') + 1)
+    repeat 24 {
+      'rhy_wait until next' (('rhy_quarter duration') / 24)
+      '_MIDI send bytes' 248
+    }
   }
 }
 
@@ -182,17 +212,17 @@ to '_MIDI command' cmd channel arg1 arg2 {
   '_MIDI init'
   local 'cmdByte' ((cmd << 4) | ((channel - 1) & 15))
   local 'oneArgByte' ((pushArgCount) < 4)
-  if (_MIDI_pin == 0) {
-    if oneArgByte {
-      '[serial:write]' ('[data:makeList]' cmdByte arg1)
-    } else {
-      '[serial:write]' ('[data:makeList]' cmdByte arg1 arg2)
-    }
-  } (_MIDI_pin == 'USB') {
+  if (or (_MIDI_pin == 'USB') ((boardType) == 'Boardie')) {
     if oneArgByte {
       '[serial:midiSend]' cmdByte arg1
     } else {
       '[serial:midiSend]' cmdByte arg1 arg2
+    }
+  } (_MIDI_pin == 0) {
+    if oneArgByte {
+      '[serial:write]' ('[data:makeList]' cmdByte arg1)
+    } else {
+      '[serial:write]' ('[data:makeList]' cmdByte arg1 arg2)
     }
   } else {
     for map _MIDI_pin {
@@ -209,12 +239,19 @@ to '_MIDI command' cmd channel arg1 arg2 {
 
 to '_MIDI init' {
   if (not _MIDI_initialized) {
-    if (_MIDI_pin == 0) {
-      '[serial:open]' 31250
+    if ((boardType) != 'Boardie') {
+      if (_MIDI_pin == 0) {
+        '[serial:open]' 31250
+      } else {
+        '[serial:close]'
+      }
     } else {
-      '[serial:close]'
+      callCustomCommand '[serial:setPins]' ('[data:makeList]' _MIDI_pin)
     }
     _MIDI_initialized = (booleanConstant true)
+    for i 16 {
+      'MIDI_change MIDI control' 'volume' i 100
+    }
   }
 }
 
@@ -254,20 +291,5 @@ to '_MIDI_Roland_control' control value channel {
   } (control == 75) {
     '_MIDI_NRPN' 1 100 channel value
   }
-}
-
-to '_trimmedLowercase' s {
-  comment 'Return a copy of the given string without whitespace
-or periods and all lowercase.'
-  local 'result' (newList (size s))
-  '[data:delete]' 'all' result
-  for i (size s) {
-    local 'ch' ('[data:unicodeAt]' i s)
-    if (and (ch > 32) (ch != 46)) {
-      if (and (65 <= ch) (ch <= 90)) {ch = (ch + 32)}
-      '[data:addLast]' ch result
-    }
-  }
-  return ('[data:unicodeString]' result)
 }
 

@@ -56,8 +56,45 @@ void initMessageService() {
 	EM_ASM_({
 		window.recvBuffer = [];
 		window.addEventListener('message', function (event) {
-			window.recvBuffer.push(...event.data);
+			if (event.data.constructor === Uint8Array) {
+				window.recvBuffer.push(...event.data);
+			} else if (event.data.constructor === Array) {
+				switch (event.data[0]) {
+					case 'putFile':
+						// store file in Boardie's localStorage
+						window.localStorage[event.data[1]] = event.data[2];
+						return;
+					case 'keyDown':
+						// button pressed
+						window.keys.set(event.data[1], true);
+						return;
+					case 'keyUp':
+						// button released
+						window.keys.set(event.data[1], false);
+						return;
+					default:
+						console.log('unrecognized message:', event.data[0]);
+						return;
+				}
+			}
 		}, false);
+	});
+}
+
+void syncFiles() {
+	// update IDE file cache with all files from Boardie's [local/session]Storage
+	EM_ASM_({
+		var origin = window.useSessionStorage ? 'session' : 'local';
+		Object.keys(window.localStorage).forEach(function (fileName) {
+			window.parent.postMessage(
+				[
+					'boardieGetFile',
+					fileName,
+					window[origin + 'Storage'][fileName]
+				],
+				'*'
+			);
+		});
 	});
 }
 
@@ -90,7 +127,7 @@ int sendBytes(uint8 *buf, int start, int end) {
 		for (var i = $1; i < $2; i++) {
 			bytes[i - $1] = getValue($0 + i, 'i8');
 		}
-		window.parent.postMessage(bytes);
+		window.parent.postMessage(bytes, '*');
 	}, buf, start, end);
 	return end - start;
 }
@@ -100,28 +137,12 @@ int sendBytes(uint8 *buf, int start, int end) {
 void initKeyboardHandler() {
 	EM_ASM_({
 		window.keys = new Map();
-
-		window.buttons = [];
-		window.buttons[37] = // left cursor
-			window.parent.document.querySelector('[data-button="a"]');
-		window.buttons[65] = window.buttons[37]; // "a" key
-		window.buttons[39] =
-			window.parent.document.querySelector('[data-button="b"]');
-		window.buttons[66] = window.buttons[39]; // "b" key
-
-		window.buttons[84] =
-			window.parent.document.querySelector('[data-button="ab"]'); // "a+b" button
-
 		window.addEventListener('keydown', function (event) {
-			if (window.buttons[event.keyCode]) {
-				window.buttons[event.keyCode].classList.add('--is-active');
-			}
+			window.parent.postMessage(['boardieKeyDown', event.keyCode], '*');
 			window.keys.set(event.keyCode, true);
 		}, false);
 		window.addEventListener('keyup', function (event) {
-			if (window.buttons[event.keyCode]) {
-				window.buttons[event.keyCode].classList.remove('--is-active');
-			}
+			window.parent.postMessage(['boardieKeyUp', event.keyCode], '*');
 			window.keys.set(event.keyCode, false);
 		}, false);
 	});
@@ -171,6 +192,7 @@ void readFilesFromURL() {
 				var fileName = decodeURIComponent(
 						descriptor.substring(0, fileStart)
 					);
+				console.log('Loading', fileName);
 				var contents = Module['base64Decode'](
 						descriptor.substring(fileStart + 1),
 						true // urlSafe
@@ -185,10 +207,12 @@ void readScriptsFromURL() {
 	EM_ASM_({
 		if (window.location.hash.startsWith('#code=')) {
 			// "#code=" is 6 chars
+			var andIndex = window.location.hash.indexOf('&');
 			var b64 = window.location.hash.substring(
-						6,
-						window.location.hash.indexOf('&')
-					);
+					6,
+					andIndex > -1 ? andIndex : window.location.hash.length
+				);
+			console.log('Loading code from URL');
 			if (b64) {
 				var bytes = Module['base64Decode'](b64, true);
 				for (var i = 0; i < bytes.length; i++) {
@@ -232,6 +256,8 @@ int main(int argc, char *argv[]) {
 	initMessageService();
 	initKeyboardHandler();
 	initSound();
+
+	syncFiles();
 
 	initTimers();
 	memInit();

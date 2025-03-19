@@ -1,6 +1,6 @@
 module 'OLED Turtle' Output
 author 'Turgut Guneysu'
-version 1 11
+version 1 12 
 depends 'OLED Graphics' dec2anyBase 
 choices DegMenu '45' '90' '135' '180' '225' '270' '315' 
 choices SizeMenu small large 
@@ -342,11 +342,7 @@ _imgWidth and _imgHeight is the adj turtle size.'
 to '_num2TF' num {
   comment 'Converts bitmap 0 and 1 binary info to 
 true/false flag info that is used to erase pixels.'
-  if (num == 1) {
-    return (booleanConstant false)
-  } (num == '0') {
-    return (booleanConstant true)
-  }
+  return (num == ('[data:toString]' '0'))
 }
 
 to '_toString' aStringOrByteArray {

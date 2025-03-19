@@ -1,6 +1,6 @@
 module NeoPanel Output
 author 'José García Yeste & Víctor Casado'
-version 1 2 
+version 1 4 
 depends NeoPixel BMP 
 description 'Draw lines, rectangles, text, and images on a NeoPixel panels (e.g. 8x8, 16x16 or 32x8) in either horizontal or vertical orientation. Panels can be daisy-chained to create larger displays if there is sufficient power to drive them.
 See: https://www.btf-lighting.com/collections/led-matrix-display/products/ws2812b-panel-screen-8-8-16-16-8-32-pixel-256-pixels-digital-flexible-led-programmed-individually-addressable-full-color-dc5v#
@@ -9,15 +9,16 @@ variables _neoPanel_width _neoPanel_height _neoPanel_isHorizontal
 
   spec ' ' 'neoPanel_attach' 'attach NeoPixel panel width _ height _ at pin _' 'num num num' 8 8 1
   space
-  spec ' ' 'neoPanel_drawPixel' 'NeoPanel set x _ y _ color _' 'num num color' 1 1
-  spec ' ' 'neoPanel_drawVerticalLine' 'NeoPanel fill column _ color _' 'num color' 1
-  spec ' ' 'neoPanel_drawHorizontalLine' 'NeoPanel fill row _ color _' 'num color' 1
-  spec ' ' 'neoPanel_fillRectangle' 'NeoPanel fill rectangle x _ y _ width _ height _ color _' 'num num num num color' 1 1 4 4
+  spec ' ' 'neoPanel_drawPixel' 'NeoPanel set x _ y _ color _' 'num num color' 1 1 14723129
+  spec ' ' 'neoPanel_drawVerticalLine' 'NeoPanel fill column _ color _' 'num color' 1 13212343
+  spec ' ' 'neoPanel_drawHorizontalLine' 'NeoPanel fill row _ color _' 'num color' 1 9842312
+  spec ' ' 'neoPanel_fillRectangle' 'NeoPanel fill rectangle x _ y _ width _ height _ color _' 'num num num num color' 1 1 4 4 4774633
   space
-  spec ' ' 'neoPanel_drawText' 'NeoPanel draw text _ at x _ y _ color _' 'str num num color' 'HELLO' 1 1
+  spec ' ' 'neoPanel_drawText' 'NeoPanel draw text _ at x _ y _ color _' 'str num num color' 'HELLO' 1 1 1500032
   spec ' ' 'neoPanel_drawBMP' 'NeoPanel draw BMP file _ at x _ y _' 'str num num' '' 1 1
   space
   spec 'r' '_neoPanel_indexForXY' '_neoPanel_index for x _ y _' 'num num' 1 1
+  spec 'r' '_neopanel_setPixel' '_neopanel_setPixel x _ y _ color _' 'auto auto color' 1 1
 
 to '_neoPanel_indexForXY' x y {
   if (or (x < 1) (y < 1)) {return 0}
@@ -37,6 +38,14 @@ to '_neoPanel_indexForXY' x y {
   }
 }
 
+to '_neopanel_setPixel' x y color {
+  local 'index' ('_neoPanel_indexForXY' x y)
+  if (index > 0) {
+    atPut index _np_pixels color
+  }
+  return index
+}
+
 to neoPanel_attach width height pin {
   _neoPanel_width = width
   _neoPanel_height = height
@@ -45,27 +54,10 @@ to neoPanel_attach width height pin {
 }
 
 to neoPanel_drawBMP filename originX originY {
-  if (not ('_bmp_readHeader' filename)) {return}
-  '[file:setReadPosition]' _bmpPixelsOffset filename
-  if (_bmpHeight >= 0) {
-    local 'y' ((originY + _bmpHeight) - 1)
-    local 'yIncrement' -1
-  } else {
-    local 'y' originY
-    local 'yIncrement' 1
+  if ('_bmp_readHeader' filename) {
+    '_bmp_drawBMPPixels' filename originX originY '_neopanel_setPixel'
+    '_NeoPixel_update'
   }
-  repeat (absoluteValue _bmpHeight) {
-    local 'line' ('_bmp_readPixelLine' filename)
-    for x (size line) {
-      local 'pixel' ('_neoPanel_indexForXY' (originX + (x - 1)) y)
-      if (pixel > 0) {
-        atPut pixel _np_pixels (at x line)
-      }
-    }
-    y += yIncrement
-  }
-  '[file:close]' filename
-  '_NeoPixel_update'
 }
 
 to neoPanel_drawHorizontalLine y color {

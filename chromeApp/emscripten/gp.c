@@ -11,12 +11,12 @@
 #include "parse.h"
 
 #ifdef EMSCRIPTEN
-  #include <emscripten.h>
+	#include <emscripten.h>
 #elif defined(IOS)
-  #include "SDL.h"
-  #include "iosOps.h"
+	#include "SDL.h"
+	#include "iosOps.h"
 #elif defined(_WIN32)
-  #include <windows.h>
+	#include <windows.h>
 #endif
 
 /* Variables */
@@ -315,7 +315,7 @@ static gp_boolean processCommandLine(int argc, char *argv[], char *prefix) {
 	// Increasing memory to 230MB (June 2022)
 	#define MEM_SIZE 230
 #else
-	#define MEM_SIZE 230  // tested with 45; fedora project uses 80MB when ship selected
+	#define MEM_SIZE 230 // tested with 45; fedora project uses 80MB when ship selected
 #endif
 
 // ***** Main *****
@@ -382,7 +382,7 @@ int main(int argc, char *argv[]) {
 		emscripten_set_main_loop(browserStep, 0, true); // callback, fps, loopFlag
 		return 0; // should not get here
 	}
-#endif  // EMSCRIPTEN
+#endif // EMSCRIPTEN
 
 	if (hasStartupFunction()) {
 		parser p;

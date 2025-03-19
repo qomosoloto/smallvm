@@ -165,7 +165,7 @@ function initGPEventHandlers() {
 	var TOUCH_MOVE = 10;
 	var WINDOW_SHOWN = 11;
 
-	function localPoint(x, y) {
+	function localPoint(x, y, yOffset) {
 		var r = canvas.getBoundingClientRect();
 		x = (x - r.left) | 0;
 		y = (y - r.top) | 0;
@@ -174,8 +174,9 @@ function initGPEventHandlers() {
 		if (GP.isRetina) {
 			x = 2 * x;
 			y = 2 * y;
+			yOffset = 2 * yOffset;
 		}
-		return [x, y];
+		return [x, y - yOffset];
 	}
 	function modifierBits(evt) {
 		var modifiers = ( // SDL modifier flags (for left-side versions of those keys)
@@ -224,15 +225,16 @@ function initGPEventHandlers() {
 	var canvas = document.getElementById('canvas');
 
 	canvas.onmousedown = function(evt) {
-		var p = localPoint(evt.clientX, evt.clientY);
+		evt.preventDefault();
+		var p = localPoint(evt.clientX, evt.clientY, 0);
 		GP.events.push([MOUSE_DOWN, p[0], p[1], evt.button, modifierBits(evt)]);
 	}
 	canvas.onmouseup = function(evt) {
-		var p = localPoint(evt.clientX, evt.clientY);
+		var p = localPoint(evt.clientX, evt.clientY, 0);
 		GP.events.push([MOUSE_UP, p[0], p[1], evt.button, modifierBits(evt)]);
 	}
 	canvas.onmousemove = function(evt) {
-		var p = localPoint(evt.clientX, evt.clientY);
+		var p = localPoint(evt.clientX, evt.clientY, 0);
 		GP.events.push([MOUSE_MOVE, p[0], p[1]]);
 	}
 	document.onkeydown = function(evt) {
@@ -281,19 +283,19 @@ function initGPEventHandlers() {
 		GP.events.push([TEXTINPUT, charCode]);
 	}
 
-    // IME composition events
-    document.addEventListener('compositionstart', function(evt) {
-        GP.compositionText = '';
-    });
-    document.addEventListener('compositionupdate', function(evt) {
-        GP.compositionText = evt.data;
-    });
-    document.addEventListener('compositionend', function(evt) {
-        for (let ch of GP.compositionText) {
-            GP.events.push([TEXTINPUT, ch.codePointAt(0)]);
-        }
-        GP.compositionText = '';
-    });
+	// IME composition events
+	document.addEventListener('compositionstart', function(evt) {
+		GP.compositionText = '';
+	});
+	document.addEventListener('compositionupdate', function(evt) {
+		GP.compositionText = evt.data;
+	});
+	document.addEventListener('compositionend', function(evt) {
+		for (let ch of GP.compositionText) {
+			GP.events.push([TEXTINPUT, ch.codePointAt(0)]);
+		}
+		GP.compositionText = '';
+	});
 
 	canvas.onwheel = function(evt) {
 		if (evt.shiftKey || evt.ctrlKey) { return; } // default behavior (browser zoom)
@@ -303,28 +305,37 @@ function initGPEventHandlers() {
 		evt.preventDefault();
 	}
 	canvas.ontouchstart = function(evt) {
-		var touch = evt.touches[evt.touches.length - 1];
+		var touch = evt.touches[0];
 		if (touch) {
-			var button = (evt.touches.length == 2) ? 3 : 0;
-			var p = localPoint(touch.clientX, touch.clientY);
+			// var button = (evt.touches.length == 2) ? 3 : 0; // did not work
+			// Attempt to use two-finger touch for right button failed; always use left button.
+			var button = 0;
+			var p = localPoint(touch.clientX, touch.clientY, 10);
 			GP.events.push([TOUCH_DOWN, p[0], p[1], button]);
 		}
 		evt.preventDefault();
 	}
-	canvas.ontouchend = function(evt) {
-		GP.events.push([TOUCH_UP, 0, 0, 0]);
-		evt.preventDefault();
-	}
 	canvas.ontouchmove = function(evt) {
-		var touch = evt.touches[evt.touches.length - 1];
+		var touch = evt.touches[0];
 		if (touch) {
-			var p = localPoint(touch.clientX, touch.clientY);
+			var p = localPoint(touch.clientX, touch.clientY, 10);
 			GP.events.push([TOUCH_MOVE, p[0], p[1], 0]);
 		}
 		evt.preventDefault();
 	}
+	canvas.ontouchend = function(evt) {
+		var touch = evt.changedTouches[0];
+		if (touch) {
+			var p = localPoint(touch.clientX, touch.clientY, 10);
+			GP.events.push([TOUCH_UP, p[0], p[1], 0]);
+		}
+		evt.preventDefault();
+	}
+	canvas.ontouchcancel = function(evt) {
+		GP.events.push([TOUCH_UP, 200, 200, 0]); // push a dummy touch_up event
+	}
 	window.onfocus = function(evt) {
-	  GP.events.push([WINDOW_SHOWN]);
+		GP.events.push([WINDOW_SHOWN]);
 	}
 }
 initGPEventHandlers();
@@ -385,12 +396,38 @@ function handleMessage(evt) {
 			// Boardie sent us bytes. Let's add them to the serial buffer.
 			GP_serialInputBuffers.push(msg);
 		}
-	} else if (msg.startsWith('showButton ')) {
-		var btn = document.getElementById(msg.substring(11));
-		if (btn) btn.style.display = 'inline';
-	} else if (msg.startsWith('hideButton ')){
-		var btn = document.getElementById(msg.substring(11));
-		if (btn) btn.style.display = 'none';
+	} else if (msg.constructor === Array) {
+		switch (msg[0]) {
+			case 'showButton':
+				var btn = msg[1];
+				if (btn) btn.style.display = 'inline';
+				return;
+			case 'hideButton':
+				var btn = document.getElementById(msg[1]);
+				if (btn) btn.style.display = 'none';
+				return;
+			case 'boardieKeyDown':
+				GP.boardie.press(msg[1]);
+				return;
+			case 'boardieKeyUp':
+				GP.boardie.unpress(msg[1]);
+				return;
+			case 'boardieGetFile':
+				GP.boardie.files[msg[1]] = msg[2];
+				return;
+			case 'boardieDeleteFile':
+				delete(GP.boardie.files[msg[1]]);
+				return;
+			case 'boardieSoundStart':
+				boardie.element.querySelector('.audio').classList.add('--is-active');
+				return;
+			case 'boardieSoundStop':
+				boardie.element.querySelector('.audio').classList.remove('--is-active');
+				return;
+			default:
+				console.log('unrecognized message:', msg);
+				return;
+		}
 	} else {
 		queueGPMessage(msg);
 	}
@@ -422,7 +459,7 @@ function uploadFiles(files) {
 	var todo = [];
 	if (files && files.length) {
 		for (var i = 0; i < files.length; i++) todo.push(files[i]);
-	    recordFile(todo.shift());
+		recordFile(todo.shift());
 	}
 }
 
@@ -458,8 +495,21 @@ function adjustButtonVisibility() {
 	if ((typeof window !== 'undefined') && (window.location.href.includes('go.html'))) {
 		document.getElementById('SeeInsideButton').style.display = 'inline';
 		document.getElementById('PresentButton').style.display = 'none';
-	} else if ((typeof window !== 'undefined') && (window.location.href.includes('microblocks.html'))) {
+	} else if ((typeof window !== 'undefined') && (window.location.href.includes('microblocks'))) {
 		document.getElementById('controls').style.display = 'none';
+		if (isKindle || isOtherMobile) {
+			// show the keyboard button on mobile devices, but hide others
+			document.getElementById('controls').style.display = 'inline';
+			document.getElementById('KeyboardButton').style.display = 'inline';
+			document.getElementById('BackspaceButton').style.display = 'none';
+			document.getElementById('FullscreenButton').style.display = 'none';
+			document.getElementById('UploadButton').style.display = 'none';
+			document.getElementById('EnableMicrophoneButton').style.display = 'none';
+			document.getElementById('SeeInsideButton').style.display = 'none';
+			document.getElementById('PresentButton').style.display = 'none';
+			document.getElementById('GoButton').style.display = 'none';
+			document.getElementById('StopButton').style.display = 'none';
+		}
 	} else {
 		document.getElementById('SeeInsideButton').style.display = 'none';
 		document.getElementById('PresentButton').style.display = 'inline';
@@ -472,20 +522,22 @@ adjustButtonVisibility();
 function setContextShadow(ctx) {
 	if (!GP.shadowColor) return;
 	ctx.shadowColor = GP.shadowColor;
-	ctx.shadowOffsetX = GP.shadowOffset;
-	ctx.shadowOffsetY = GP.shadowOffset;
+	ctx.shadowOffsetX = GP.shadowOffsetX;
+	ctx.shadowOffsetY = GP.shadowOffsetY;
 	ctx.shadowBlur = GP.shadowBlur;
 }
 
-function setShadow(red, green, blue, alpha, offset, blur) {
+function setShadow(red, green, blue, alpha, offsetX, offsetY, blur) {
 	GP.shadowColor = 'rgba(' + red + ', ' + green + ', ' + blue + ', ' + alpha + ')';
-	GP.shadowOffset = offset;
+	GP.shadowOffsetX = offsetX;
+	GP.shadowOffsetY = offsetY;
 	GP.shadowBlur = blur;
 }
 
 function clearShadow() {
 	GP.shadowColor = null;
-	GP.shadowOffset = 0;
+	GP.shadowOffsetX = 0;
+	GP.shadowOffsetY = 0;
 	GP.shadowBlur = 0;
 }
 
@@ -639,17 +691,17 @@ function GP_stopAudioOutput() {
 }
 
 function GP_toggleFullscreen() {
-  var doc = window.document;
-  var docEl = doc.documentElement;
+	var doc = window.document;
+	var docEl = doc.documentElement;
 
-  var requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
-  var cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
+	var requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+	var cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
 
-  if(!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
-	requestFullScreen.call(docEl);
-  } else {
-	cancelFullScreen.call(doc);
-  }
+	if(!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
+		requestFullScreen.call(docEl);
+	} else {
+		cancelFullScreen.call(doc);
+	}
 }
 
 // Boardie Support
@@ -662,149 +714,188 @@ GP.boardie = {
 	element: null,
 	iframe: null,
 	isOpen: false,
-        position: null,
-        reset: function () {
-            var win = this.iframe.contentWindow;
-            win.postMessage(new Uint8Array([ 0xFA, 0x0F, 3 ])); // system reset w/ Boardie option
-            var ctx = win.document.querySelector('canvas').getContext('2d');
-			ctx.fillStyle = "#000";
-			ctx.fillRect(0, 0, 240, 240); // clear screen
-            win.postMessage(new Uint8Array([ 0xFA, 0x05, 0 ])); // start all
-        },
-	press: function (keyCode) { this.iframe.contentWindow.press(keyCode); },
-	unpress: function (keyCode) { this.iframe.contentWindow.unpress(keyCode); }
+	position: null,
+	reset: function () {
+		win = this.iframe.contentWindow;
+		win.postMessage(new Uint8Array([ 0xFA, 0x0F, 3 ]), '*'); // system reset w/ Boardie option
+		ctx = win.document.querySelector('canvas').getContext('2d');
+		ctx.fillStyle = "#000";
+		ctx.fillRect(0, 0, 240, 240); // clear screen
+		win.postMessage(new Uint8Array([ 0xFA, 0x05, 0 ]), '*'); // start all
+	},
+	buttonForCode: function (keyCode) {
+		switch (parseInt(keyCode)) {
+			case 37:
+			case 65:
+				return 'a';
+			case 39:
+			case 66:
+				return 'b';
+			case 84:
+				return 'ab';
+			default:
+				return '';
+		}
+	},
+	files: {},
+	press: function (keyCode, andSendToBoard) {
+		var button = this.buttonForCode(keyCode),
+				element = this.element.querySelector(`[data-button="${button}"]`);
+		if (element) { element.classList.add('--is-active'); }
+		if (andSendToBoard) {
+			this.iframe.contentWindow.postMessage(['keyDown', keyCode], '*');
+		}
+	},
+	unpress: function (keyCode, andSendToBoard) {
+		var button = this.buttonForCode(keyCode);
+				element = this.element.querySelector(`[data-button="${button}"]`);
+		if (element) { element.classList.remove('--is-active'); }
+		if (andSendToBoard) {
+			this.iframe.contentWindow.postMessage(['keyUp', keyCode], '*');
+		}
+	}
 };
 
 function GP_openBoardie() {
-    var req = new XMLHttpRequest();
-        boardie = GP.boardie;
+	var req = new XMLHttpRequest();
+		boardie = GP.boardie;
 
-    GP_closeSerialPort(); // close serial port if open
+	GP_closeSerialPort(); // close serial port if open
+	GP.boardie.files = {}; // reset file cache
 
-    req.open('GET', 'boardie/boardie.html');
-    req.onreadystatechange = function () {
-        if (req.readyState == 4 && req.status == 200) {
-            boardie.element = document.createElement('div');
-            boardie.element.classList.add('boardie');
-            boardie.element.style.position = 'absolute';
-            boardie.element.style.zIndex = 999;
-            if (boardie.position) {
-                boardie.element.style.left = boardie.position.left;
-                boardie.element.style.top = boardie.position.top;
-            } else {
-                boardie.element.style.top = '70px';
-                boardie.element.style.right = '34px';
-            }
-            boardie.element.style.cursor = 'grab';
-            boardie.element.innerHTML = req.responseText;
+	req.open('GET', 'boardie/boardie.html?version=2-0-35-1');
+	req.onreadystatechange = function () {
+		if (req.readyState == 4 && req.status == 200) {
+			boardie.element = document.createElement('div');
+			boardie.element.innerHTML = req.responseText;
+			boardie.element.style.position = 'absolute';
+			boardie.element.style.width = '272px';
+			boardie.element.style.zIndex = 999;
 
-            boardie.iframe = boardie.element.querySelector('iframe');
+			var ideCnv = document.getElementById('canvas');
+			if (boardie.position &&
+				(boardie.position.x <= ideCnv.clientWidth - 45) &&
+				(boardie.position.y <= ideCnv.clientHeight - 45)) {
+					boardie.element.style.left = boardie.position.x + 'px';
+					boardie.element.style.top = boardie.position.y + 'px';
+			} else {
+				boardie.element.style.top = '70px';
+				boardie.element.style.right = '34px';
+			}
+			boardie.element.style.cursor = 'grab';
 
-            boardie.element.onclick = function (evt) {
+			var isStandAlone = window.matchMedia('(display-mode: standalone)').matches;
+			boardie.iframe = boardie.element.querySelector('iframe');
+			if ((window.location.hostname == 'microblocks.fun') && !isStandAlone) {
+				// Run Boardie from a separate domain to ensure it runs as an OOPIF
+				boardie.iframe.src = 'https://boardie.microblocks.fun/vm.html';
+			} else {
+				// Load from source domain when not running from microblocks.fun
+				// (e.g. when running as a stand-alone progressive web app).
+				// Not the end of the world, but the UI will interfere with
+				// time-sensitive threads, such as when making music
+				boardie.iframe.src = 'boardie/vm.html?version=2-0-35-1';
+			}
+
+			boardie.element.onclick = function (evt) {
 				if (!evt.target.closest('[data-button]')) {
 					boardie.iframe.focus();
 				}
 			}
 
-            document.body.append(boardie.element);
+			document.body.append(boardie.element);
 
-            makeDraggable(boardie.element);
+			makeDraggable(boardie.element);
 
-            boardie.element.querySelectorAll('[data-button]').forEach(
-                button => {
-                    button.addEventListener('keydown', (evt) => {
-                        boardie.press(evt.keyCode);
-                        boardie.iframe.focus();
-                    });
-                }
-            );
+			boardie.element.querySelectorAll('[data-button]').forEach(
+				button => {
+					button.addEventListener('keydown', (evt) => {
+						boardie.press(evt.keyCode, true);
+						boardie.iframe.focus();
+					});
+				}
+			);
 
-            boardie.iframe.contentWindow.addEventListener(
-                'soundstart',
-                function () {
-                    boardie.element.querySelector('.audio').classList.add('--is-active');
-                }
-            );
-            boardie.iframe.contentWindow.addEventListener(
-                'soundstop',
-                function () {
-                    boardie.element.querySelector('.audio').classList.remove('--is-active');
-                }
-            );
+			boardie.iframe.contentWindow.addEventListener('click', (event) => {
+				boardie.element.classList.add('--is-active');
+			});
 
-            boardie.iframe.contentWindow.addEventListener('click', (event) => {
-                boardie.element.classList.add('--is-active');
-            });
+			boardie.isOpen = true;
+		}
+	};
 
-            boardie.isOpen = true;
-        }
-    };
-
-    req.send();
+	req.send();
 };
 
 function makeDraggable (element) {
-    // taken from w3schools (https://www.w3schools.com/howto/howto_js_draggable.asp)
-    var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+	// taken from w3schools (https://www.w3schools.com/howto/howto_js_draggable.asp)
+	var lastX = 0, lastY = 0;
 
-    element.onpointerdown = dragMouseDown;
+	element.onpointerdown = dragMouseDown;
 
-    function dragMouseDown(e) {
-        e = e || window.event;
-        if (!e.target.closest('[data-undraggable]')) {
-            element.style.cursor = 'grabbing';
-            e.preventDefault();
-            // get the mouse cursor position at startup:
-            pos3 = e.clientX;
-            pos4 = e.clientY;
-            document.onpointerup = closeDragElement;
-            // call a function whenever the cursor moves:
-            document.onpointermove = elementDrag;
-        }
-    };
+	function dragMouseDown(e) {
+		e = e || window.event;
+		if (!e.target.closest('[data-undraggable]')) {
+			element.style.cursor = 'grabbing';
+			e.preventDefault();
+			// get the mouse cursor position at startup:
+			lastX = e.clientX;
+			lastY = e.clientY;
+			document.onpointerup = endElementDrag;
+			// call a function whenever the cursor moves:
+			document.onpointermove = elementDrag;
+		}
+	};
 
-    function elementDrag(e) {
-        e = e || window.event;
-        e.preventDefault();
-        // calculate the new cursor position:
-        pos1 = pos3 - e.clientX;
-        pos2 = pos4 - e.clientY;
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        // set the element's new position:
-        element.style.top = (element.offsetTop - pos2) + "px";
-        element.style.left = (element.offsetLeft - pos1) + "px";
-        if (!element.classList.contains('--is-dragged')) {
-            element.classList.add('--is-dragged');
-        }
-    };
+	function elementDrag(e) {
+		e = e || window.event;
+		e.preventDefault();
 
-    function closeDragElement() {
-        // stop moving when mouse button is released:
-        document.onpointerup = null;
-        document.onpointermove = null;
-        GP.boardie.position = {
-            left: element.style.left,
-            top: element.style.top
-        };
-        element.classList.remove('--is-dragged');
-        element.style.cursor = 'grab';
-    };
+		// compute max position
+		var maxX = document.getElementById('canvas').clientWidth - element.clientWidth;
+		var maxY = document.getElementById('canvas').clientHeight - element.clientHeight;
+
+		// calculate the new cursor position:
+		var newX = Math.round(element.offsetLeft + (e.clientX - lastX));
+		var newY = Math.round(element.offsetTop + (e.clientY - lastY));
+
+		// constrain top left corner to be at least partially on screen
+		newX = (newX < 0) ? 0 : ((newX < maxX) ? newX : maxX);
+		newY = (newY < 0) ? 0 : ((newY < maxY) ? newY : maxY);
+		lastX = e.clientX;
+		lastY = e.clientY;
+		// set the element's new position:
+		element.style.left = newX + "px";
+		element.style.top = newY + "px";
+		if (!element.classList.contains('--is-dragged')) {
+			element.classList.add('--is-dragged');
+		}
+	};
+
+	function endElementDrag() {
+		// stop moving when mouse button is released:
+		document.onpointerup = null;
+		document.onpointermove = null;
+		var r = element.getBoundingClientRect();
+		GP.boardie.position = { x: r.x, y: r.y }; // record final position
+		element.classList.remove('--is-dragged');
+		element.style.cursor = 'grab';
+	};
 };
 
 function focusDetection (elementSelector) {
-    document.addEventListener('click', (event) => {
-        var element = document.querySelector(elementSelector);
-        if (element) {
-            if (event.target.closest('.boardie')) {
-                if (!element.classList.contains('--is-active')) {
-                    element.classList.add('--is-active');
-                }
-            } else {
-                element.classList.remove('--is-active');
-            }
-        }
-    });
+	document.addEventListener('click', (event) => {
+		var element = document.querySelector(elementSelector);
+		if (element) {
+			if (event.target.closest('.boardie')) {
+				if (!element.classList.contains('--is-active')) {
+					element.classList.add('--is-active');
+				}
+			} else {
+				element.classList.remove('--is-active');
+			}
+		}
+	});
 };
 focusDetection('.boardie');
 
@@ -944,10 +1035,10 @@ function GP_openSerialPort(id, path, baud) {
 		if (!connectionInfo || chrome.runtime.lastError) {
 			var reason = '';
 			if (chrome.runtime.lastError) reason = chrome.runtime.lastError.message
-        	console.log('Port open failed ' + reason);
-        	GP_serialPortID = -1;
-        	return; // failed to open port
-    	}
+			console.log('Port open failed ' + reason);
+			GP_serialPortID = -1;
+			return; // failed to open port
+		}
 		GP_serialPortID = connectionInfo.connectionId;
 		GP_serialInputBuffers = [];
 		if (!GP_serialPortListenersAdded) {
@@ -1018,7 +1109,7 @@ function GP_readSerialPort(maxBytes) {
 
 function GP_writeSerialPort(data) {
 	if (GP.boardie.isOpen) {
-		GP.boardie.iframe.contentWindow.postMessage(data);
+		GP.boardie.iframe.contentWindow.postMessage(data, '*');
 		return data.buffer.byteLength;
 	} else if (webBluetoothConnected()) {
 		return bleSerial.write_data(data);
@@ -1120,7 +1211,7 @@ class NimBLESerial {
  		this.connected = true;
 		this.sendInProgress = false;
 		console.log("BLE connected");
-   }
+	}
 
 	disconnect() {
 		if (this.device != undefined) {
@@ -1216,17 +1307,17 @@ async function GP_ReadFile(ext) {
 function download(filename, text) {
 	// from https://stackoverflow.com/questions/2897619/using-html5-javascript-to-generate-and-save-a-file
 
-    var pom = document.createElement('a');
-    pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-    pom.setAttribute('download', filename);
+	var pom = document.createElement('a');
+	pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+	pom.setAttribute('download', filename);
 
-    if (document.createEvent) {
-        var event = document.createEvent('MouseEvents');
-        event.initEvent('click', true, true);
-        pom.dispatchEvent(event);
-    } else {
-        pom.click();
-    }
+	if (document.createEvent) {
+		var event = document.createEvent('MouseEvents');
+		event.initEvent('click', true, true);
+		pom.dispatchEvent(event);
+	} else {
+		pom.click();
+	}
 }
 
 async function GP_writeFile(data, fName, id, cover) {
@@ -1290,6 +1381,28 @@ async function GP_writeFile(data, fName, id, cover) {
 	// 			options.types = [{ accept: { 'text/plain': [ext] } }];
 	// 		}
 	// 	}
+	if (hasChromeFilesystem()) {
+		// extract the extension from fName
+		const options = {
+			type: 'saveFile',
+			suggestedName: fName + '.' + ext,
+			accepts: [{ description: 'MicroBlocks', extensions: [ext] }]
+		};
+		chrome.fileSystem.chooseEntry(options, onFileSelected);
+	} else if (typeof window.showSaveFilePicker != 'undefined') { // Native Filesystem API
+		if (/(CrOS)/.test(navigator.userAgent) || /Linux/.test(navigator.userAgent)) {
+			// On Chromebooks and Linux, the extension is not automatically appended.
+			fName = fName + '.' + ext;
+		}
+		options = { suggestedName: fName, id: id };
+		if ('' != ext) {
+			if ('.' != ext[0]) ext = '.' + ext;
+			if (('.hex' == ext) || ('.uf2' == ext)) {
+				options.types = [{ accept: { 'application/octet-stream': [ext] } }];
+			} else {
+				options.types = [{ accept: { 'text/plain': [ext] } }];
+			}
+		}
 
 	// 	const fileHandle = await window.showSaveFilePicker(options).catch((e) => { console.log(e); });
 	// 	if (!fileHandle) {
@@ -1329,13 +1442,13 @@ if ((typeof chrome != 'undefined') &&
 // warn before leaving page
 
 window.onbeforeunload = function() {
-   return "Leave this page? (changes will be lost)";
+	return "Leave this page? (changes will be lost)";
 };
 
 // progressive web app service worker
 
 window.onload = function() {
-  if (('serviceWorker' in navigator) && !hasChromeFilesystem()) {
-    navigator.serviceWorker.register('sw.js');
-  }
+	if (('serviceWorker' in navigator) && !hasChromeFilesystem()) {
+		navigator.serviceWorker.register('sw.js');
+	}
 }

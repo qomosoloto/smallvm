@@ -127,7 +127,7 @@ static void sendFile(int id, char *fileName) {
 }
 
 static void sendFileInfo(char *fileName, int fileSize, int entryIndex) {
-	//  Send file info message. Format: (entryIndex, file size in bytes, name)
+	// Send file info message. Format: (entryIndex, file size in bytes, name)
 	char buf[1024];
 	if ('/' == fileName[0]) fileName++; // skip leading '/'
 	int len = strlen(fileName);

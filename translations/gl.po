@@ -1,0 +1,1014 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-10-28 16:36+0200\n"
+"PO-Revision-Date: 2024-10-28 15:36+0000\n"
+"Last-Translator: Miguel Bouzada\n"
+"Language-Team: Galician <https://hosted.weblate.org/projects/microblocks/ide/"
+"gl/>\n"
+"Language: gl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: ENCODING\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.8.2-dev\n"
+
+#. "Output" blocks category label
+msgid "cat;Output"
+msgstr "Saída"
+
+#. Citilab ED1 Buttons library block
+msgid "set capacitive threshold to _"
+msgstr "poñer o limiar capacitivo a _"
+
+#. TFT Display library block
+msgid "enable TFT _"
+msgstr "activar TFT _"
+
+#. Script right-click context menu
+msgid "script;delete"
+msgstr "eliminar"
+
+#. Block right-click context menu tooltip
+msgid "copy these blocks to the clipboard"
+msgstr "copia estes bloques no portapapeis"
+
+#. In MicroBlocks IDE connection menu
+msgid "Serial port:"
+msgstr "Porto serie:"
+
+#. Block right-click context menu
+msgid "delete block"
+msgstr "eliminar bloque"
+
+#. Settings menu option
+msgid "update firmware on board"
+msgstr "actualizar o firmware da placa"
+
+#. Settings menu option
+msgid "about..."
+msgstr "sobre..."
+
+#. Button
+msgid "Yes"
+msgstr "Si"
+
+#. Block input right-click context menu
+msgid "Input type:"
+msgstr "Tipo de entrada:"
+
+#. Block right-click context menu
+msgid "duplicate"
+msgstr "duplicar"
+
+#. String in file picker and library dialogs
+msgid "File"
+msgstr "Ficheiro"
+
+#. Block right-click context menu
+msgid "duplicate this block"
+msgstr "duplicar este bloque"
+
+#. Button
+msgid "Okay"
+msgstr "Aceptar"
+
+#. Block part type, while making a new block
+msgid "input"
+msgstr "entrada"
+
+#. Block right-click context menu
+msgid "delete block definition..."
+msgstr "eliminar a definición do bloque..."
+
+#. Block part type, while making a new block
+msgid "label"
+msgstr "etiqueta"
+
+#. Block right-click context menu tooltip
+msgid "delete this block"
+msgstr "eliminar este bloque"
+
+#. Block right-click context menu
+msgid "extract block"
+msgstr "extraer bloque"
+
+#. Script right-click context menu
+msgid "save picture of script"
+msgstr "gardar a imaxe do programa"
+
+#. Script right-click context menu tooltip
+msgid "save a picture of this block definition as a PNG file"
+msgstr "gardar unha imaxe da definición deste bloque en formato PNG"
+
+#. Button on top of "Variables" category
+msgid "Delete a variable"
+msgstr "Eliminar unha variábel"
+
+#. Block in Basic Sensors library
+msgid "tilt z"
+msgstr "inclinación z"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "send NeoPixel rgb _"
+msgstr "enviar RGB _ ao NeoPixel"
+
+#. NeoPixel library block
+msgid "clear NeoPixels"
+msgstr "apagar NeoPixeis"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "radio last string"
+msgstr "último texto recibido por radio"
+
+#. Block in Comm category
+msgid "no op"
+msgstr "no op"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "radio set power (0-7) _"
+msgstr "pon a potencia da radio a (0-7) _"
+
+#. NeoPixel library block
+msgid "set NeoPixels _ _ _ _ _ _ _ _ _ _"
+msgstr "poñer NeoPixeis _ _ _ _ _ _ _ _ _ _"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "play tone pin _ frequency _"
+msgstr "toca un ton no pin _ na frecuencia _"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "my IP address"
+msgstr "o meu enderezo IP"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "radio send number _"
+msgstr "enviar número _ por radio"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "radio send pair _ = _"
+msgstr "enviar asociación _ = _ por radio"
+
+#. Block in Comm category
+msgid "i2c set device _ register _ to _"
+msgstr "i2c escribir no dispositivo _ o rexistro _ con _"
+
+#. NeoPixel library block
+msgid "set all NeoPixels color _"
+msgstr "poñer todos os NeoPixeis de cor _"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "shape for letter _"
+msgstr "forma para a letra _"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "radio message received?"
+msgstr "mensaxe de radio recibida?"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "radio last signal strength"
+msgstr "intensidade da última señal de radio"
+
+#. Block in Comm category
+msgid "spi send _"
+msgstr "spi enviar _"
+
+#. Block in Basic Sensors library
+msgid "light level"
+msgstr "nivel de luz"
+
+#. "Variables" blocks category label
+msgid "cat;Variables"
+msgstr "Variábeis"
+
+#. Block in Data category
+msgid "length of _"
+msgstr "largo de _"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "radio send string _"
+msgstr "enviar texto _ por radio"
+
+#. Button on top of "Variables" category
+msgid "Add a variable"
+msgstr "Crear unha variábel"
+
+#. Make a block dialog
+msgid "Enter function name:"
+msgstr "Nome da función:"
+
+#. Block in Comm category
+msgid "print _"
+msgstr "escribir _"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "radio send packet _"
+msgstr "enviar paquetes por radio _"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "stop WiFi"
+msgstr "deter a WiFi"
+
+#. Block in Comm category
+msgid "ignore"
+msgstr "ignorar"
+
+#. Button on top of "My Blocks" category
+msgid "Add a reporter block"
+msgstr "Engadir un bloque de reportes"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "start WiFi _ password _"
+msgstr "iniciar a WiFi _ co contrasinal _"
+
+#. Block in Operators category
+msgid "hex _"
+msgstr "hexadecimal _"
+
+#. Block in Comm category
+msgid "spi receive"
+msgstr "spi ler"
+
+#. Block in Basic Sensors library
+msgid "tilt x"
+msgstr "inclinación x"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "radio set channel (0-83) _"
+msgstr "pon a canle de rádio a (0-83) _"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "draw shape _ at x _ y _"
+msgstr "debuxar a forma _ en x _ y _"
+
+#. "My Blocks" blocks category label
+msgid "cat;My Blocks"
+msgstr "Os meus bloques"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "disable radio"
+msgstr "desactivar a radio"
+
+#. "Basic Sensors" library label.
+msgid "Basic Sensors"
+msgstr "Sensores básicos"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "has tone support"
+msgstr "admite tons"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "radio receive packet _"
+msgstr "recepción de paquetes por radio _"
+
+#. Block in Basic Sensors library
+msgid "temperature (°C)"
+msgstr "temperatura (°C)"
+
+#. "Comm" blocks category label
+msgid "cat;Comm"
+msgstr "Comunicacións"
+
+#. Block in Data category
+msgid "new list length _"
+msgstr "nova lonxitude da lista _"
+
+#. NeoPixel library block
+msgid "set NeoPixel _ color _"
+msgstr "poñer NeoPixel _ de cor _"
+
+#. Block in Data category
+msgid "item _ of _"
+msgstr "elemento _ de _"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "WiFi status"
+msgstr "estado da WiFi"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "radio last message type"
+msgstr "tipo da última mensaxe recibido por radio"
+
+#. New variable dialog
+msgid "New variable name?"
+msgstr "Novo nome da variábel?"
+
+#. NeoPixel library block
+msgid "rotate NeoPixels by _"
+msgstr "rotar NeoPixeis en _"
+
+#. Button on top of "My Blocks" category
+msgid "Add a command block"
+msgstr "Engadir un bloque de ordes"
+
+#. Block in Variables category
+msgid "set _ to _"
+msgstr "asignar _ a _"
+
+#. Block in Variables category
+msgid "change _ by _"
+msgstr "aumentar _ en _"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "has WiFi support"
+msgstr "admite WiFi"
+
+#. BirdBrain Technologies Hummingbird kit library block
+msgid "humm;Light"
+msgstr "Luz"
+
+#. Web Things library block
+msgid "register event _ type _"
+msgstr "rexistrar o evento _ do tipo _"
+
+#. Scripting area right-click context menu
+msgid "clean up"
+msgstr "limpeza"
+
+#. TFT Display library block
+msgid "set TFT pixel x _ y _ to _"
+msgstr "poñer o píxel x _ y _ da cor _"
+
+#. Tone library label
+#. Generates music tones on buzzers
+msgid "Tone"
+msgstr "Tons"
+
+#. String in file picker and library dialogs
+msgid "File name:"
+msgstr "Nome de ficheiro:"
+
+#. Citilab ED1 Buttons library label
+msgid "ED1 Buttons"
+msgstr "Botóns ED1"
+
+#. Scrolling library block
+msgid "scroll text _"
+msgstr "animar o texto _"
+
+#. BirdBrain Technologies Hummingbird kit library block
+msgid "Hummingbird Battery (mV)"
+msgstr "Hummingbird Batería (mV)"
+
+#. BirdBrain Technologies Hummingbird kit library block
+msgid "humm;Dial"
+msgstr "Dial"
+
+#. Block right-click context menu
+msgid "expand"
+msgstr "expandir"
+
+#. 5x5 LED Display library block
+msgid "display _"
+msgstr "pantalla _"
+
+#. BirdBrain Technologies Hummingbird kit library block
+msgid "humm;Distance (cm)"
+msgstr "Distancia (cm)"
+
+#. Radio comm library label
+#. Allows micro:bit boards to exchange messages
+#. All of its blocks are primitive (see "Primitives" section)
+msgid "Radio"
+msgstr "Radio"
+
+#. BirdBrain Technologies Hummingbird kit library block
+msgid "Hummingbird _ _"
+msgstr "Hummingbird _ _"
+
+#. 5x5 LED Display library block
+msgid "display character _"
+msgstr "amosar carácter _"
+
+#. Citilab ED1 Stepper Motor library block
+msgid "stop steppers"
+msgstr "deter motores"
+
+#. BirdBrain Technologies Hummingbird kit library block
+msgid "Hummingbird Tri-LED _ R _ % G _ % B _ %"
+msgstr "Hummingbird Tri-LED _ Vermello _ % Verde _ % Azul _ %"
+
+#. Infrared remote library label
+msgid "IR Remote"
+msgstr "Infravermellos"
+
+#. Citilab ED1 Stepper Motor library label
+msgid "ED1 Stepper Motor"
+msgstr "Motores ED1"
+
+#. BirdBrain Technologies Hummingbird kit library label
+msgid "Hummingbird LED _ _ %"
+msgstr "Hummingbird LED _ _ %"
+
+#. Servo motor library label
+msgid "Servo"
+msgstr "Servomotores"
+
+#. Infrared Remote library block
+msgid "receive IR code from device _"
+msgstr "recibir código IR dende o dispositivo _"
+
+#. Scrolling library block
+msgid "stop scrolling"
+msgstr "deter a animación"
+
+#. 5x5 LED Display library block
+msgid "plot x _ y _"
+msgstr "acender x _ y _"
+
+#. Infrared Remote library block
+msgid "receive IR code"
+msgstr "recibir código IR dende"
+
+#. BirdBrain Technologies Hummingbird kit library block
+msgid "Hummingbird Rotation Servo _ _ %"
+msgstr "Hummingbird Servo Rotacional _ _ %"
+
+#. BirdBrain Technologies Hummingbird kit library block
+msgid "humm;Other"
+msgstr "Outros"
+
+#. WiFi library block
+msgid "wifi create hotspot _ password _"
+msgstr "crear punto de acceso WiFi _ co contrasinal _"
+
+#. Tone library block
+msgid "attach buzzer to pin _"
+msgstr "inicializar zunidor no pin _"
+
+#. Scrolling library block
+msgid "scroll number _"
+msgstr "animar o número _"
+
+#. BirdBrain Technologies Hummingbird kit library block
+msgid "humm;Sound"
+msgstr "Son"
+
+#. Key name (as in computer keyboard key)
+msgid "kbd;Control"
+msgstr "Control"
+
+#. Citilab ED1 Stepper Motor library block
+msgid "move motor 1 _ and motor 2 _ _ steps"
+msgstr "mover o motor 1 en _ e o motor 2 en _ _ pasos"
+
+#. Infrared Remote library block
+msgid "test IR"
+msgstr "probar IR"
+
+#. TFT Display library block
+msgid "draw line on TFT from x _ y _ to x _ y _ color _"
+msgstr "debuxar liña de x _ y _ a x _ y _ cor _"
+
+#. Citilab ED1 Stepper Motor library block
+msgid "counter-clockwise"
+msgstr "sentido antihorario"
+
+#. Infrared Remote library block
+msgid "attach IR receiver to pin _"
+msgstr "inicializar o receptor IR no pin _"
+
+#. In MicroBlocks IDE connection menu. Select "other..." serial port
+msgid "other..."
+msgstr "outro..."
+
+#. In MicroBlocks IDE connection menu
+msgid "Connect"
+msgstr "Conectar"
+
+#. Block right-click context menu tooltip
+msgid "just this one block"
+msgstr "só este bloque"
+
+#. MicroBlocks IDE error message.
+msgid "The board is not responding."
+msgstr "A placa non responde."
+
+#. Settings menu option
+msgid "export functions as library"
+msgstr "exportar as funcións como unha biblioteca"
+
+#. In MicroBlocks IDE project menu
+msgid "New"
+msgstr "Novo"
+
+#. In MicroBlocks IDE connection menu. Select "no" serial port
+msgid "none"
+msgstr "ningún"
+
+#. Button
+msgid "No"
+msgstr "Non"
+
+#. Button
+msgid "Cancel"
+msgstr "Cancelar"
+
+#. String in file picker and library dialogs
+msgid "File Save"
+msgstr "Gardar ficheiro"
+
+#. In MicroBlocks IDE project menu
+msgid "Open"
+msgstr "Abrir"
+
+#. Block right-click context menu
+msgid "copy to clipboard"
+msgstr "copiar no portapapeis"
+
+#. In MicroBlocks IDE connection menu
+msgid "disconnect"
+msgstr "desconectar"
+
+#. Script right-click context menu
+msgid "show instructions"
+msgstr "amosar as instrucións"
+
+#. Block input right-click context menu option
+msgid "string or number"
+msgstr "texto ou número"
+
+#. MicroBlocks IDE error message.
+msgid "Script is too large to send to board."
+msgstr "O programa é grande de máis para envialo á placa.."
+
+#. In MicroBlocks IDE firmware update widgets. Board type to update.
+msgid "Board type:"
+msgstr "Tipo de placa:"
+
+#. Block definition right-click context menu option confirmation
+msgid "Are you sure you want to remove this block definition?"
+msgstr "Confirma que quere retirar a definición deste bloque?"
+
+#. Confirmation window
+msgid "Quit MicroBlocks?"
+msgstr "Saír de MicroBlocks?"
+
+#. Tooltip in "Stop" button. Top right of IDE.
+msgid "Stop"
+msgstr "Deter"
+
+#. About window info
+msgid "Created with GP"
+msgstr "Creado con GP."
+
+#. Block right-click context menu
+msgid "duplicate all"
+msgstr "duplicar ata abaixo"
+
+#. Scripting area right-click context menu
+msgid "paste script"
+msgstr "pegar o programa"
+
+#. Obsolete blocks category label
+msgid "Obsolete"
+msgstr "Obsoleto"
+
+#. In MicroBlocks IDE project menu
+msgid "Save"
+msgstr "Gardar"
+
+#. In MicroBlocks IDE connection window. Serial port name to connect to.
+msgid "Port name?"
+msgstr "Nome do porto?"
+
+#. String in file picker and library dialogs
+msgid "File Open"
+msgstr "Abrir ficheiro"
+
+#. Language menu tooltip
+msgid "Language"
+msgstr "Idioma"
+
+#. MicroBlocks IDE error message.
+msgid "No boards found; is your board plugged in?"
+msgstr "Non se atopou ningunha placa; ten conectada a súa placa?"
+
+#. Block in Output category
+msgid "set user LED _"
+msgstr "acender LED integrado _"
+
+#. Block in Output category
+msgid "say _"
+msgstr "dicir _"
+
+#. Block in Output category
+msgid "graph _"
+msgstr "engadir á gráfica _"
+
+#. "Input" blocks category label
+msgid "cat;Input"
+msgstr "Entrada"
+
+#. Block in Input category
+msgid "button A"
+msgstr "botón A"
+
+#. Block in Input category
+msgid "button B"
+msgstr "botón B"
+
+#. Block in Input category
+msgid "microseconds"
+msgstr "microsegundos"
+
+#. "Pins" blocks category label
+msgid "cat;Pins"
+msgstr "Pins"
+
+#. Block in Pins category
+msgid "read digital pin _"
+msgstr "lectura dixital _"
+
+#. Block in Operators category
+msgid "_ mod _"
+msgstr "_ módulo _"
+
+#. Block in Operators category
+msgid "abs _"
+msgstr "valor absoluto de _"
+
+#. Block in Operators category
+msgid "random _ to _"
+msgstr "número ao chou entre _ e _"
+
+#. Block in Operators category
+msgid "not _"
+msgstr "non _"
+
+#. Block in Operators category
+msgid "_ and _"
+msgstr "_ e _"
+
+#. Block in Operators category
+msgid "and _"
+msgstr "e _"
+
+#. Block in Operators category
+msgid "_ or _"
+msgstr "_ ou _"
+
+#. Block in Operators category
+msgid "or _"
+msgstr "ou _"
+
+#. Scripting area right-click context menu
+msgid "paste all scripts"
+msgstr "pegar todos os programas"
+
+#. Firmware file read error.
+#. %1 holds the firmware file name
+msgid "Could not read %1."
+msgstr "Non foi posíbel ler %1."
+
+#. MicroBlocks IDE information
+msgid "Use \"Connect\" button to connect to a MicroBlocks device."
+msgstr ""
+"Utilice o botón «Conectar» para conectarse a un dispositivo MicroBlocks."
+
+#. MicroBlocks IDE information
+msgid "Try to Install MicroBlocks on the board?"
+msgstr "Tentar instalar MicroBlocks na placa?"
+
+#. Tooltip in "Start" button. Top right of IDE.
+msgid "Start"
+msgstr "Iniciar"
+
+#. Confirmation window
+msgid "Discard current project?"
+msgstr "Quere desbotar o proxecto actual?"
+
+#. Scripting area right-click context menu
+msgid "arrange scripts"
+msgstr "organizar programas"
+
+#. Scripting area right-click context menu
+msgid "copy all scripts to clipboard"
+msgstr "copiar todos os programas no portappeis"
+
+#. Graph context menu option
+msgid "show data graph"
+msgstr "amosar a gráfica de datos"
+
+#. Graph context menu option
+msgid "set serial delay"
+msgstr "axustar a latencia do porto serie"
+
+#. Settings menu option
+msgid "firmware version"
+msgstr "versión do firmware"
+
+#. MicroBlocks IDE information
+msgid "MicroBlocks HTTP Server listening on port 6473"
+msgstr "o servidor HTTP de MicroBlocks esta activo no porto 6473"
+
+#. Block right-click context menu tooltip
+msgid "pull out this block"
+msgstr "sacar este bloque"
+
+#. Block input right-click context menu option
+msgid "editable number or string"
+msgstr "número ou texto editábel"
+
+#. Block in Basic Sensors library
+msgid "tilt y"
+msgstr "inclinación y"
+
+#. Tone library block
+msgid "play midi key _ for _ ms"
+msgstr "tocar a tecla MIDI _ durante _ ms"
+
+#. Web Things library block
+msgid "start WebThing server"
+msgstr "iniciar o servidor de WebThings"
+
+#. Citilab ED1 Stepper Motor library block
+msgid "clockwise"
+msgstr "sentido horario"
+
+#. Citilab ED1 Buttons library block
+msgid "capacitive sensor _"
+msgstr "sensor capacitivo _"
+
+#. Ultrasound distance library block
+msgid "distance (cm) trigger _ echo _"
+msgstr "distancia (cm) disparador _ eco _"
+
+#. Key name (as in computer keyboard key)
+msgid "kbd;delete"
+msgstr "eliminar"
+
+#. Tone library block
+msgid "play note _ octave _ for _ ms"
+msgstr "tocar a nota _ na oitava _ durante _ ms"
+
+#. Tone library block
+msgid "play frequency _ for _ ms"
+msgstr "tocar a frecuencia _ durante _ ms"
+
+#. In MicroBlocks IDE firmware update widgets. Board to update.
+msgid "Select board:"
+msgstr "Seleccionar a placa:"
+
+#. Block right-click context menu tooltip
+msgid "show the definition of this block"
+msgstr "amosa a definición deste bloque"
+
+#. Block right-click context menu tooltip
+msgid "delete the definition of this block"
+msgstr "elimina a definición deste bloque"
+
+#. Block input right-click context menu option
+msgid "string only"
+msgstr "só texto"
+
+#. Block input right-click context menu option
+msgid "number only"
+msgstr "só número"
+
+#. Block definition right-click context menu option
+msgid "hide block definition"
+msgstr "agochar a definición do bloque"
+
+#. Block in Input category
+msgid "milliseconds"
+msgstr "milisegundos"
+
+#. Block in Input category
+msgid "board type"
+msgstr "tipo de placa"
+
+#. Block in Pins category
+msgid "read analog pin _"
+msgstr "lectura analóxica _"
+
+#. Block in Control category
+msgid "wait _ millisecs"
+msgstr "agardar _ milisegundos"
+
+#. Block in Control category
+msgid "if _ _"
+msgstr "se _ _"
+
+#. Block in Control category
+msgid "if _ _ else _"
+msgstr "se _ _ se non _"
+
+#. Block in Control category
+msgid "else if _ _"
+msgstr "se non, se _ _"
+
+#. Block in Control category
+msgid "return _"
+msgstr "retornar _"
+
+#. WiFi library block
+msgid "IP address"
+msgstr "enderezo IP"
+
+#. About window info. As in "By Mary, Johanna and Tracy".
+#. The %1, %2 and %3 tags will be automatically replaced by names. Please keep intact.
+msgid "about;by %1, %2 & %3."
+msgstr "por %1, %2 e %3."
+
+#. About window info
+msgid "More info at http://microblocks.fun"
+msgstr "Máis información en http://microblocks.fun"
+
+#. Settings menu option
+msgid "virtual machine version"
+msgstr "versión da máquina virtual"
+
+#. Settings menu option
+msgid "show advanced blocks"
+msgstr "amosar os bloques avanzados"
+
+#. Settings menu option
+msgid "hide advanced blocks"
+msgstr "agochar os bloques avanzados"
+
+#. Graph window title
+msgid "Data Graph"
+msgstr "Gráfico de datos"
+
+#. Script right-click context menu
+msgid "show compiled bytes"
+msgstr "amosar os bytes compilados"
+
+#. Block in Pins category
+msgid "set digital pin _ to _"
+msgstr "poñer o pin dixital _ a _"
+
+#. Block in Pins category
+msgid "set pin _ to _"
+msgstr "poñer o pin _ a _"
+
+#. Block in Pins category
+msgid "analog pins"
+msgstr "pins analóxicos"
+
+#. Block in Pins category
+msgid "digital pins"
+msgstr "pins dixitais"
+
+#. "Control" blocks category label
+msgid "cat;Control"
+msgstr "Control"
+
+#. Block in Control category
+msgid "when started"
+msgstr "ao comezar"
+
+#. Block in Control category
+msgid "when button _ pressed"
+msgstr "cando se preme o botón _"
+
+#. Block in Control category
+msgid "forever _"
+msgstr "por sempre _"
+
+#. Block in Control category
+msgid "repeat _ _"
+msgstr "repetir _ veces _"
+
+#. Block in Control category
+msgid "else"
+msgstr "se non"
+
+#. Block in Control category
+msgid "when _"
+msgstr "cando _"
+
+#. Block in Control category
+msgid "wait until _"
+msgstr "agardar ata que _"
+
+#. Block in Control category
+msgid "wait _ microsecs"
+msgstr "agardar _ microsegundos"
+
+#. Block in Control category
+msgid "when _ received"
+msgstr "ao recibir _"
+
+#. Block in Control category
+msgid "broadcast _"
+msgstr "difundir _"
+
+#. Block in Control category
+msgid "comment _"
+msgstr "comentario _"
+
+#. Block in Control category
+msgid "for _ in _ _"
+msgstr "por cada _ en _ _"
+
+#. Block in Control category
+msgid "repeat until _ _"
+msgstr "repetir ata que _ _"
+
+#. Block in Control category
+msgid "stop this task"
+msgstr "deter esta tarefa"
+
+#. Block in Control category
+msgid "stop all"
+msgstr "detelo todo"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "radio last number"
+msgstr "último número recibido por radio"
+
+#. Text scrolling library label
+#. Scrolls text on 5x5 LED displays and simulated ones
+msgid "Scrolling"
+msgstr "Texto animado"
+
+#. 5x5 LED display library label
+#. Supports the micro:bit display, but also simulated 5x5 displays on boards
+#. with differently sized LED arrays, NeoPixel arrays or TFT displays
+msgid "LED Display"
+msgstr "Pantalla LED"
+
+#. 5x5 LED Display library block
+msgid "clear display"
+msgstr "limpar pantalla"
+
+#. 5x5 LED Display library block
+msgid "unplot x _ y _"
+msgstr "apagar x _ y _"
+
+#. Block right-click context menu
+msgid "collapse"
+msgstr "contraer"
+
+#. Script right-click context menu tooltip
+msgid "save a picture of these blocks as a PNG file"
+msgstr "garda unha imaxe destes bloques como un ficheiro PNG"
+
+#. Script right-click context menu
+msgid "copy script"
+msgstr "copia el programa"
+
+#. Variable right-click context menu
+msgid "rename..."
+msgstr "renomear..."
+
+#. Block right-click context menu
+msgid "show block definition..."
+msgstr "amosar a definición do bloque..."
+
+#. Block right-click context menu tooltip
+msgid "duplicate these blocks"
+msgstr "duplica este bloque e todos os que lle seguen"
+
+#. Block definition right-click context menu
+msgid "blockdef;delete"
+msgstr "eliminar"
+
+#. Block input right-click context menu option
+msgid "define"
+msgstr "definir"
+
+#. Block input right-click context menu option
+msgid "number/string"
+msgstr "número/texto"
+
+#. As in load a "Custom" language file
+msgid "Custom..."
+msgstr "Personalizado..."
+
+#. Button
+msgid "OK"
+msgstr "Aceptar"
+
+#. Button
+msgid "Ok"
+msgstr "Aceptar"
+
+#. Window title
+msgid "Confirm"
+msgstr "Confirmar"
+
+#. Library folder
+msgid "folder;Libraries"
+msgstr "Bibliotecas"
+
+#. Library folder
+msgid "folder;Other"
+msgstr "Outros"
+
+#. Library folder
+msgid "folder;Sound"
+msgstr "Son"
+
+#. String in file picker and library dialogs
+#. as in "by Jane Doe", the author of this library
+msgid "libdata;by"
+msgstr "por"
+
+#. Tip Bar label or text (at the bottom of the IDE, gives info on the currently hovered element)
+msgid "Input"
+msgstr "Entrada"

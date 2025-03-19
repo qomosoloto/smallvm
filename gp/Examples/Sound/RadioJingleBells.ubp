@@ -53,7 +53,7 @@ repeat 16 {
 
 module 'LED Display' Output
 author MicroBlocks
-version 1 8 
+version 1 9 
 choices led_imageMenu heart 'small heart' yes no happy sad confused angry asleep surprised silly fabulous meh 't-shirt' 'roller skate' duck house tortoise butterfly 'stick figure' ghost sword giraffe skull umbrella snake rabbit cow 'quarter note' 'eight note' pitchfork target triangle 'left triangle' 'chess board' diamond 'small diamond' square 'small square' scissors 
 description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) support these primitives with a simulated "fat pixel" display.'
 variables _stop_scrolling_text 
@@ -69,11 +69,10 @@ variables _stop_scrolling_text
   spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
   spec ' ' 'stopScrollingText' 'stop scrolling'
   space
-  spec ' ' '_set display color' 'set display color _' 'color'
-  space
   spec 'r' '_led_image' 'led image _' 'microbitDisplay' 15237440
   spec 'r' '_led_namedImage' '_led_namedImage _' 'menu.led_imageMenu' 'happy'
   spec 'r' '_led_imageData' '_led_imageData'
+  spec ' ' 'set display color' 'set display color _' 'color'
 
 to '_led_image' twentyFiveBitInt {
   comment 'An LED image is a 25-bit integer'
@@ -94,10 +93,6 @@ to '_led_namedImage' name {
   local 'start' (('[data:find]' ':' data i) + 1)
   local 'end' (('[data:find]' ',' data i) - 1)
   return ('[data:convertType]' ('[data:copyFromTo]' data start end) 'number')
-}
-
-to '_set display color' color {
-  callCustomCommand '[display:mbSetColor]' ('[data:makeList]' color)
 }
 
 to displayCharacter s {
@@ -140,6 +135,10 @@ to scroll_text text optionalDelay {
       waitMillis delay
     }
   }
+}
+
+to 'set display color' color {
+  callCustomCommand '[display:mbSetColor]' ('[data:makeList]' color)
 }
 
 to stopScrollingText {
@@ -300,23 +299,28 @@ to 'play ringtone' RTTTL {
 
 module Tone Output
 author MicroBlocks
-version 1 8 
+version 1 9 
 tags tone sound music audio note speaker 
-choices tone_NoteName c 'c#' d 'd#' e f 'f#' g 'g#' a 'a#' b 
-description 'Audio tone generation. Make music with MicroBlocks!'
+choices tone_NoteName 'nt;c' 'nt;c#' 'nt;d' 'nt;d#' 'nt;e' 'nt;f' 'nt;f#' 'nt;g' 'nt;g#' 'nt;a' 'nt;a#' 'nt;b' 
+description 'Audio tone generation. Make music with MicroBlocks!
+'
 variables _tonePin _toneInitalized _toneLoopOverhead _toneNoteNames _toneArezzoNotes _toneFrequencies 
 
-  spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'str.tone_NoteName num num' 'c' 0 500
+  spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'str.tone_NoteName num num' 'nt;c' 0 500
   spec ' ' 'playMIDIKey' 'play midi key _ for _ ms' 'num num' 60 500
   spec ' ' 'play frequency' 'play frequency _ for _ ms' 'num num' 261 500
+  space
   spec ' ' 'startTone' 'start tone _ Hz' 'num' 440
   spec ' ' 'stopTone' 'stop tone'
+  space
   spec ' ' 'attach buzzer to pin' 'attach buzzer to pin _' 'auto' ''
+  space
   spec 'r' '_measureLoopOverhead' '_measureLoopOverhead'
   spec 'r' '_baseFreqForNote' '_baseFreqForNote _' 'auto' 'c'
   spec 'r' '_baseFreqForSemitone' '_baseFreqForSemitone _' 'num' 0
   spec ' ' '_toneLoop' '_toneLoop _ for _ ms' 'num num' 440000 100
   spec 'r' '_trimmedLowercase' '_trimmedLowercase _' 'str' 'A. b C...'
+  spec ' ' '_tone init note names' '_tone init note names'
 
 to '_baseFreqForNote' note {
   comment 'Return the frequency for the given note in the middle-C octave
@@ -324,10 +328,8 @@ scaled by 1000. For example, return 440000 (440Hz) for A.
 Note names may be upper or lower case. Note names
 may be followed by # for a sharp or b for a flat.'
   local 'normalized note' ('_trimmedLowercase' note)
-  if (_toneNoteNames == 0) {
-    _toneNoteNames = ('[data:makeList]' 'c' 'c#' 'd' 'd#' 'e' 'f' 'f#' 'g' 'g#' 'a' 'a#' 'b' 'c_' 'db' 'd_' 'eb' 'e_' 'e#' 'f_' 'gb' 'g_' 'ab' 'a_' 'bb' 'b_' 'b#')
-    _toneArezzoNotes = ('[data:makeList]' 'do' 'do#' 're' 're#' 'mi' 'fa' 'fa#' 'sol' 'sol#' 'la' 'la#' 'si' 'do_' 'dob' 're_' 'reb' 'mi_' 'mi#' 'fa_' 'solb' 'sol_' 'lab' 'la_' 'sib' 'si_' 'si#')
-  }
+  'normalized note' = (ifExpression ((at 1 (v 'normalized note')) == 'n') (v 'normalized note') ('[data:join]' 'nt;' (v 'normalized note')))
+  '_tone init note names'
   if (('[data:find]' (v 'normalized note') _toneArezzoNotes) > 0) {
     return ('_baseFreqForSemitone' ('[data:find]' (v 'normalized note') _toneArezzoNotes))
   } else {
@@ -357,6 +359,13 @@ to '_measureLoopOverhead' {
   }
   local 'usecs' ((microsOp) - startT)
   return ((usecs - 20000) / 200)
+}
+
+to '_tone init note names' {
+  if (_toneNoteNames == 0) {
+    _toneNoteNames = ('[data:makeList]' 'nt;c' 'nt;c#' 'nt;d' 'nt;d#' 'nt;e' 'nt;f' 'nt;f#' 'nt;g' 'nt;g#' 'nt;a' 'nt;a#' 'nt;b' 'nt;c_' 'nt;db' 'nt;d_' 'nt;eb' 'nt;e_' 'nt;e#' 'nt;f_' 'nt;gb' 'nt;g_' 'nt;ab' 'nt;a_' 'nt;bb' 'nt;b_' 'nt;b#')
+    _toneArezzoNotes = ('[data:makeList]' 'nt;do' 'nt;do#' 'nt;re' 'nt;re#' 'nt;mi' 'nt;fa' 'nt;fa#' 'nt;sol' 'nt;sol#' 'nt;la' 'nt;la#' 'nt;si' 'nt;do_' 'nt;dob' 'nt;re_' 'nt;reb' 'nt;mi_' 'nt;mi#' 'nt;fa_' 'nt;solb' 'nt;sol_' 'nt;lab' 'nt;la_' 'nt;sib' 'nt;si_' 'nt;si#')
+  }
 }
 
 to '_toneLoop' scaledFreq ms {

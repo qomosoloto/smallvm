@@ -2,8 +2,8 @@ module Cutebot Output
 author wwj718
 version 1 6 
 depends 'Distance (HC-SR04)' NeoPixel 
-choices cutebot_side left right 
-choices cutebot_light left right both 
+choices cutebot_side 'cutebotside;left' 'cutebotside;right'
+choices cutebot_light 'cutebotlight;left' 'cutebotlight;right' 'cutebotlight;both'
 description 'Cutebot is a rear-drive smart car driven by dual high speed motors.
 
 It features two RGB headlights, left and right line-following sensors, an ultrasonic distance sensor, and two downward-facing NeoPixels.
@@ -20,10 +20,10 @@ https://www.elecfreaks.com/learn-en/microbitKit/smart_cutebot/cutebot_car.html'
   spec ' ' 'cutebot_setServo' 'Cutebot set servo _ to _ degrees (-90 to 90)' 'menu.range:1-2 num' 1 90
   spec ' ' 'cutebot_setServoSpeed' 'Cutebot set servo _ to speed _ (-100 to 100)' 'menu.range:1-2 num' 1 100
   space
-  spec ' ' 'cutebot_setHeadlightColor' 'Cutebot set headlight _ to _' 'menu.cutebot_light color' 'both'
-  spec ' ' 'cutebot_setNeopixels' 'Cutebot set NeoPixel _ to _' 'menu.cutebot_light color' 'both'
+  spec ' ' 'cutebot_setHeadlightColor' 'Cutebot set headlight _ to _' 'menu.cutebot_light color' 'cutebotlight;both'
+  spec ' ' 'cutebot_setNeopixels' 'Cutebot set NeoPixel _ to _' 'menu.cutebot_light color' 'cutebotlight;both'
   space
-  spec 'r' 'cutebot_lineSensor' 'Cutebot _ line sensor' 'menu.cutebot_side' 'left'
+  spec 'r' 'cutebot_lineSensor' 'Cutebot _ line sensor' 'menu.cutebot_side' 'cutebotside;left'
   spec 'r' 'cutebot_seesLine' 'Cutebot sees line on left _ right _' 'bool bool' true true
   spec 'r' 'cutebot_distance' 'Cutebot distance (cm)'
   space
@@ -46,7 +46,7 @@ to cutebot_lineSensor side {
   comment 'Return true if a black line is detected on the given side.'
   local 'left_pin' 13
   local 'right_pin' 14
-  if (side == 'left') {
+  if (side == 'cutebotside;left') {
     return (not (digitalReadOp left_pin))
   } else {
     return (not (digitalReadOp right_pin))
@@ -54,7 +54,7 @@ to cutebot_lineSensor side {
 }
 
 to cutebot_seesLine leftSide rightSide {
-  return (and (leftSide == (cutebot_lineSensor 'left')) (rightSide == (cutebot_lineSensor 'right')))
+  return (and (leftSide == (cutebot_lineSensor 'cutebotside;left')) (rightSide == (cutebot_lineSensor 'cutebotside;right')))
 }
 
 to cutebot_setHeadlightColor which color {
@@ -63,9 +63,9 @@ to cutebot_setHeadlightColor which color {
   local 'b' ((color >> b) & 255)
   local 'left_LED' 4
   local 'right_LED' 8
-  if (which == 'left') {
+  if (which == 'cutebotlight;left') {
     '_cutebot_sendCmd' ('[data:makeList]' left_LED r g b)
-  } (which == 'right') {
+  } (which == 'cutebotlight;right') {
     '_cutebot_sendCmd' ('[data:makeList]' right_LED r g b)
   } else {
     '_cutebot_sendCmd' ('[data:makeList]' left_LED r g b)
@@ -75,9 +75,9 @@ to cutebot_setHeadlightColor which color {
 
 to cutebot_setNeopixels which_NeoPixel color {
   if (0 == _np_pixels) {neoPixelAttach 2 15}
-  if (which_NeoPixel == 'left') {
+  if (which_NeoPixel == 'cutebotlight;left') {
     atPut 1 _np_pixels color
-  } (which_NeoPixel == 'right') {
+  } (which_NeoPixel == 'cutebotlight;right') {
     atPut 2 _np_pixels color
   } else {
     atPut 1 _np_pixels color

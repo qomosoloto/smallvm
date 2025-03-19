@@ -1,13 +1,14 @@
 module 'Cutebot Pro' Output
 author MicroBlocks
-version 0 9 
+version 0 10 
 depends 'Distance (HC-SR04)' 'IR Remote' NeoPixel 
-choices wheelMenu left right both 
-choices leftRightMenu left right 
+choices wheelMenu 'cutebotwheel;left' 'cutebotwheel;right' 'cutebotwheel;both'
+choices lightMenu 'cutebotlight;left' 'cutebotlight;right' 'cutebotlight;both'
+choices leftRightMenu 'cutebotwheel;left' 'cutebotwheel;right'
 choices turnAngleMenu '45 degrees' '90 degrees' '135 degrees' '180 degrees' 
-choices directionMenu forward backward 
+choices directionMenu 'cutebot;forward' 'cutebot;backward'
 choices servoTypeMenu '180 degree' '270 degree' '360 degree' 
-choices turnTypeMenu left right 'left-in-place' 'right-in-place' 
+choices turnTypeMenu 'cutebotturn;left' 'cutebotturn;right' 'cutebotturn;left-in-place' 'cutebotturn;right-in-place' 
 description 'The ELECFREAKS Cutebot Pro features:
 - 2 x Encoder Motors
 - HC-SR04 Distance Sensor (pins 8 and 12)
@@ -60,15 +61,15 @@ I2C Commands:
 variables _cbpro_leftCount _cbpro_rightCount _cppro_orientation 
 
   spec ' ' 'cbpro_setWheelSpeed' 'CBPro set wheel speed left _ right _ (-60 to 60 cm/s)' 'num num' 30 30
-  spec 'r' 'cbpro_wheelSpeed' 'CBPro speed of _ wheel (cm/s)' 'menu.leftRightMenu' 'left'
-  spec ' ' 'cbpro_stopWheel' 'CBPro stop wheel _' 'menu.wheelMenu' 'both'
+  spec 'r' 'cbpro_wheelSpeed' 'CBPro speed of _ wheel (cm/s)' 'menu.leftRightMenu' 'cutebotwheel;left'
+  spec ' ' 'cbpro_stopWheel' 'CBPro stop wheel _' 'menu.wheelMenu' 'cutebotwheel;both'
   spec ' ' 'cbpro_stopAll' 'CBPro stop all'
   space
   spec ' ' 'cbpro_move' 'CBPro move _ (-255 to 255 cm)' 'num' 10
   spec ' ' 'cbpro_turn' 'CBPro turn _ degrees' 'num' 90
   space
-  spec ' ' 'cbpro_setHeadlight' 'CBPro set headlight _ to _' 'menu.wheelMenu color' 'both'
-  spec ' ' 'cbpro_setNeopixels' 'CBPro set NeoPixel _ to _' 'menu.wheelMenu color' 'both'
+  spec ' ' 'cbpro_setHeadlight' 'CBPro set headlight _ to _' 'menu.lightMenu color' 'cutebotlight;both'
+  spec ' ' 'cbpro_setNeopixels' 'CBPro set NeoPixel _ to _' 'menu.lightMenu color' 'cutebotlight;both'
   space
   spec 'r' 'cbpro_distance' 'CBPro distance (cm)'
   space
@@ -87,7 +88,7 @@ variables _cbpro_leftCount _cbpro_rightCount _cppro_orientation
   space
   spec 'r' 'cbpro_getVersion' 'CBPro version'
   space
-  spec ' ' '_cbpro_setWheelPower' '_cbpro_setWheel _ power _ (-100 to 100)' 'menu.wheelMenu num' 'both' 100
+  spec ' ' '_cbpro_setWheelPower' '_cbpro_setWheel _ power _ (-100 to 100)' 'menu.wheelMenu num' 'cutebotwheel;both' 100
   spec ' ' '_cbpro_clearEncodersAndOrientation' '_cbpro_clearEncodersAndOrientation'
   spec 'r' '_cbpro_getOrientation' '_cbpro_getOrientation'
   spec ' ' '_cbpro_readEncoders' '_cbpro_readEncoders'
@@ -103,7 +104,7 @@ to '_cbpro_clearEncodersAndOrientation' {
   _cppro_orientation = 0
 }
 
-to '_cbpro_getOrientation' wheel {
+to '_cbpro_getOrientation' {
   comment 'Get the approximate robot orientation based on the turns it has made.'
   return _cppro_orientation
 }
@@ -144,7 +145,7 @@ FORWARD: POSITIVE values
 On rescale, min power is set to +/-10 since any less number does not
 move car.
 '
-  wheels = (ifExpression ('left' == wheels) 1 (ifExpression ('right' == wheels) 2 3))
+  wheels = (ifExpression ('cutebotwheel;left' == wheels) 1 (ifExpression ('cutebotwheel;right' == wheels) 2 3))
   if (0 == power) {
     cbpro_stopWheel wheels
   } else {
@@ -156,7 +157,7 @@ move car.
 }
 
 to '_cbpro_wheelsMoving' {
-  return (or ((cbpro_wheelSpeed 'left') > 0) ((cbpro_wheelSpeed 'right') > 0))
+  return (or ((cbpro_wheelSpeed 'cutebotwheel;left') > 0) ((cbpro_wheelSpeed 'cutebotwheel;right') > 0))
 }
 
 to '_cbpro_writeCmd' cmd arg1 arg2 arg3 arg4 {
@@ -232,7 +233,7 @@ Distance range: 0 - 255 cm'
 }
 
 to cbpro_setHeadlight led color {
-  whichLEDs = (ifExpression ('right' == led) 1 (ifExpression ('left' == led) 2 3))
+  whichLEDs = (ifExpression ('cutebotlight;right' == led) 1 (ifExpression ('cutebotlight;left' == led) 2 3))
   local 'r' ((color >> 16) & 255)
   local 'g' ((color >> 8) & 255)
   local 'b' (color & 255)
@@ -247,9 +248,9 @@ to cbpro_setMotorPower power {
 
 to cbpro_setNeopixels which_NeoPixel color {
   if (0 == _np_pixels) {neoPixelAttach 2 15}
-  if (which_NeoPixel == 'left') {
+  if (which_NeoPixel == 'cutebotlight;left') {
     atPut 1 _np_pixels color
-  } (which_NeoPixel == 'right') {
+  } (which_NeoPixel == 'cutebotlight;right') {
     atPut 2 _np_pixels color
   } else {
     atPut 1 _np_pixels color
@@ -290,10 +291,10 @@ NOTE: speed=0 is used internally to reset.'
 
 to cbpro_stopAll {
   comment 'Stop wheels, external motor, and servos. Turn off headlights and NeoPixels.'
-  cbpro_stopWheel 'both'
+  cbpro_stopWheel 'cutebotwheel;both'
   cbpro_stopMotor
-  cbpro_setHeadlight 'both' 0
-  cbpro_setNeopixels 'both' 0
+  cbpro_setHeadlight 'cutebotlight;both' 0
+  cbpro_setNeopixels 'cutebotlight;both' 0
   for i 4 {
     cbpro_setServoSpeed i 0
   }
@@ -308,7 +309,7 @@ to cbpro_stopWheel wheel {
   comment 'FULL SPEED/STOP any wheel
 #2: FWD=7  BWD=8  STOP=9
 #3: L=1 R=2 B=3'
-  wheel = (ifExpression ('left' == wheel) 1 (ifExpression ('right' == wheel) 2 3))
+  wheel = (ifExpression ('cutebotwheel;left' == wheel) 1 (ifExpression ('cutebotwheel;right' == wheel) 2 3))
   '_cbpro_writeCmd' 9 wheel 0 0 0
 }
 
@@ -343,7 +344,7 @@ Min turn amount is 4.'
 
 to cbpro_wheelSpeed wheel {
   comment 'Return the speed of the given wheel (cm/s).'
-  wheel = (ifExpression ('left' == wheel) 1 2)
+  wheel = (ifExpression ('cutebotwheel;left' == wheel) 1 2)
   '_cbpro_writeCmd' 5 wheel 0 0 0
   return ('_cbpro_readByte')
 }

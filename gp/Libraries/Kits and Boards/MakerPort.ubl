@@ -1,6 +1,6 @@
 module MakerPort Output
 author MicroBlocks
-version 2 0 
+version 2 3 
 depends 'LCD Display' 'MP3 Player' Tone Touch 'IR Remote' 
 choices makerport_audioSource MP3 Tone 
 choices makerport_loudnessPin 'mp3 player' 'analog pin (13)' 'extra pin (17)' 
@@ -12,7 +12,6 @@ variables _makerport_microSDInserted
   spec ' ' 'makerport_setAllLEDs' 'set all MakerPort LEDs _' 'bool' true
   space
   spec ' ' 'makerport_beep' 'MakerPort tone _ Hz for _ msecs : volume _ (0-10)' 'num num num' 440 100 10
-  spec ' ' 'makerport_setAudioSource' 'set MakerPort audio source to _' 'menu.makerport_audioSource' 'MP3'
   space
   spec ' ' 'makerport_typeString' 'type _ to computer' 'str' 'Hello from MakerPort!'
   space
@@ -25,7 +24,6 @@ to makerport_beep freq msecs optionalVolume {
   local 'cycles' ((500 * msecs) / halfCycleTime)
   local 'amplitude' (50 * (argOrDefault 3 10))
   amplitude = (maximum 0 (minimum amplitude 1023))
-  digitalWriteOp 19 true
   repeat cycles {
     analogWriteOp 0 amplitude
     waitMicros halfCycleTime
@@ -37,16 +35,7 @@ to makerport_beep freq msecs optionalVolume {
 to makerport_initialize {
   makerport_setAllLEDs false
   mp3_initialize 'MakerPort' 20 21
-  if ((boardType) == 'MakerPort V3') {
-    attachIR 22
-  } else {
-    attachIR 18
-    if (makerport_mp3_hasCard) {
-      makerport_setAudioSource 'MP3'
-    } else {
-      makerport_setAudioSource 'Tone'
-    }
-  }
+  attachIR 22
 }
 
 to makerport_loudness soundPin {
@@ -66,49 +55,13 @@ to makerport_loudness soundPin {
 }
 
 to makerport_mp3_hasCard {
-  comment 'Note: This command works only if MP3 player is
-connected to the hardware serial pins.'
-  if ((digitalPins) > 24) {
-    comment 'MakerPort v1.52 or later: serial port connected to external pins, not MP3 player'
-    _makerport_microSDInserted = (booleanConstant true)
-  }
-  if (isType _makerport_microSDInserted 'boolean') {
-    comment 'return previously determined value'
-    return _makerport_microSDInserted
-  }
-  if ((boardType) == 'MakerPort V3') {
-    comment 'To Do: Figure out how to detect card on V3. Just return true for now.'
-    return (booleanConstant true)
-  }
-  '[serial:open]' 9600
-  comment 'Send MP3 player initialization command. Works only only V1 and V2 prototypes.'
-  '[serial:write]' ('[data:makeList]' (hexToInt '7E') (hexToInt 'FF') 6 (hexToInt '0C') 0 0 0 254 239 (hexToInt 'EF'))
-  local 'bytesRead' ('[data:newByteArray]' 0)
-  repeat 60 {
-    comment 'Loop for up to 3 seconds while waiting for a response'
-    bytesRead = ('[data:join]' bytesRead ('[serial:read]'))
-    if ((size bytesRead) >= 10) {
-      comment 'Got a response message. Item 7 is 2 if
-a Flash card is inserted in the player.'
-      '[serial:close]'
-      _makerport_microSDInserted = ((at 7 bytesRead) == 2)
-      return _makerport_microSDInserted
-    }
-    waitMillis 50
-  }
-  '[serial:close]'
-  _makerport_microSDInserted = (booleanConstant false)
-  return _makerport_microSDInserted
+  return (_mp3Status == 'ok')
 }
 
 to makerport_setAllLEDs bool {
   for pin 12 {
     digitalWriteOp pin bool
   }
-}
-
-to makerport_setAudioSource src {
-  digitalWriteOp 19 (src != 'MP3')
 }
 
 to makerport_typeString s {

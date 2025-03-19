@@ -9,14 +9,15 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <emscripten.h>
 
 #include "mem.h"
 #include "interp.h"
 
-#define DEFAULT_WIDTH 240
-#define DEFAULT_HEIGHT 240
+#define TFT_WIDTH 240
+#define TFT_HEIGHT 240
 
 static int touchEnabled = false;
 static int tftEnabled = false;
@@ -29,7 +30,7 @@ void tftClear() {
 	EM_ASM_({
 		window.ctx.fillStyle = "#000";
 		window.ctx.fillRect(0, 0, $0, $1);
-	}, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+	}, TFT_WIDTH, TFT_HEIGHT);
 	tftChanged();
 }
 
@@ -52,7 +53,7 @@ void tftInit() {
 				return 'rgb(' + ((color24b >> 16) & 255) + ',' +
 					((color24b >> 8) & 255) + ',' + (color24b & 255) + ')';
 			};
-		}, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+		}, TFT_WIDTH, TFT_HEIGHT);
 	}
 }
 
@@ -81,11 +82,11 @@ static OBJ primSetBacklight(int argCount, OBJ *args) {
 }
 
 static OBJ primGetWidth(int argCount, OBJ *args) {
-	return int2obj(DEFAULT_WIDTH);
+	return int2obj(TFT_WIDTH);
 }
 
 static OBJ primGetHeight(int argCount, OBJ *args) {
-	return int2obj(DEFAULT_HEIGHT);
+	return int2obj(TFT_HEIGHT);
 }
 
 static OBJ primSetPixel(int argCount, OBJ *args) {
@@ -98,6 +99,100 @@ static OBJ primSetPixel(int argCount, OBJ *args) {
 		obj2int(args[1]), // y
 		obj2int(args[2]) // color
 	);
+	tftChanged();
+	return falseObj;
+}
+
+static OBJ primPixelRow(int argCount, OBJ *args) {
+	// Draw a single row of pixels (a list or byte array) at the given y.
+	// If a byte array is provided the optional argument bytesPerPixel
+	// determines the pixel size: 2, 3 or 4 bytes.
+	// 2 means 16-bit RGB565 pixels; -2 means 16-bit RGB555 pixels.
+	// 32 and 24 bit pixels are RGB(A) byte order. (Alpha of 32-bit pixels is ignored).
+	// Used to accelerate BMP file display and other bitmap operations.
+
+	tftInit();
+
+	OBJ pixelDataObj = args[0];
+	int x = obj2int(args[1]);
+	if (x >= TFT_WIDTH) return falseObj;
+	int y = obj2int(args[2]);
+	if ((y < 0) || (y >= TFT_HEIGHT)) return falseObj;
+	int bytesPerPixel = ((argCount > 3) && isInt(args[3])) ? obj2int(args[3]) : 4;
+
+	uint32 palette[256];
+	if ((argCount > 4) && IS_TYPE(args[4], ListType)) {
+		// paletteObj is a list of Integers representingRGB colors
+		// palette is a C array of TFT display pixel values (e.g. 16-bit colors)
+		OBJ paletteObj = args[4];
+		int colorCount = obj2int(FIELD(paletteObj, 0)); // list size
+		if (colorCount > 256) colorCount = 256;
+		memset(palette, 0, sizeof(palette));
+		for (int i = 0; i < colorCount; i++) {
+			OBJ rgbObj = FIELD(paletteObj, i + 1);
+			palette[i] = isInt(rgbObj) ? obj2int(rgbObj) : 0;
+		}
+	}
+
+	if (IS_TYPE(pixelDataObj, ListType)) {
+		int pixelCount = obj2int(FIELD(pixelDataObj, 0));
+		if (pixelCount > (TFT_WIDTH - x)) pixelCount = TFT_WIDTH - x;
+		for (int i = 0; i < pixelCount; i++) {
+			OBJ pixelObj = FIELD(pixelDataObj, (i + 1));
+			int rgb = (isInt(pixelObj)) ? obj2int(pixelObj) : 0;
+			EM_ASM_({
+					window.ctx.fillStyle = window.rgbFrom24b($2);
+					window.ctx.fillRect($0, $1, 1, 1);
+				},
+				x + i, y, rgb
+			);
+		}
+	} else if (IS_TYPE(pixelDataObj, ByteArrayType)) {
+		int isRGB565 = true;
+		if (bytesPerPixel < 0) {
+			isRGB565 = false; // -2 means 16-bit RGB555 (vs. RGB565)
+			bytesPerPixel = -bytesPerPixel;
+		}
+		if ((bytesPerPixel < 1) || (bytesPerPixel > 4)) return falseObj;
+
+		int pixelCount = BYTES(pixelDataObj) / bytesPerPixel;
+		if (pixelCount > (TFT_WIDTH - x)) pixelCount = TFT_WIDTH - x;
+		uint8 *byte = (uint8 *) &FIELD(pixelDataObj, 0);
+		if (1 == bytesPerPixel) {
+			for (int i = 0; i < pixelCount; i++) {
+				EM_ASM_({
+						window.ctx.fillStyle = window.rgbFrom24b($2);
+						window.ctx.fillRect($0, $1, 1, 1);
+					},
+					x + i, y, palette[*byte++]
+				);
+			}
+		} else if (2 == bytesPerPixel) {
+			for (int i = 0; i < pixelCount; i++) {
+				int pixel = (byte[1] << 8) | byte[0];
+				int r = isRGB565 ? ((pixel >> 8) & 248) : ((pixel >> 7) & 248);
+				int g = isRGB565 ? ((pixel >> 3) & 252) : ((pixel >> 2) & 248);
+				int b = (pixel << 3) & 248;
+				EM_ASM_({
+						window.ctx.fillStyle = window.rgbFrom24b($2);
+						window.ctx.fillRect($0, $1, 1, 1);
+					},
+					x + i, y, ((r << 16) | (g << 8) | b)
+				);
+				byte += bytesPerPixel;
+			}
+		} else { // 24-bit or 32-bit pixels
+			for (int i = 0; i < pixelCount; i++) {
+				EM_ASM_({
+						window.ctx.fillStyle = window.rgbFrom24b($2);
+						window.ctx.fillRect($0, $1, 1, 1);
+					},
+					x + i, y, ((byte[2] << 16) | (byte[1] << 8) | byte[0])
+				);
+				byte += bytesPerPixel;
+			}
+		}
+	}
 	tftChanged();
 	return falseObj;
 }
@@ -468,12 +563,12 @@ void tftSetHugePixel(int x, int y, int state) {
 	// simulate a 5x5 array of square pixels like the micro:bit LED array
 	tftInit();
 	int minDimension, xInset = 0, yInset = 0;
-	if (DEFAULT_WIDTH > DEFAULT_HEIGHT) {
-		minDimension = DEFAULT_HEIGHT;
-		xInset = (DEFAULT_WIDTH - DEFAULT_HEIGHT) / 2;
+	if (TFT_WIDTH > TFT_HEIGHT) {
+		minDimension = TFT_HEIGHT;
+		xInset = (TFT_WIDTH - TFT_HEIGHT) / 2;
 	} else {
-		minDimension = DEFAULT_WIDTH;
-		yInset = (DEFAULT_HEIGHT - DEFAULT_WIDTH) / 2;
+		minDimension = TFT_WIDTH;
+		yInset = (TFT_HEIGHT - TFT_WIDTH) / 2;
 	}
 	int lineWidth = (minDimension > 60) ? 3 : 1;
 	int squareSize = (minDimension - (6 * lineWidth)) / 5;
@@ -570,6 +665,7 @@ static PrimEntry entries[] = {
 	{"getWidth", primGetWidth},
 	{"getHeight", primGetHeight},
 	{"setPixel", primSetPixel},
+	{"pixelRow", primPixelRow},
 	{"line", primLine},
 	{"rect", primRect},
 	{"roundedRect", primRoundedRect},

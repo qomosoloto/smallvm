@@ -1,6 +1,6 @@
 module 'BLE Radio' Comm
 author MicroBlocks
-version 1 0 
+version 1 1 
 description 'This library supports easy message exchange among boards that support Bluetooth Low Energy (BLE).
 
 A message can contain a string, a number, or both. Messages are received by all boards in the same BLE radio group as the sender.
@@ -60,7 +60,7 @@ to bleRadio_sendPair s n {
   atPut 4 msg ((n >> 24) & 255)
   msg = ('[data:join]' msg ('[data:asByteArray]' s))
   '[ble:radioStartBeam]' msg
-  waitMillis 250
+  waitMillis 500
   '[ble:radioStopBeam]'
 }
 

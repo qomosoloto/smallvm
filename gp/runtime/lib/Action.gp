@@ -10,32 +10,32 @@ arguments, using "call" or "callWith" method, as if it
 were a normal function or function name.'
 
 to action func args... {
-  // Create an Action that combines the given function and arguments.
-  // The function can be either the name of a function or (less commonly)
-  // an actual function object, or even another Action object.
+	// Create an Action that combines the given function and arguments.
+	// The function can be either the name of a function or (less commonly)
+	// an actual function object, or even another Action object.
 
-  argList = (list)
-  for i (argCount) {
-    if (i > 1) { add argList (arg i) }
-  }
-  return (new 'Action' func (toArray argList))
+	argList = (list)
+	for i (argCount) {
+		if (i > 1) { add argList (arg i) }
+	}
+	return (new 'Action' func (toArray argList))
 }
 
 method call Action args... {
-  // Return the result of calling the Action's function on its
-  // arguments and zero or more additional arguments.
+	// Return the result of calling the Action's function on its
+	// arguments and zero or more additional arguments.
 
-  if ((argCount) == 1) {
-    return (callWith function arguments)
-  }
-  allArgs = (toList arguments)
-  for i (argCount) {
-    if (i > 1) { add allArgs (arg i) }
-  }
-  return (callWith function (toArray allArgs))
+	if ((argCount) == 1) {
+		return (callWith function arguments)
+	}
+	allArgs = (toList arguments)
+	for i (argCount) {
+		if (i > 1) { add allArgs (arg i) }
+	}
+	return (callWith function (toArray allArgs))
 }
 
 method callWith Action argsArray {
-  allArgs = (join arguments argsArray)
-  return (callWith function allArgs)
+	allArgs = (join arguments argsArray)
+	return (callWith function allArgs)
 }

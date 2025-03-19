@@ -219,8 +219,16 @@ static void serialOpen(int baudRate) {
 		SERIAL_PORT.begin(baudRate, SERIAL_8N1, rxPin, txPin);
 	#elif defined(COCUBE)
 		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 21, 22);
+	#elif defined(M5CORE2)
+		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 32, 33);
 	#elif defined(ARDUINO_M5Atom_Lite_ESP32) || defined(ARDUINO_M5Atom_Matrix_ESP32)
 		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 32, 26);
+	#elif defined(ARDUINO_M5Stick_C)
+		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 33, 32);
+	#elif defined(ARDUINO_M5Atom_Lite_S3)
+		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 1, 2);
+	#elif defined(TX_FT_BOX)
+		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 44, 43);
 	#elif defined(RP2040_PHILHOWER)
 		#if defined(PICO_ED)
 			// pico:ed edge connector pins 0-3 are analog pins 26-29
@@ -237,6 +245,8 @@ static void serialOpen(int baudRate) {
 		SERIAL_PORT.begin(baudRate);
 		delayMicroseconds(5); // wait for garbage byte when first opening the serial port after a reset (seen at 115200 baud)
 		SERIAL_PORT.begin(baudRate); // reset to discard garbage byte
+	#elif defined(ESP32_ORIGINAL)
+		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 16, 17);
 	#else
 		SERIAL_PORT.begin(baudRate);
 	#endif

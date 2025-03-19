@@ -531,7 +531,7 @@ static int audioInputCallback(
 	while (dstPtr < end) *dstPtr++ = *srcPtr++;
 
 	inputReady = true;
-    return 0;
+	return 0;
 }
 
 OBJ primStopAudioInput(int nargs, OBJ args[]) {

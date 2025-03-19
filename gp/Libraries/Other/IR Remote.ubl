@@ -1,14 +1,14 @@
 module 'IR Remote' Comm
 author MicroBlocks
-version 1 7 
-tags ir infrared remote 
+version 1 8
+tags ir infrared remote
 description 'Sends and receives infrared remote control messages like the ones used for TV sets or air conditioners. Currently supports only the NEC protocol, which is quite common but not the only IR protocol in use. An NEC message consists of a one byte device number and a one byte command.
 
 Note: Transmitting IR does not work on ESP8266 boards.
 
 Receiving requires an IR receiver module, such as those built into the Circuit Playground Express and ED1 boards. Transmitting requires an IR transmitter LED, such as those built into the Circuit Playground Express and several M5 Stack products. Inexpensive IR LED transmitter and receivers are available for use with other boards.
 '
-variables _ir_pin _ir_pulse_times _ir_last_code _ir_last_device _ir_transmit_pin 
+variables _ir_pin _ir_pulse_times _ir_last_code _ir_last_device _ir_transmit_pin
 
   spec ' ' 'attachIR' 'attach IR receiver to pin _' 'num' 0
   spec 'r' 'ir_code_received' 'IR code received?'
@@ -27,6 +27,8 @@ variables _ir_pin _ir_pulse_times _ir_last_code _ir_last_device _ir_transmit_pin
   spec 'r' '_getIRByte' '_getIRByte _' 'auto any' 4
   spec 'r' '_got32Bits' '_got32Bits' 'any'
   spec ' ' '_IR_SendByte' '_IR_SendByte _' 'auto' '10'
+  spec ' ' 'timerIRCapture' 'timerIRCapture'
+  spec ' ' 'interruptIRCapture' 'interruptIRCapture'
 
 to IR_Transmit device command {
   if (_ir_transmit_pin == 0) {if (or ((boardType) == 'CircuitPlayground') ((boardType) == 'M5Atom-Matrix')) {
@@ -77,7 +79,7 @@ to '_IR_SendByte' byte {
 
 to '_captureIRMessage' {
   if (_ir_pulse_times == 0) {
-    _ir_pulse_times = (newList 200)
+    _ir_pulse_times = (newList 100)
     if (_ir_pin == 0) {
       if ((boardType) == 'CircuitPlayground') {
         _ir_pin = 11
@@ -92,45 +94,22 @@ to '_captureIRMessage' {
       }
     }
   }
-  atPut 'all' _ir_pulse_times 0
-  local 'i' 1
-  comment 'Wait for IR signal -- this is the start of a new message.
-Note: THe pin goes low when an IR signal is detected.'
-  waitUntil (not (digitalReadOp _ir_pin))
-  local 'start' (microsOp)
-  forever {
-    comment 'Record the time until the end of the current IR pulse ("mark")'
-    waitUntil (digitalReadOp _ir_pin)
-    local 'end' (microsOp)
-    atPut i _ir_pulse_times (end - start)
-    i += 1
-    start = end
-    comment 'Record time until the start of the next IR pulse ("space")'
-    repeatUntil (not (digitalReadOp _ir_pin)) {
-      if (((microsOp) - start) > 5000) {
-        comment 'No IR pulse for 5000 usecs means "end of message"'
-        return 0
-      }
-    }
-    local 'end' (microsOp)
-    atPut i _ir_pulse_times (end - start)
-    i += 1
-    start = end
-  }
+  comment 'Capture the next IR message.'
+  interruptIRCapture
 }
 
 to '_dumpIR' {
   comment 'Print raw pulse timings to the terminal.
 Can be used to analyze new protocols.'
   local 'i' 1
-  printIt '-----'
+  graphIt '-----'
   repeat (size _ir_pulse_times) {
     local 'mark usecs' (at i _ir_pulse_times)
     local 'space usecs' (at (i + 1) _ir_pulse_times)
-    printIt (v 'mark usecs') (v 'space usecs')
+    graphIt (v 'mark usecs') (v 'space usecs')
     i += 2
     if ((v 'space usecs') == 0) {
-      printIt 'timing entries:' (i - 2)
+      graphIt 'timing entries:' (i - 2)
       return 0
     }
   }
@@ -188,6 +167,27 @@ to attachIRTransmitter pin {
   _ir_transmit_pin = pin
 }
 
+to interruptIRCapture {
+  comment 'Capture IR pulses using interrupt-based pulse capture system.'
+  atPut 'all' _ir_pulse_times 0
+  comment 'Wait for IR signal -- this is the start of a new message.
+Note: THe pin goes low when an IR signal is detected.'
+  waitUntil (not (digitalReadOp _ir_pin))
+  local 'start' (millisOp)
+  '[sensors:captureStart]' _ir_pin
+  comment 'Collect IR pulses until we receive over 67 pulses or until the timeout.'
+  repeatUntil (or (('[sensors:captureCount]') > 67) ((millisSince start) > 200)) {
+    waitMillis 5
+  }
+  local 'pulseData' ('[sensors:captureEnd]')
+  comment 'If we got at least 67 pulses, copy their absolute values (durations) into _ir_pulse_times.'
+  if ((size pulseData) >= 67) {
+    for i 67 {
+      atPut i _ir_pulse_times (absoluteValue (at i pulseData))
+    }
+  }
+}
+
 to ir_code_received {
   return ((receiveIR) >= 0)
 }
@@ -207,6 +207,35 @@ to receiveIR {
       atPut 'all' _ir_pulse_times 0
       return _ir_last_code
     }
+  }
+}
+
+to timerIRCapture {
+  comment 'Capture IR pulses using the microseconds timer. (Original version, not currently used.)'
+  atPut 'all' _ir_pulse_times 0
+  local 'i' 1
+  comment 'Wait for IR signal -- this is the start of a new message.
+Note: THe pin goes low when an IR signal is detected.'
+  waitUntil (not (digitalReadOp _ir_pin))
+  local 'start' (microsOp)
+  forever {
+    comment 'Record the time until the end of the current IR pulse ("mark")'
+    waitUntil (digitalReadOp _ir_pin)
+    local 'end' (microsOp)
+    atPut i _ir_pulse_times (end - start)
+    i += 1
+    start = end
+    comment 'Record time until the start of the next IR pulse ("space")'
+    repeatUntil (not (digitalReadOp _ir_pin)) {
+      if (((microsOp) - start) > 5000) {
+        comment 'No IR pulse for 5000 usecs means "end of message"'
+        return 0
+      }
+    }
+    local 'end' (microsOp)
+    atPut i _ir_pulse_times (end - start)
+    i += 1
+    start = end
   }
 }
 

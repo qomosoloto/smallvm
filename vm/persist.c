@@ -33,8 +33,8 @@
 void delay(unsigned long); // Arduino delay function
 
 #if defined(ARDUINO_ARCH_ESP32)
-  // use Flash codestore on all ESP32 variants
-  #define ESP32_FLASH_CODESTORE true
+	// use Flash codestore on all ESP32 variants
+	#define ESP32_FLASH_CODESTORE true
 #endif
 
 // flash operations for supported platforms
@@ -914,7 +914,7 @@ static void compactRAM(int printStats) {
 	//	6. update the compaction count
 	//	7. re-write the code file
 
-	uint32_t startT = millisecs();
+	uint32 startT = millisecs();
 
 	int *dst = ((0 == !current) ? start0 : start1) + 1;
 	int *src = compactionStartRecord();

@@ -1,6 +1,6 @@
 module 'Distance (HC-SR04)' Input
 author 'Joan Guillén & Josep Ferràndiz'
-version 1 2 
+version 1 4 
 tags sensor 'hc-sr04' distance ultrasound 
 description 'Support for the HC-SR04 ultrasound distance sensor.'
 variables _sr04_last 
@@ -28,9 +28,6 @@ to 'distance (cm)' trig ech {
   _sr04_last = ((10 * ((microsOp) - start)) / 583)
   comment 'Leave some time for reverberations to die away.'
   waitMillis 10
-  if (_sr04_last == 0) {
-    zeroCount += 1
-  }
   return _sr04_last
 }
 

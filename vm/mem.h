@@ -16,43 +16,46 @@ extern "C" {
 
 // Unify Arduino IDE and PlatformIO
 #if defined(NRF52_SERIES) && !defined(NRF52)
-  #define NRF52 1
+	#define NRF52 1
 #endif
 
 // Define short symbols ESP32 variants
 #if defined(CONFIG_IDF_TARGET_ESP32S2)
-  #define ESP32_S2 1
+	#define ESP32_S2 1
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
-  #define ESP32_S3 1
+	#define ESP32_S3 1
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
-  #define ESP32_C3 1
+	#define ESP32_C3 1
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
-  #define ESP32_C6 1
+	#define ESP32_C6 1
 #endif
 
 #if defined(ESP32) && !(defined(ESP32_S2) || defined(ESP32_S3) || defined(ESP32_C3) || defined(ESP32_C6))
-  #define ESP32_ORIGINAL 1
+	#define ESP32_ORIGINAL 1
 #endif
 
 #if defined(ARDUINO_ARCH_RP2040) && !defined(__MBED__)
-  #define RP2040_PHILHOWER 1
+	#define RP2040_PHILHOWER 1
 #endif
 
 #if defined(BLE_IDE) || defined(BLE_KEYBOARD) || defined(BLE_UART) || defined(BLE_OCTO)
-  #define USE_NIMBLE 1
+	#define USE_NIMBLE 1
 #endif
 
 #if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || defined(CALLIOPE_V3) || \
 	defined(ARDUINO_BBC_MICROBIT_V2) || defined(ARDUINO_M5Atom_Matrix_ESP32) || \
-	defined(GNUBLOCKS) || defined(ARDUINO_Mbits)
+	defined(GNUBLOCKS) || defined(ARDUINO_Mbits) || defined(STEAMaker)
 		#define HAS_LED_MATRIX 1
 #endif
 
-// Unsigned integer types
+// Integer types
 
 typedef unsigned char uint8;
+typedef unsigned short uint16;
 typedef unsigned int uint32;
 typedef unsigned long long uint64;
+
+typedef signed short int int16;
 
 // Boolean constants for readability (if not already defined)
 

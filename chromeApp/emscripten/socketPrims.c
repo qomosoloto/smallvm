@@ -12,11 +12,11 @@
 #include <ws2tcpip.h>
 
 #if !defined(EWOULDBLOCK)
-  #define EWOULDBLOCK WSAEWOULDBLOCK
+	#define EWOULDBLOCK WSAEWOULDBLOCK
 #endif
 
 #if !defined(EAGAIN)
-  #define EAGAIN WSAEWOULDBLOCK
+	#define EAGAIN WSAEWOULDBLOCK
 #endif
 
 #define SHUT_RDWR SD_BOTH
@@ -60,24 +60,24 @@ static int initialized = false;
 
 static void init() {
 	if (initialized) return;
-  #ifdef _WIN32
+	#ifdef _WIN32
 	int err = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if (err) {
 		printf("WSAStartup failed: %d\n", err);
 		return;
 	}
-  #endif
+	#endif
 	initialized = true;
 }
 
 static void setNonBlocking(int socket) {
-  #ifdef _WIN32
+	#ifdef _WIN32
 	unsigned long flag = true;
 	ioctlsocket(socket, FIONBIO, &flag);
-  #else
+	#else
 	sigignore(SIGPIPE); // prevent program from terminating when attempting to write to a closed socket
 	fcntl(socket, F_SETFL, O_NONBLOCK); // make non-blocking
-  #endif
+	#endif
 }
 
 static int lookupHost(char *hostName, struct sockaddr_in *result) {
@@ -162,9 +162,9 @@ static int socketHasData(int s) {
 	int n = recv(s, (void *) buf, 1, MSG_PEEK);
 	if (n > 0) return 1; // data available
 	if (n == 0) return -1; // normal shutdown
-  #ifdef _WIN32
+	#ifdef _WIN32
 	errno = WSAGetLastError();
-  #endif
+	#endif
 	if ((n < 0) && (errno == EWOULDBLOCK)) return 0; // no data, but socket is still open
 	return -1;	// error
 }
@@ -333,9 +333,9 @@ OBJ primWriteSocket(int nargs, OBJ args[]) {
 
 	int bytesWritten = send(socket, data, byteCount, 0);
 	if (bytesWritten < 0) {
-  #ifdef _WIN32
+	#ifdef _WIN32
 		errno = WSAGetLastError();
-  #endif
+	#endif
 		if ((errno != EAGAIN) && (errno != EWOULDBLOCK)) {
 			printf("write error %s (%d); socket closed\n", strerror(errno), errno);
 			finalizeSocket(args[0]); // other end has exited or closed the socket

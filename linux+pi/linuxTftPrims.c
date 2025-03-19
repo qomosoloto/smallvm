@@ -183,30 +183,30 @@ static void initKeys() {
 static void processEvents() {
 	SDL_Event e;
 	while (SDL_PollEvent(&e) > 0) {
-        switch(e.type) {
-            case SDL_QUIT:
-                SDL_DestroyWindow(window);
+		switch(e.type) {
+			case SDL_QUIT:
+				SDL_DestroyWindow(window);
 				SDL_Quit();
 				tftEnabled = false;
 				exit(0); // quit from GnuBlocks
 				break;
 			case SDL_MOUSEBUTTONDOWN:
 				mouseDownTime = millisecs();
-                mouseDown = true;
-                break;
+				mouseDown = true;
+				break;
 			case SDL_MOUSEBUTTONUP:
-                mouseDown = false;
+				mouseDown = false;
 				mouseX = -1;
 				mouseY = -1;
-                break;
+				break;
 			case SDL_KEYDOWN:
 				// Using keysyms detects keys by their name, not position,
 				// but gives huge values for keys that aren't characters, like
 				// the arrow keys, numpad keys or modifiers. Scancodes will be
 				// different for different keyboard layouts.
 				KEY_SCANCODE[e.key.keysym.scancode] = 1;
-                break;
-            case SDL_KEYUP:
+				break;
+			case SDL_KEYUP:
 				KEY_SCANCODE[e.key.keysym.scancode] = 0;
 				break;
 			default:
@@ -220,9 +220,9 @@ void tftInit() {
 		lastRefreshTime = millisecs();
 //		SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
-    // Unrecoverable error, exit here.
-    printf("SDL_Init failed: %s\n", SDL_GetError());
-    return;
+	// Unrecoverable error, exit here.
+	printf("SDL_Init failed: %s\n", SDL_GetError());
+	return;
 }
 		window = SDL_CreateWindow("MicroBlocks for Linux",
 				SDL_WINDOWPOS_UNDEFINED,

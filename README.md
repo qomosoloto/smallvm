@@ -1,7 +1,8 @@
 # README #
 
 ## 帮助改进中文翻译
-欢迎帮忙改进编程界面的中文翻译, 翻译文件位于 [translations/简体中文.txt](https://github.com/MicroBlocksCN/smallvm/blob/devCN/translations/%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87.txt)
+
+欢迎帮忙改进编程界面的中文翻译, [开始翻译](https://hosted.weblate.org/projects/microblocks/ide/zh_Hans/)
 
 ## 开发相关
 
@@ -175,8 +176,8 @@ sometimes with a short time lag for testing.
 
 ## Contributing ##
 
-We welcome your feedback, comments, feature requests, and
-[bug reports](https://bitbucket.org/john_maloney/smallvm/issues?status=new&status=open).
+We welcome your feedback, comments, feature requests, 
+[bug reports](https://bitbucket.org/john_maloney/smallvm/issues?status=new&status=open) on BitBucket and [translations](https://hosted.weblate.org/engage/microblocks/) on Weblate.
 
 Since MicroBlocks is still under active development by the core team, we are not currently
 soliciting code contributions or pull requests. However, if you are creating tutorials or other materials for MicroBlocks, please let us know so we can link to your website.

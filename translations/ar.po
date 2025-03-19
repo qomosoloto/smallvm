@@ -1,0 +1,703 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-10-28 16:36+0200\n"
+"PO-Revision-Date: 2024-10-28 15:36+0000\n"
+"Last-Translator: Mel Azzi\n"
+"Language-Team: Arabic <https://hosted.weblate.org/projects/microblocks/ide/"
+"ar/>\n"
+"Language: ar\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: ENCODING\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
+"&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
+"X-Generator: Weblate 5.8.2-dev\n"
+
+#. Block in Input category
+msgid "button B"
+msgstr "زر ب"
+
+#. Block in Pins category
+msgid "read analog pin _"
+msgstr "قراءة المنفذ التناظري _"
+
+#. Block in Pins category
+msgid "set digital pin _ to _"
+msgstr "جعل المنفذ الرقمي _ يساوي _"
+
+#. Block in Control category
+msgid "when started"
+msgstr "عند البداية"
+
+#. Block in Control category
+msgid "forever _"
+msgstr "باستمرار _"
+
+#. Block in Control category
+msgid "comment _"
+msgstr "تعليق _"
+
+#. Block in Operators category
+msgid "_ and _"
+msgstr "_ و _"
+
+#. Block in Comm category
+msgid "ignore"
+msgstr "تجاهل"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "shape for letter _"
+msgstr "شكل الحرف _"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "send NeoPixel rgb _"
+msgstr "send NeoPixel rgb _"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "play tone pin _ frequency _"
+msgstr "لعب نغمة منفذ _ موجة تردد _"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "my IP address"
+msgstr "عنوان IP الخاص بي"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "radio send number _"
+msgstr "أرسل عبر الراديو رقم _"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "radio last string"
+msgstr "راديو أخر سلسلة"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "radio set power (0-7) _"
+msgstr "راديو ضبط طاقة (0-7) _"
+
+#. NeoPixel library block
+msgid "clear NeoPixels"
+msgstr "Clear NeoPixels"
+
+#. Tooltip in "Start" button. Top right of IDE.
+msgid "Start"
+msgstr "بداية"
+
+#. Variable right-click context menu
+msgid "rename..."
+msgstr "إعادة تسمية ..."
+
+#. Scripting area right-click context menu
+msgid "arrange scripts"
+msgstr "ترتيب البرامج النصية"
+
+#. In MicroBlocks IDE project menu
+msgid "Open"
+msgstr "فتح"
+
+#. Obsolete blocks category label
+msgid "Obsolete"
+msgstr "قديم"
+
+#. Button on top of "Variables" category
+msgid "Delete a variable"
+msgstr "حذف متغير"
+
+#. Block in Basic Sensors library
+msgid "tilt z"
+msgstr "الميل ض"
+
+#. Block in Basic Sensors library
+msgid "tilt y"
+msgstr "الميل ص"
+
+#. Block in Comm category
+msgid "no op"
+msgstr "لا عملية"
+
+#. NeoPixel library block
+msgid "set NeoPixels _ _ _ _ _ _ _ _ _ _"
+msgstr "Set NeoPixels _ _ _ _ _ _ _ _ _ _"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "radio send pair _ = _"
+msgstr "أرسل عبر الراديو زوج _ = _"
+
+#. NeoPixel library block
+msgid "set all NeoPixels color _"
+msgstr "set all NeoPixels color _"
+
+#. Block in Comm category
+msgid "i2c set device _ register _ to _"
+msgstr "ضبط جهاز _ سجل _ إلى _ i2c"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "radio message received?"
+msgstr "وصلت الرسالة عبر الراديو؟"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "radio last signal strength"
+msgstr "راديو قوة الإشارة الأخيرة"
+
+#. Block in Comm category
+msgid "spi send _"
+msgstr "spi بعث _"
+
+#. Block in Basic Sensors library
+msgid "light level"
+msgstr "مستوى الضوء"
+
+#. "Variables" blocks category label
+msgid "cat;Variables"
+msgstr "المتغيرات"
+
+#. Block in Data category
+msgid "length of _"
+msgstr "طول _"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "radio send string _"
+msgstr "أرسل عبر الراديو سلسلة _"
+
+#. Button on top of "Variables" category
+msgid "Add a variable"
+msgstr "إضافة متغير"
+
+#. Block in Comm category
+msgid "print _"
+msgstr "طبع _"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "radio last number"
+msgstr "راديو آخر رقم"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "radio send packet _"
+msgstr "radio send packet _"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "stop WiFi"
+msgstr "وقف واي فاي"
+
+#. Block in Comm category
+msgid "i2c get device _ register _"
+msgstr "الحصول على جهاز _ سجل _ i2c"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "start WiFi _ password _"
+msgstr "ابدأ واي فاي _ كلمة المرور _"
+
+#. Block in Operators category
+msgid "hex _"
+msgstr "hex _"
+
+#. Block in Comm category
+msgid "spi receive"
+msgstr "spi إستلم"
+
+#. Block in Basic Sensors library
+msgid "tilt x"
+msgstr "الميل س"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "radio set channel (0-83) _"
+msgstr "راديو ضبط قناة (0-83) _"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "draw shape _ at x _ y _"
+msgstr "رسم شكل _ في س _ ص _"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "disable radio"
+msgstr "تعطيل الراديو"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "has tone support"
+msgstr "لديه دعم نغمة"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "radio receive packet _"
+msgstr "radio receive packet _"
+
+#. Block in Basic Sensors library
+msgid "temperature (°C)"
+msgstr "درجة الحرارة (درجة مئوية)"
+
+#. Block in Data category
+msgid "new list length _"
+msgstr "قائمة جديدة طول _"
+
+#. NeoPixel library block
+msgid "set NeoPixel _ color _"
+msgstr "set NeoPixel _ color _"
+
+#. Block in Data category
+msgid "item _ of _"
+msgstr "غرض _ من _"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "WiFi status"
+msgstr "حالة واي فاي"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "radio last message type"
+msgstr "راديو نوع الرسالة الماضية"
+
+#. NeoPixel library block
+msgid "rotate NeoPixels by _"
+msgstr "rotate NeoPixels by _"
+
+#. Block in Variables category
+msgid "set _ to _"
+msgstr "إجعل _ بقيمة _"
+
+#. Block in Variables category
+msgid "change _ by _"
+msgstr "غير _ ب _"
+
+#. Primitive block. Mostly hidden from end users.
+msgid "has WiFi support"
+msgstr "لديه دعم واي فاي"
+
+#. Script right-click context menu
+msgid "script;delete"
+msgstr "حذف"
+
+#. Block right-click context menu
+msgid "collapse"
+msgstr "إخفاء"
+
+#. Settings menu option
+msgid "show advanced blocks"
+msgstr "إظهار الكتل المتقدمة"
+
+#. Script right-click context menu
+msgid "show compiled bytes"
+msgstr "عرض بايت المترجمة"
+
+#. Scripting area right-click context menu
+msgid "paste all scripts"
+msgstr "لصق جميع البرامج النصية"
+
+#. TFT Display library block
+msgid "set TFT pixel x _ y _ to _"
+msgstr "set TFT pixel x _ y _ to _"
+
+#. Citilab ED1 Stepper Motor library block
+msgid "stop steppers"
+msgstr "وقف السائر"
+
+#. Citilab ED1 Buttons library block
+msgid "set capacitive threshold to _"
+msgstr "ضبط عتبة سعوية إلى _"
+
+#. Citilab ED1 Buttons library block
+msgid "capacitive sensor _"
+msgstr "مستشعر سعوي ‪_‬"
+
+#. Scrolling library block
+msgid "stop scrolling"
+msgstr "توقف عن التمرير"
+
+#. Tone library block
+msgid "play note _ octave _ for _ ms"
+msgstr "تلعب نوتا _ اوكتاف _ خلال _ مللي ثانية"
+
+#. Settings menu option
+msgid "about..."
+msgstr "حول..."
+
+#. Tone library block
+msgid "attach buzzer to pin _"
+msgstr "attach buzzer to pin _"
+
+#. Color library block
+msgid "color r _ g _ b _ (0-255)"
+msgstr "اللون أحمر _ أخضر _ أزرق _"
+
+#. Key name (as in computer keyboard key)
+msgid "kbd;Control"
+msgstr "مراقبة"
+
+#. 5x5 LED Display library block
+msgid "display _"
+msgstr "شاشة _"
+
+#. Citilab ED1 Stepper Motor library block
+msgid "move motor 1 _ and motor 2 _ _ steps"
+msgstr "تحرك المحرك 1 _ والمحرك 2 _ _ الخطوات"
+
+#. Citilab ED1 Stepper Motor library block
+msgid "counter-clockwise"
+msgstr "عكس عقارب الساعه"
+
+#. In MicroBlocks IDE connection menu. Select "other..." serial port
+msgid "other..."
+msgstr "غير..."
+
+#. Tooltip in "Stop" button. Top right of IDE.
+msgid "Stop"
+msgstr "توقف"
+
+#. "Output" blocks category label
+msgid "cat;Output"
+msgstr "المخرجات"
+
+#. Block in Output category
+msgid "set user LED _"
+msgstr "ضبط الصمام الثنائي للمستخدم _"
+
+#. Block in Output category
+msgid "say _"
+msgstr "قل _"
+
+#. "Input" blocks category label
+msgid "cat;Input"
+msgstr "المدخلات"
+
+#. Block in Input category
+msgid "button A"
+msgstr "زر أ"
+
+#. Block in Control category
+msgid "stop this task"
+msgstr "وقف هذه المهمة"
+
+#. Block in Operators category
+msgid "_ mod _"
+msgstr "_ mod _"
+
+#. Block in Operators category
+msgid "abs _"
+msgstr "قيمه مطلقه _"
+
+#. Block in Operators category
+msgid "random _ to _"
+msgstr "رقم عشوائي من _ إلى _"
+
+#. Button
+msgid "Ok"
+msgstr "وافق"
+
+#. String in file picker and library dialogs
+msgid "File Open"
+msgstr "فتح الملف"
+
+#. In MicroBlocks IDE connection menu
+msgid "Connect"
+msgstr "وصل"
+
+#. In MicroBlocks IDE firmware update widgets. Board to update.
+msgid "Select board:"
+msgstr "اختر الوحة:"
+
+#. About window info
+msgid "More info at http://microblocks.fun"
+msgstr "More info at http://microblocks.fun"
+
+#. Block in Control category
+msgid "broadcast _"
+msgstr "نشر _"
+
+#. MicroBlocks IDE error message.
+msgid "The board is not responding."
+msgstr "اللوحة لا تستجيب."
+
+#. Scripting area right-click context menu
+msgid "clean up"
+msgstr "تنظيف"
+
+#. Scripting area right-click context menu
+msgid "paste script"
+msgstr "لصق البرنامج النصي"
+
+#. Settings menu option
+msgid "virtual machine version"
+msgstr "نسخة الجهاز الظاهري"
+
+#. Block right-click context menu
+msgid "expand"
+msgstr "وسع"
+
+#. Block right-click context menu
+msgid "duplicate"
+msgstr "كرر"
+
+#. Block right-click context menu tooltip
+msgid "just this one block"
+msgstr "فقط هذه الكتلة"
+
+#. Script right-click context menu
+msgid "save picture of script"
+msgstr "حفظ صورة للبرنامج النصي"
+
+#. Script right-click context menu
+msgid "copy script"
+msgstr "نسخ البرنامج النصي"
+
+#. Block in Input category
+msgid "microseconds"
+msgstr "ميكروثانية"
+
+#. Block in Input category
+msgid "milliseconds"
+msgstr "ميلي ثانية"
+
+#. Block in Input category
+msgid "board type"
+msgstr "نوع اللوحة"
+
+#. "Pins" blocks category label
+msgid "cat;Pins"
+msgstr "المنافذ"
+
+#. Block in Pins category
+msgid "read digital pin _"
+msgstr "قراءة المنفذ الرقمي _"
+
+#. Block in Pins category
+msgid "set pin _ to _"
+msgstr "جعل المنفذ _ يساوي _"
+
+#. Block in Pins category
+msgid "analog pins"
+msgstr "المنافذ التناظرية"
+
+#. Block in Pins category
+msgid "digital pins"
+msgstr "المنافذ الرقمية"
+
+#. "Control" blocks category label
+msgid "cat;Control"
+msgstr "مراقبة"
+
+#. Block in Control category
+msgid "when button _ pressed"
+msgstr "عند الضغط على زر _"
+
+#. Block in Control category
+msgid "repeat _ _"
+msgstr "تكرار _ _"
+
+#. Block in Control category
+msgid "wait _ millisecs"
+msgstr "انتظر _ ميلي ثانية"
+
+#. Block in Control category
+msgid "if _ _"
+msgstr "إذا _ _"
+
+#. Block in Control category
+msgid "if _ _ else _"
+msgstr "إذا _ _ آخر _"
+
+#. Block in Control category
+msgid "else if _ _"
+msgstr "آخر إذا _ _"
+
+#. Block in Control category
+msgid "else"
+msgstr "آخر"
+
+#. Block in Control category
+msgid "when _"
+msgstr "عندما _"
+
+#. Block in Control category
+msgid "wait until _"
+msgstr "انتظر حتى _"
+
+#. Block in Control category
+msgid "wait _ microsecs"
+msgstr "انتظر _ ميكروثانية"
+
+#. Block in Control category
+msgid "return _"
+msgstr "رجع _"
+
+#. Block in Control category
+msgid "when _ received"
+msgstr "عند تلقي _"
+
+#. Block in Control category
+msgid "for _ in _ _"
+msgstr "ل _ في _ _"
+
+#. Block in Control category
+msgid "stop all"
+msgstr "توقيف كل شيء"
+
+#. Block in Operators category
+msgid "not _"
+msgstr "ليس _"
+
+#. Block in Control category
+msgid "repeat until _ _"
+msgstr "كرر حتى _ _"
+
+#. Block in Operators category
+msgid "and _"
+msgstr "و _"
+
+#. Block in Operators category
+msgid "_ or _"
+msgstr "_ أو _"
+
+#. Block in Operators category
+msgid "or _"
+msgstr "أو _"
+
+#. Citilab ED1 Stepper Motor library block
+msgid "clockwise"
+msgstr "بإتجاه عقارب الساعة"
+
+#. Infrared Remote library block
+msgid "receive IR code from device _"
+msgstr "تلقي رمز الأشعة تحت الحمراء من الجهاز _"
+
+#. Infrared Remote library block
+msgid "test IR"
+msgstr "اختبار الأشعة تحت الحمراء"
+
+#. Key name (as in computer keyboard key)
+msgid "kbd;delete"
+msgstr "حذف"
+
+#. 5x5 LED Display library block
+msgid "clear display"
+msgstr "مسح الشاشة"
+
+#. TFT Display library block
+msgid "enable TFT _"
+msgstr "مكن TFT _"
+
+#. 5x5 LED Display library block
+msgid "plot x _ y _"
+msgstr "رسم س _ ص _"
+
+#. 5x5 LED Display library block
+msgid "unplot x _ y _"
+msgstr "محو رسم س _ ص _"
+
+#. In MicroBlocks IDE project menu
+msgid "New"
+msgstr "جديد"
+
+#. In MicroBlocks IDE project menu
+msgid "Save"
+msgstr "حفظ"
+
+#. In MicroBlocks IDE connection menu
+msgid "disconnect"
+msgstr "قطع الاتصال"
+
+#. In MicroBlocks IDE connection menu
+msgid "Serial port:"
+msgstr "منفذ تسلسلي:"
+
+#. In MicroBlocks IDE connection menu. Select "no" serial port
+msgid "none"
+msgstr "لا شيء"
+
+#. In MicroBlocks IDE connection window. Serial port name to connect to.
+msgid "Port name?"
+msgstr "إسم المنفذ؟"
+
+#. In MicroBlocks IDE firmware update widgets. Board type to update.
+msgid "Board type:"
+msgstr "نوع اللوحة:"
+
+#. About window info. As in "By Mary, Johanna and Tracy".
+#. The %1, %2 and %3 tags will be automatically replaced by names. Please keep intact.
+msgid "about;by %1, %2 & %3."
+msgstr "من قبل %3 & %2, %1."
+
+#. MicroBlocks IDE error message.
+msgid "Script is too large to send to board."
+msgstr "البرنامج النصي كبير جدًا بحيث لا يمكن إرساله إلى اللوحة"
+
+#. MicroBlocks IDE information
+msgid "Use \"Connect\" button to connect to a MicroBlocks device."
+msgstr "استخدم زر \"وصل\" للاتصال بجهاز MicroBlocks."
+
+#. MicroBlocks IDE error message.
+msgid "No boards found; is your board plugged in?"
+msgstr "لم يتم العثور على لوحات‪.‬ هل تم توصيل اللوحة الخاصة بك؟"
+
+#. Button
+msgid "Yes"
+msgstr "نعم"
+
+#. MicroBlocks IDE information
+msgid "Try to Install MicroBlocks on the board?"
+msgstr "محاولة تثبيت MicroBlocks على اللوحة؟"
+
+#. Confirmation window
+msgid "Quit MicroBlocks?"
+msgstr "الخروج من MicroBlocks؟"
+
+#. Confirmation window
+msgid "Discard current project?"
+msgstr "تجاهل المشروع الحالي؟"
+
+#. Settings menu option
+msgid "export functions as library"
+msgstr "تصدير دوال كمكتبة"
+
+#. Settings menu option
+msgid "hide advanced blocks"
+msgstr "إخفاء الكتل المتقدمة"
+
+#. Graph window title
+msgid "Data Graph"
+msgstr "الرسم البياني"
+
+#. Script right-click context menu
+msgid "show instructions"
+msgstr "عرض التعليمات"
+
+#. Block definition right-click context menu
+msgid "blockdef;delete"
+msgstr "حذف"
+
+#. Button
+msgid "No"
+msgstr "لا"
+
+#. Button
+msgid "Cancel"
+msgstr "إلغاء"
+
+#. Block definition right-click context menu option confirmation
+msgid "Are you sure you want to remove this block definition?"
+msgstr "هل أنت متأكد من أنك تريد إزالة تعريف الكتلة؟"
+
+#. Button
+msgid "Okay"
+msgstr "وافق"
+
+#. Window title
+msgid "Confirm"
+msgstr "أكد"
+
+#. Library folder
+msgid "folder;Libraries"
+msgstr "المكتبات"
+
+#. String in file picker and library dialogs
+msgid "File Save"
+msgstr "حفظ الملف"
+
+#. String in file picker and library dialogs
+#. as in "by Jane Doe", the author of this library
+msgid "libdata;by"
+msgstr "من قبل"
+
+#. String in file picker and library dialogs
+msgid "File name:"
+msgstr "اسم الملف:"
+
+#. Tip Bar label or text (at the bottom of the IDE, gives info on the currently hovered element)
+msgid "Input"
+msgstr "المدخلات"

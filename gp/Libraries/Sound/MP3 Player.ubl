@@ -1,6 +1,6 @@
 module 'MP3 Player' Output
 author MicroBlocks
-version 1 10 
+version 1 13 
 choices mp3PlayerType MakerPort 'MakerBit/HyperDuino' DFRobot Octopus 
 description 'Support for Octopus (FN-M16P and YX6300 chips) and DFRobot/HyperDuino/MakerBit/MakerPort) MP3 Players (YX5300, A19HFA440, and GD3300B chips).
 
@@ -8,7 +8,7 @@ Sends commands to MP3 player using software serial via any digital pin on any bo
 
 To use the "mp3 play ... until done" block, connect TX of MP3 player to a second pin and set that pin as the optional "rx pin" in the "mp3 initialize" block .
 '
-variables _mp3UseChecksum _mp3Pin _mp3RxPin 
+variables _mp3UseChecksum _mp3Pin _mp3RxPin _mp3Status 
 
   spec ' ' 'mp3_initialize' 'mp3 initialize _ pin _ : rx pin _' 'menu.mp3PlayerType num num' 'MakerPort' 20 21
   spec ' ' 'mp3_setVolume' 'mp3 set volume _ (0-30)' 'num' 20
@@ -23,7 +23,7 @@ variables _mp3UseChecksum _mp3Pin _mp3RxPin
   spec ' ' 'mp3_resume' 'mp3 resume'
   space
   spec ' ' '_mp3_sendMP3Cmd' '_mp3_sendMP3Cmd _ _ _' 'auto num num' '0x0C' 0 0
-  spec ' ' '_mp3_waitForResponse' '_mp3_waitForResponse'
+  spec 'r' '_mp3_timeForResponse' '_mp3_timeForResponse timeout _ msecs' 'auto' 1000
 
 to '_mp3_sendMP3Cmd' cmd arg1 arg2 {
   if (_mp3UseChecksum == 0) {
@@ -48,23 +48,24 @@ to '_mp3_sendMP3Cmd' cmd arg1 arg2 {
   for byte msg {
     '[io:softWriteByte]' byte _mp3Pin 9600
   }
-  waitMillis 100
+  comment 'Leave some time for MP3 chip to process command'
+  waitMillis 5
 }
 
-to '_mp3_waitForResponse' {
-  comment 'Wait for a response on _mp3RxPin.
+to '_mp3_timeForResponse' timeout {
+  comment 'Wait for a response on _mp3RxPin for up to timeout milliseconds.
 Note: a low value on _mp3RxPin is the start of a response message.
 We do not read the actual message but wait 20 bytes worth of time.'
-  if (_mp3RxPin >= 0) {
-    local 'endTime' ((millisOp) + 3000)
-    repeatUntil (not (digitalReadOp _mp3RxPin)) {
-      if ((millisOp) > endTime) {return 0}
-    }
-    waitMillis 21
-  } else {
-    comment 'RX pin not set so just wait a few seconds.'
-    waitMillis 3000
+  if (_mp3RxPin < 0) {
+    comment 'No _mp3RxPin'
+    return -1
   }
+  local 'startMSecs' (millisOp)
+  local 'elapsed' 0
+  repeatUntil (or (not (digitalReadOp _mp3RxPin)) (elapsed > timeout)) {
+    elapsed = (millisSince startMSecs)
+  }
+  return elapsed
 }
 
 to mp3_initialize type pin optionalRxPin {
@@ -74,12 +75,28 @@ to mp3_initialize type pin optionalRxPin {
   if ((pushArgCount) > 2) {
     _mp3RxPin = optionalRxPin
   }
-  comment 'Reset'
+  comment 'Reset the MP3 player'
   '_mp3_sendMP3Cmd' '0x0C' 0 0
-  if (_mp3RxPin >= 0) {
-    '_mp3_waitForResponse'
-  } else {
+  if (_mp3RxPin < 0) {
+    comment 'No _mp3RxPin; assume ok'
+    _mp3Status = 'ok'
     waitMillis 1000
+  } else {
+    comment 'Has _mp3RxPin, determine MP3 player status'
+    if (('_mp3_timeForResponse' 1000) < 100) {
+      _mp3Status = 'no card'
+      return 0
+    }
+    waitMillis 100
+    comment 'Try to play a non-existent track; should respond in under 800 msecs.
+Times out when MP3 switch is in "files" mode.'
+    mp3_playTrack 87 87
+    if (('_mp3_timeForResponse' 800) >= 800) {
+      _mp3Status = 'files mode'
+    } else {
+      _mp3Status = 'ok'
+    }
+    waitMillis 500
   }
 }
 
@@ -115,7 +132,14 @@ This sets the folder for the "play next track in folder" command.'
 }
 
 to mp3_playTrackUntilDone trackNum folderNum {
-  if (_mp3RxPin < 0) {sayIt 'To use this feature, set the RX pin in "mp3 initialize".'}
+  if (_mp3RxPin < 0) {
+    sayIt 'To use this feature, set the RX pin in "mp3 initialize".'
+    return 0
+  }
+  if (_mp3Status != 'ok') {
+    sayIt 'MP3 Player is not available or the micro SD card is not inserted.'
+    return 0
+  }
   mp3_playTrack trackNum folderNum
   if (_mp3RxPin >= 0) {
     waitUntil (not (digitalReadOp _mp3RxPin))

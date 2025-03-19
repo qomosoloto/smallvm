@@ -5,173 +5,173 @@ defineClass MediaViewer morph project type listFrame notesFrame resizer
 method type MediaViewer { return type }
 
 to newMediaViewer aProject viewerType {
-  return (initialize (new 'MediaViewer') aProject viewerType)
+	return (initialize (new 'MediaViewer') aProject viewerType)
 }
 
 method initialize MediaViewer aProject viewerType {
-  scale = (global 'scale')
-  project = aProject
-  type = viewerType
-  morph = (newMorph this)
-  if ('Images' == viewerType) {
-	addImportButton this 'image'
-	addPaintButton this
-	addMediaList this (images project)
-  } ('Sounds' == viewerType) {
-	addImportButton this 'sound'
-	addMediaList this (sounds project)
-  } ('Notes' == viewerType) {
-	addNotes this
-  }
-  setMinExtent morph (scale * 235) (scale * 200)
-  resizer = (resizeHandle this 'horizontal')
-  return this
+	scale = (global 'scale')
+	project = aProject
+	type = viewerType
+	morph = (newMorph this)
+	if ('Images' == viewerType) {
+		addImportButton this 'image'
+		addPaintButton this
+		addMediaList this (images project)
+	} ('Sounds' == viewerType) {
+		addImportButton this 'sound'
+		addMediaList this (sounds project)
+	} ('Notes' == viewerType) {
+		addNotes this
+	}
+	setMinExtent morph (scale * 235) (scale * 200)
+	resizer = (resizeHandle this 'horizontal')
+	return this
 }
 
 // notes
 
 method saveNotes MediaViewer {
-  if (notNil notesFrame) {
-    setNotes project (contentsWithoutCRs (contents notesFrame))
-  }
+	if (notNil notesFrame) {
+		setNotes project (contentsWithoutCRs (contents notesFrame))
+	}
 }
 
 method redraw MediaViewer {
-  fillColor = (gray 220)
-  borderColor = (gray 150)
-  borderWidth = (2 * (global 'scale'))
-  bm = (newBitmap (width morph) (height morph) fillColor)
-  outlineRectangle (newShapeMaker bm) (rect 0 0 (width morph) (height morph)) borderWidth borderColor
-  setCostume morph bm
-  fixLayout this
+	fillColor = (gray 220)
+	borderColor = (gray 150)
+	borderWidth = (2 * (global 'scale'))
+	bm = (newBitmap (width morph) (height morph) fillColor)
+	outlineRectangle (newShapeMaker bm) (rect 0 0 (width morph) (height morph)) borderWidth borderColor
+	setCostume morph bm
+	fixLayout this
 }
 
 method addImportButton MediaViewer mediaType {
-  if ('Browser' == (platform)) { return } // import on browser is via drag-n-drop
-  scale = (global 'scale')
-  label = (join 'Add ' mediaType ' from file')
-  btn = (pushButton label (gray 120) (action 'importMediaFile' this mediaType))
-  setPosition (morph btn) (12 * scale) (15 * scale)
-  addPart morph (morph btn)
+	if ('Browser' == (platform)) { return } // import on browser is via drag-n-drop
+	scale = (global 'scale')
+	label = (join 'Add ' mediaType ' from file')
+	btn = (pushButton label (action 'importMediaFile' this mediaType))
+	setPosition (morph btn) (12 * scale) (15 * scale)
+	addPart morph (morph btn)
 }
 
 method addPaintButton MediaViewer {
-  scale = (global 'scale')
-  label = (join 'Paint new image')
-  btn = (pushButton label (gray 120) (action 'openPaintEditor' this))
-  setPosition (morph btn) (140 * scale) (15 * scale)
-  if ('Browser' == (platform)) { setPosition (morph btn) (12 * scale) (15 * scale) }
-  addPart morph (morph btn)
+	scale = (global 'scale')
+	label = (join 'Paint new image')
+	btn = (pushButton label (action 'openPaintEditor' this))
+	setPosition (morph btn) (140 * scale) (15 * scale)
+	if ('Browser' == (platform)) { setPosition (morph btn) (12 * scale) (15 * scale) }
+	addPart morph (morph btn)
 }
 
 method addMediaList MediaViewer mediaItems {
-  menuIcon = (menuIcon this)
-  soundIcon = (soundIcon this)
-  listFrame = (scrollFrame (newBox) (gray 240))
-  contentsM = (morph (contents listFrame))
-  setExtent contentsM 0 0
-  for el mediaItems {
-	item = (intialize (new 'MediaItem') el menuIcon soundIcon)
-	addPart contentsM (morph item)
-  }
-  fixLayout this
-  addPart morph (morph listFrame)
+	menuIcon = (menuIcon this)
+	soundIcon = (soundIcon this)
+	listFrame = (scrollFrame (newBox) (gray 240))
+	contentsM = (morph (contents listFrame))
+	setExtent contentsM 0 0
+	for el mediaItems {
+		item = (intialize (new 'MediaItem') el menuIcon soundIcon)
+		addPart contentsM (morph item)
+	}
+	fixLayout this
+	addPart morph (morph listFrame)
 }
 
 method addNotes MediaViewer {
-  scale = (global 'scale')
-  textBox = (newText '' 'Arial' (18 * scale))
-  setEditRule textBox 'editable'
-  setGrabRule (morph textBox) 'ignore'
-  setBorders textBox 10 10
-  notesFrame = (scrollFrame textBox (gray 235))
-  setPosition (morph notesFrame) (10 * scale) (10 * scale)
-  setExtent (morph notesFrame) 500 800
-  setText textBox (notes project)
-  addPart morph (morph notesFrame)
+	scale = (global 'scale')
+	textBox = (newText '' 'Arial' (18 * scale))
+	setEditRule textBox 'editable'
+	setGrabRule (morph textBox) 'ignore'
+	setBorders textBox 10 10
+	notesFrame = (scrollFrame textBox (gray 235))
+	setPosition (morph notesFrame) (10 * scale) (10 * scale)
+	setExtent (morph notesFrame) 500 800
+	setText textBox (notes project)
+	addPart morph (morph notesFrame)
 }
 
 method importMediaFile MediaViewer mediaType {
-  editor = (projectEditor this)
-  if (notNil editor) { importMediaFile editor mediaType }
+	editor = (projectEditor this)
+	if (notNil editor) { importMediaFile editor mediaType }
 }
 
 method textChanged MediaViewer txt {
-  if (notNil notesFrame) {
-	rightMargin = (5 * (global 'scale'))
-	wrapLinesToWidth (contents notesFrame) (max 100 ((width (morph notesFrame)) - rightMargin))
-	saveNotes this
-  }
-  itemM = (ownerThatIsA (morph txt) 'MediaItem')
-  if (notNil itemM) { // edit name of a media item
-	item = (item (handler itemM))
-	setName item (text txt)
-  }
+	if (notNil notesFrame) {
+		rightMargin = (5 * (global 'scale'))
+		wrapLinesToWidth (contents notesFrame) (max 100 ((width (morph notesFrame)) - rightMargin))
+		saveNotes this
+	}
+	itemM = (ownerThatIsA (morph txt) 'MediaItem')
+	if (notNil itemM) { // edit name of a media item
+		item = (item (handler itemM))
+		setName item (text txt)
+	}
 }
 
 // editors
 
 method openPaintEditor MediaViewer {
-  editor = (projectEditor this)
-  if (isNil editor) { return }
-  openPaintEditorOn origImg (action 'saveEditedImage' editor)
+	editor = (projectEditor this)
+	if (isNil editor) { return }
+	openPaintEditorOn origImg (action 'saveEditedImage' editor)
 }
 
 method projectEditor MediaViewer {
-  editor = (ownerThatIsA morph 'ProjectEditor')
-  if (isNil editor) { return nil }
-  return (handler editor)
+	editor = (ownerThatIsA morph 'ProjectEditor')
+	if (isNil editor) { return nil }
+	return (handler editor)
 }
 
 // layout
 
 method fixLayout MediaViewer {
-  scale = (global 'scale')
-  border = (2 * scale)
-  rightMargin = (5 * scale)
+	scale = (global 'scale')
+	border = (2 * scale)
+	rightMargin = (5 * scale)
 
-  if (notNil resizer) {
-	setRight (morph resizer) ((right morph) - border)
-	setBottom (morph resizer) ((bottom morph) - border)
-	addPart morph (morph resizer) // bring to front
-  }
-  if (notNil listFrame) {
-	  m = (morph listFrame)
-	  setInsetInOwner m border (40 * scale)
-	  setExtent m ((right morph) - ((left m) + border)) ((bottom morph) - ((top m) + border))
-	  fixListItemLayout this
-  }
-  if (notNil notesFrame) {
-	  m = (morph notesFrame)
-	  setInsetInOwner m border border
-	  setExtent m ((right morph) - ((left m) + border)) ((bottom morph) - ((top m) + border))
-	  wrapLinesToWidth (contents notesFrame) (max 100 ((width m) - rightMargin))
-  }
-  if (notNil (morph resizer)) {
-	size = (10 * scale)
-    setLeft (morph resizer) ((right morph) - border)
-    setTop (morph resizer) (top morph)
-    setExtent (morph resizer) size (height morph)
-    drawPaneResizingCostumes resizer
-  }
-  editor = (projectEditor this)
-  if (notNil editor) { fixLayout editor }
+	if (notNil resizer) {
+		setRight (morph resizer) ((right morph) - border)
+		setBottom (morph resizer) ((bottom morph) - border)
+		addPart morph (morph resizer) // bring to front
+	}
+	if (notNil listFrame) {
+			m = (morph listFrame)
+			setInsetInOwner m border (40 * scale)
+			setExtent m ((right morph) - ((left m) + border)) ((bottom morph) - ((top m) + border))
+			fixListItemLayout this
+	}
+	if (notNil notesFrame) {
+			m = (morph notesFrame)
+			setInsetInOwner m border border
+			setExtent m ((right morph) - ((left m) + border)) ((bottom morph) - ((top m) + border))
+			wrapLinesToWidth (contents notesFrame) (max 100 ((width m) - rightMargin))
+	}
+	if (notNil (morph resizer)) {
+		size = (10 * scale)
+		setLeft (morph resizer) ((right morph) - border)
+		setTop (morph resizer) (top morph)
+		setExtent (morph resizer) size (height morph)
+		drawPaneResizingCostumes resizer
+	}
+	editor = (projectEditor this)
+	if (notNil editor) { fixLayout editor }
 }
 
 method fixListItemLayout MediaViewer {
-  itemWidth = (max 100 (width (morph listFrame)))
-  listContents = (morph (contents listFrame))
-  y = (top listContents)
-  for itemM (parts listContents) {
-	setItemWidth (handler itemM) itemWidth
-	setPosition itemM (left listContents) y
-	y += ((height (fullBounds itemM)) + 5)
-  }
-  updateSliders listFrame
+	itemWidth = (max 100 (width (morph listFrame)))
+	listContents = (morph (contents listFrame))
+	y = (top listContents)
+	for itemM (parts listContents) {
+		setItemWidth (handler itemM) itemWidth
+		setPosition itemM (left listContents) y
+		y += ((height (fullBounds itemM)) + 5)
+	}
+	updateSliders listFrame
 }
 
 method menuIcon MediaViewer {
-  data = '
+	data = '
 AAAAAAAAAAAAAgMAAAc/e6zP7f397c+sej8HAAADAgAAAAAAAAAAAAAAAAAAAAAABQAAKYzd///////9
 /f//////3YwpAAAFAAAAAAAAAAAAAAAAAAACAgAZl/v///z3+v////////r3/P//+5cZAAICAAAAAAAA
 AAAAAAADAABc7v//9vv////45dzc5fj////79v//7lwAAAMAAAAAAAAAAAADAACa///3/P//0IdIIg4G
@@ -199,13 +199,13 @@ AAAAAAABSbz///j8/7UAAAMAAAAAAAAAAwAAmv//9/z//9CGSCIOBgYOIkiH0P///Pf//5oAAAMAAAAA
 AAAAAAADAABc7v//9vv////45dzc5fj////79v//7lwAAAMAAAAAAAAAAAAAAAICABmX+////Pf6////
 ////+vf8///7lxkAAgIAAAAAAAAAAAAAAAAAAAUAACiM3f///////f3//////92LKAAABQAAAAAAAAAA
 AAAAAAAAAAAAAgMAAAdAe6zP7f397c+se0AHAAADAgAAAAAAAAAAAA=='
-  bm = (newBitmap 40 40)
-  applyAlphaChannel bm (base64Decode data) (gray 130)
-  return bm
+	bm = (newBitmap 40 40)
+	applyAlphaChannel bm (base64Decode data) (gray 130)
+	return bm
 }
 
 method soundIcon MediaViewer {
-  data = '
+	data = '
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -313,9 +313,9 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=='
-  bm = (newBitmap 80 80)
-  applyAlphaChannel bm (base64Decode data) (gray 90)
-  return bm
+	bm = (newBitmap 80 80)
+	applyAlphaChannel bm (base64Decode data) (gray 90)
+	return bm
 }
 
 defineClass MediaItem morph item menuButton
@@ -323,178 +323,178 @@ defineClass MediaItem morph item menuButton
 method item MediaItem { return item }
 
 method intialize MediaItem imageOrSound menuIcon soundIcon {
-  // scale = (global 'scale')
-  morph = (newMorph this)
-  item = imageOrSound
-  addThumbnail this soundIcon
-  addMenuButton this menuIcon
-  addNameLine this
-  addDetailsLine this
-  return this
+	// scale = (global 'scale')
+	morph = (newMorph this)
+	item = imageOrSound
+	addThumbnail this soundIcon
+	addMenuButton this menuIcon
+	addNameLine this
+	addDetailsLine this
+	return this
 }
 
 method addThumbnail MediaItem soundIcon {
-  scale = (global 'scale')
-  if (isClass item 'Sound') {
-	if (isNil soundIcon) { return }
-	thumbnail = soundIcon
-  } else {
-	thumbnail = (thumbnail item 80 80)
-  }
-  m = (newMorph)
-  setCostume m thumbnail
-  if (isClass item 'Sound') {
-	setHandler m (new 'Trigger' m (action 'toggleSound' this))
-	setTransparentTouch m true
-  } (isClass item 'Bitmap') {
-	setHandler m (new 'Trigger' m (action 'setImage' this))
-	setTransparentTouch m true
-  }
-  if (scale != 2) { setScale m (scale / 2) }
-  setPosition m (10 * scale) (10 * scale)
-  addPart morph m
+	scale = (global 'scale')
+	if (isClass item 'Sound') {
+		if (isNil soundIcon) { return }
+		thumbnail = soundIcon
+	} else {
+		thumbnail = (thumbnail item 80 80)
+	}
+	m = (newMorph)
+	setCostume m thumbnail
+	if (isClass item 'Sound') {
+		setHandler m (new 'Trigger' m (action 'toggleSound' this))
+		setTransparentTouch m true
+	} (isClass item 'Bitmap') {
+		setHandler m (new 'Trigger' m (action 'setImage' this))
+		setTransparentTouch m true
+	}
+	if (scale != 2) { setScale m (scale / 2) }
+	setPosition m (10 * scale) (10 * scale)
+	addPart morph m
 }
 
 method addNameLine MediaItem {
-  scale = (global 'scale')
-  fontSize = (15 * scale)
-  textBox = (newText (name item) 'Arial' fontSize)
-  setEditRule textBox 'line'
-  setPosition (morph textBox) (60 * scale) (14 * scale)
-  addPart morph (morph textBox)
+	scale = (global 'scale')
+	fontSize = (15 * scale)
+	textBox = (newText (name item) 'Arial' fontSize)
+	setEditRule textBox 'line'
+	setPosition (morph textBox) (60 * scale) (14 * scale)
+	addPart morph (morph textBox)
 }
 
 method addDetailsLine MediaItem {
-  scale = (global 'scale')
-  fontSize = (11 * scale)
-  if (isClass item 'Bitmap') {
-	byteCount = (byteCount (pixelData item))
-	details = (join '' (width item) 'x' (height item))
-  } (isClass item 'Sound') {
-	byteCount = (4 * (count (samples item)))
-	secs = ((count (samples item)) / (samplingRate item))
-	details = (join (toString secs 2) ' seconds')
-  } else {
-	byteCount = 0
-	details = ''
-  }
-  if (byteCount < 1000) {
-	sizeString = (join '  (' byteCount ' bytes)')
-  } else {
-	sizeString = (join '  (' (round (byteCount / 1000)) ' kb)')
-  }
-  if (isClass item 'Sound') {
-	rate = (truncate ((samplingRate item) / 1000))
-	sizeString = (join sizeString ' ' rate 'k')
-  }
-  line1 = (newText (join details sizeString) 'Arial' fontSize)
-  setEditRule line1 'static'
-  setPosition (morph line1) (61 * scale) (32 * scale)
-  addPart morph (morph line1)
+	scale = (global 'scale')
+	fontSize = (11 * scale)
+	if (isClass item 'Bitmap') {
+		byteCount = (byteCount (pixelData item))
+		details = (join '' (width item) 'x' (height item))
+	} (isClass item 'Sound') {
+		byteCount = (4 * (count (samples item)))
+		secs = ((count (samples item)) / (samplingRate item))
+		details = (join (toString secs 2) ' seconds')
+	} else {
+		byteCount = 0
+		details = ''
+	}
+	if (byteCount < 1000) {
+		sizeString = (join '  (' byteCount ' bytes)')
+	} else {
+		sizeString = (join '  (' (round (byteCount / 1000)) ' kb)')
+	}
+	if (isClass item 'Sound') {
+		rate = (truncate ((samplingRate item) / 1000))
+		sizeString = (join sizeString ' ' rate 'k')
+	}
+	line1 = (newText (join details sizeString) 'Arial' fontSize)
+	setEditRule line1 'static'
+	setPosition (morph line1) (61 * scale) (32 * scale)
+	addPart morph (morph line1)
 }
 
 // thumbnail click actions
 
 method toggleSound MediaItem {
-  if (not (isClass item 'Sound')) { return }
-  mixer = (soundMixer (global 'page'))
-  if (isPlaying mixer item) {
-	removeSound mixer item
-  } else {
-	addSound mixer item
-  }
+	if (not (isClass item 'Sound')) { return }
+	mixer = (soundMixer (global 'page'))
+	if (isPlaying mixer item) {
+		removeSound mixer item
+	} else {
+		addSound mixer item
+	}
 }
 
 method setImage MediaItem {
-  if (not (isClass item 'Bitmap')) { return }
-  editor = (projectEditor this)
-  if (isNil editor) { return nil }
-  scripter = (scripter editor)
-  if (and (notNil scripter) (notNil (targetObj scripter))) {
-	m = (morph (targetObj scripter))
-	p = (rotationCenter m)
-	penWasDown = (isPenDown m)
-	if penWasDown { penUp m }
-	setCostume m item
-	placeRotationCenter m (first p) (last p)
-	if penWasDown { penDown m }
-  }
+	if (not (isClass item 'Bitmap')) { return }
+	editor = (projectEditor this)
+	if (isNil editor) { return nil }
+	scripter = (scripter editor)
+	if (and (notNil scripter) (notNil (targetObj scripter))) {
+		m = (morph (targetObj scripter))
+		p = (rotationCenter m)
+		penWasDown = (isPenDown m)
+		if penWasDown { penUp m }
+		setCostume m item
+		placeRotationCenter m (first p) (last p)
+		if penWasDown { penDown m }
+	}
 }
 
 // menu
 
 method addMenuButton MediaItem soundIcon {
-  scale = (global 'scale')
-  menuButton = (new 'Trigger' (newMorph) (action 'contextMenu' this))
-  setHandler (morph menuButton) menuButton
-  m = (morph menuButton)
-  setTransparentTouch m true
-  setCostume m soundIcon
-  if (scale != 2) { setScale m (scale / 2) }
-  setPosition m (200 * scale) (10 * scale)
-  addPart morph m
+	scale = (global 'scale')
+	menuButton = (new 'Trigger' (newMorph) (action 'contextMenu' this))
+	setHandler (morph menuButton) menuButton
+	m = (morph menuButton)
+	setTransparentTouch m true
+	setCostume m soundIcon
+	if (scale != 2) { setScale m (scale / 2) }
+	setPosition m (200 * scale) (10 * scale)
+	addPart morph m
 }
 
 method contextMenu MediaItem {
-  menu = (menu nil this)
-  if (isClass item 'Bitmap') {
-  	addItem menu 'edit' 'editItem'
-  }
-  addItem menu 'export' 'export'
-  addLine menu
-  addItem menu 'delete' 'delete'
-  popUpAtHand menu (global 'page')
+	menu = (menu nil this)
+	if (isClass item 'Bitmap') {
+		addItem menu 'edit' 'editItem'
+	}
+	addItem menu 'export' 'export'
+	addLine menu
+	addItem menu 'delete' 'delete'
+	popUpAtHand menu (global 'page')
 }
 
 method editItem MediaItem {
-  editor = (projectEditor this)
-  if (isNil editor) { return }
-  if (isClass item 'Bitmap') {
-	openPaintEditorOn item (action 'saveEditedImage' editor)
-  }
+	editor = (projectEditor this)
+	if (isNil editor) { return }
+	if (isClass item 'Bitmap') {
+		openPaintEditorOn item (action 'saveEditedImage' editor)
+	}
 }
 
 method export MediaItem {
  if (isClass item 'Bitmap') {
-	fName = (fileToWrite (name item) '.png')
-	if ('' == fName) { return }
+		fName = (fileToWrite (name item) '.png')
+		if ('' == fName) { return }
 
-	ppi = (prompt (global 'page') 'Pixels per inch:' '100')
-	if ('' == ppi) { ppi = '100' }
+		ppi = (prompt (global 'page') 'Pixels per inch:' '100')
+		if ('' == ppi) { ppi = '100' }
 
-	data = (encodePNG item (toInteger ppi))
-	if (not (endsWith fName '.png')) { fName = (join fName '.png') }
-	writeFile fName data
-  } (isClass item 'Sound') {
-	fName = (fileToWrite (name item) '.wav')
-	if ('' == fName) { return }
+		data = (encodePNG item (toInteger ppi))
+		if (not (endsWith fName '.png')) { fName = (join fName '.png') }
+		writeFile fName data
+	} (isClass item 'Sound') {
+		fName = (fileToWrite (name item) '.wav')
+		if ('' == fName) { return }
 
-	if (not (endsWith fName '.wav')) { fName = (join fName '.wav') }
-	writeFile fName (encodeWAV item)
-  }
+		if (not (endsWith fName '.wav')) { fName = (join fName '.wav') }
+		writeFile fName (encodeWAV item)
+	}
 }
 
 method delete MediaItem {
-  editor = (projectEditor this)
-  if (isNil editor) { return }
-  if (isClass item 'Bitmap') { remove (images (project editor)) item }
-  if (isClass item 'Sound') { remove (sounds (project editor)) item }
-  refreshTab editor
+	editor = (projectEditor this)
+	if (isNil editor) { return }
+	if (isClass item 'Bitmap') { remove (images (project editor)) item }
+	if (isClass item 'Sound') { remove (sounds (project editor)) item }
+	refreshTab editor
 }
 
 method projectEditor MediaItem {
-  editor = (ownerThatIsA morph 'ProjectEditor')
-  if (isNil editor) { return nil }
-  return (handler editor)
+	editor = (ownerThatIsA morph 'ProjectEditor')
+	if (isNil editor) { return nil }
+	return (handler editor)
 }
 
 // layout
 
 method setItemWidth MediaItem newWidth {
-  // Set my bounds width and update my menu button position.
-  // Called when MediaList layout changes.
-  scale = (global 'scale')
-  setExtent morph newWidth nil
-  m = (morph menuButton)
-  setPosition m ((right morph) - ((width m) + (18 * scale))) (top m)
+	// Set my bounds width and update my menu button position.
+	// Called when MediaList layout changes.
+	scale = (global 'scale')
+	setExtent morph newWidth nil
+	m = (morph menuButton)
+	setPosition m ((right morph) - ((width m) + (18 * scale))) (top m)
 }

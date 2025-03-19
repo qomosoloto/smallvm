@@ -25,20 +25,20 @@ typedef double __attribute__((aligned(4))) align4_double;	// double aligned to a
 // Platforms
 
 #if defined(__APPLE__) && defined(__MACH__)
-  #include <TargetConditionals.h>
-  #if TARGET_OS_IPHONE == 1
-    #define IOS 1
-  #elif TARGET_OS_MAC == 1
-    #define MAC 1
-  #endif
+	#include <TargetConditionals.h>
+	#if TARGET_OS_IPHONE == 1
+		#define IOS 1
+	#elif TARGET_OS_MAC == 1
+		#define MAC 1
+	#endif
 #endif
 
 // macro for exporting functions from dynamically loaded libraries
 
 #if defined(IOS) || defined(MAC)
-  #define EXPORT __attribute__((visibility("default")))
+	#define EXPORT __attribute__((visibility("default")))
 #else
-  #define EXPORT
+	#define EXPORT
 #endif
 
 // Endian flag
@@ -82,13 +82,13 @@ These macros do nothing on 32-bit machines.
 extern unsigned char *baseAddress;
 
 #ifdef _LP64
-#  define HEADER_WORDS 5
-#  define O2A(oop)   ((ADDR)(((unsigned long)(oop)) + (unsigned long)baseAddress))
-#  define A2O(addr) ((OBJ)((unsigned long)addr) - (unsigned long)baseAddress)
+	# define HEADER_WORDS 5
+	# define O2A(oop)   ((ADDR)(((unsigned long)(oop)) + (unsigned long)baseAddress))
+	# define A2O(addr) ((OBJ)((unsigned long)addr) - (unsigned long)baseAddress)
 #else
-#  define HEADER_WORDS 4
-#  define O2A(oop)   ((ADDR)(oop))
-#  define A2O(addr) ((OBJ)(addr))
+	# define HEADER_WORDS 4
+	# define O2A(oop)   ((ADDR)(oop))
+	# define A2O(addr) ((OBJ)(addr))
 #endif
 
 # define ExternalReferenceWords ((2 * sizeof(ADDR)) / sizeof(OBJ))

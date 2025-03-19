@@ -2,81 +2,73 @@
 // Dialog box for specifying files for opening or saving in MicroBlocks.
 // Note: Replaces the GP FilePicker in the MicroBlocks IDE.
 
-defineClass MicroBlocksFilePicker morph window folderReadout listPane parentButton newFolderButton nameLabel nameField cancelButton okayButton topDir currentDir useEmbeddedFS action forSaving extensions isDone answer onFileSelect onFolderSelect cloudAction
+defineClass MicroBlocksFilePicker morph window folderReadout listPane parentButton newFolderButton nameLabel nameField cancelButton okayButton topDir currentDir useEmbeddedFS action forSaving extensions isDone answer onFileSelect onFolderSelect cloudAction folderTranslationPrefix
 
-to pickFileToOpen anAction defaultPath extensionList {
-  // Pick an existing file to open starting at defaultPath, if provided. If anAction is not
-  // nil, invoke it on the full path of the choosen file. If it is nil, wait synchronously
-  // until a file is chosen and return its full path, or the empty string if no file is chosen.
+to microBlocksFileToWrite defaultPath extensionList {
+	// Ask the user to enter a file name and location for writing. If provided, defaultPath is
+	// offered as a starting point. Wait synchronously until a file is specified and return its
+	// full path, or the empty string if the user cancels the operation.
 
-  return (pickFile anAction defaultPath extensionList false)
-}
-
-to fileToWrite defaultPath extensionList {
-  // Ask the user to enter a file name and location for writing. If provided, defaultPath is
-  // offered as a starting point. Wait synchronously until a file is specified and return its
-  // full path, or the empty string if the user cancels the operation.
-
-  if (and (notNil defaultPath) (endsWith defaultPath 'png') ) {
-	lastScriptPicFolder = (lastScriptPicFolder (findProjectEditor))
-    if (notNil lastScriptPicFolder) {
-      defaultPath = (join lastScriptPicFolder (filePart defaultPath))
-    }
-  }
-
-  if (and (isClass extensionList 'String') (notNil defaultPath) ((count defaultPath) > 0)) {
-	// there is a single extension and the default path is not nil or empty
-	extension = extensionList
-	if (not (endsWith defaultPath extension)) {
-	  // append the extension to the default path
-	  defaultPath = (join defaultPath extension)
+	if (and (notNil defaultPath) (endsWith defaultPath 'png') ) {
+		lastScriptPicFolder = (lastScriptPicFolder (findProjectEditor))
+		if (notNil lastScriptPicFolder) {
+			defaultPath = (join lastScriptPicFolder (filePart defaultPath))
+		}
 	}
-  }
-  fileName = (pickFile nil defaultPath extensionList true)
-  if (endsWith fileName 'png') {
-	 setLastScriptPicFolder (findProjectEditor) (directoryPart fileName)
-  }
-  return fileName
+
+	if (and (isClass extensionList 'String') (notNil defaultPath) ((count defaultPath) > 0)) {
+		// there is a single extension and the default path is not nil or empty
+		extension = extensionList
+		if (not (endsWith defaultPath extension)) {
+			// append the extension to the default path
+			defaultPath = (join defaultPath extension)
+		}
+	}
+	fileName = (microBlocksPickFile nil defaultPath extensionList true)
+	if (endsWith fileName 'png') {
+		setLastScriptPicFolder (findProjectEditor) (directoryPart fileName)
+	}
+	return fileName
 }
 
-to pickFile anAction defaultPath extensionList saveFlag {
-  if (isNil saveFlag) { saveFlag = false }
-  page = (global 'page')
-  if (and (notNil defaultPath) (beginsWith defaultPath '//')) {
-	defaultPath = ''
-  }
-  picker = (initialize (new 'MicroBlocksFilePicker') anAction defaultPath extensionList saveFlag)
-  pickerM = (morph picker)
-  setPosition pickerM (half ((width page) - (width pickerM))) (40 * (global 'scale'))
-  addPart page picker
+to microBlocksPickFile anAction defaultPath extensionList saveFlag {
+	if (isNil saveFlag) { saveFlag = false }
+	page = (global 'page')
+	if (and (notNil defaultPath) (beginsWith defaultPath '//')) {
+		defaultPath = ''
+	}
+	picker = (initialize (new 'MicroBlocksFilePicker') anAction defaultPath extensionList saveFlag)
+	pickerM = (morph picker)
+	setPosition pickerM (half ((width page) - (width pickerM))) (40 * (global 'scale'))
+	addPart page picker
 
-  if (and saveFlag (isNil anAction)) {
-	// modal version -- waits until done and returns result or nil
-	setField (hand page) 'lastTouchTime' nil
-	while (not (isDone picker)) { doOneCycle page }
-	destroy pickerM
-	return (answer picker)
-  }
+	if (and saveFlag (isNil anAction)) {
+		// modal version -- waits until done and returns result or nil
+		setField (hand page) 'lastTouchTime' nil
+		while (not (isDone picker)) { doOneCycle page }
+		destroy pickerM
+		return (answer picker)
+	}
 }
 
 // function to return the user's MicroBlocks folder
 
 to microblocksFolder {
-  if ('iOS' == (platform)) { return '.' }
-  path = (userHomePath)
+	if ('iOS' == (platform)) { return '.' }
+	path = (userHomePath)
 
-  // Look for <home>/Documents
-  if (contains (listDirectories path) 'Documents') {
-	path = (join path '/Documents')
-  }
-  if (not (contains (listDirectories path) 'MicroBlocks')) {
-	// create the MicroBlocks folder if it does not already exist
-	makeDirectory (join path '/MicroBlocks')
-  }
-  if (contains (listDirectories path) 'MicroBlocks') {
-	path = (join path '/MicroBlocks')
-  }
-  return path
+	// Look for <home>/Documents
+	if (contains (listDirectories path) 'Documents') {
+		path = (join path '/Documents')
+	}
+	if (not (contains (listDirectories path) 'MicroBlocks')) {
+		// create the MicroBlocks folder if it does not already exist
+		makeDirectory (join path '/MicroBlocks')
+	}
+	if (contains (listDirectories path) 'MicroBlocks') {
+		path = (join path '/MicroBlocks')
+	}
+	return path
 }
 
 // support for synchronous ("modal") calls
@@ -90,222 +82,240 @@ method answer MicroBlocksFilePicker { return answer }
 method window MicroBlocksFilePicker { return window }
 
 method initialize MicroBlocksFilePicker anAction defaultPath extensionList saveFlag {
-  if (isNil defaultPath) { defaultPath = (microblocksFolder) }
-  if (isNil saveFlag) { saveFlag = false }
-  if (isClass extensionList 'String') { extensionList = (list extensionList) }
-  scale = (global 'scale')
-  useEmbeddedFS = false
+	if (isNil defaultPath) { defaultPath = (microblocksFolder) }
+	if (isNil saveFlag) { saveFlag = false }
+	if (isClass extensionList 'String') { extensionList = (list extensionList) }
+	scale = (global 'scale')
+	useEmbeddedFS = false
 
-  forSaving = saveFlag
-  if forSaving {
-	title = 'File Save'
-  } else {
-	title = 'File Open'
-  }
-  window = (window title)
-  morph = (morph window)
-  setHandler morph this
-  setClipping morph true
-  clr = (gray 250)
+	forSaving = saveFlag
+	if forSaving {
+		title = 'File Save'
+	} else {
+		title = 'File Open'
+	}
+	window = (window title)
+	morph = (morph window)
+	if (isMobile) { hide (morph (getField window 'resizer')) } // difficult to use on mobile
+	setHandler morph this
+	setClipping morph true
+	clr = (gray 250)
 
-  action = anAction
-  extensions = extensionList
-  topDir = ''
-  isDone = false
-  answer = ''
+	action = anAction
+	extensions = extensionList
+	topDir = ''
+	isDone = false
+	answer = ''
 
-  lbox = (listBox (array) nil (action 'fileOrFolderSelected' this) clr)
-  onDoubleClick lbox (action 'fileOrFolderDoubleClicked' this)
-  setFont lbox 'Arial' 16
-  if ('Linux' == (platform)) { setFont lbox 'Arial' 12 }
-  listPane = (scrollFrame lbox clr)
-  addPart morph (morph listPane)
-  setGrabRule (morph listPane) 'ignore'
+	folderTranslationPrefix = ''
+	if (and (not saveFlag) (notNil extensions)) {
+		if (or (contains extensions '.ubl') (contains extensions '.ubp')) {
+			folderTranslationPrefix = 'folder;'
+		}
+	}
 
-  addShortcutButtons this
-  addFolderReadoutAndParentButton this
-  if forSaving { addFileNameField this (filePart defaultPath) }
-  okayLabel = 'Open'
-  if forSaving { okayLabel = 'Save' }
-  okayButton = (textButton this 0 0 okayLabel 'okay' true) // default
-  cancelButton = (textButton this 0 0 'Cancel' (action 'destroy' morph))
+	lbox = (listBox (array) nil (action 'fileOrFolderSelected' this) clr)
+	onDoubleClick lbox (action 'fileOrFolderDoubleClicked' this)
+	setFont lbox 'Arial' 16
+	if ('Linux' == (platform)) { setFont lbox 'Arial' 12 }
+	listPane = (scrollFrame lbox clr)
+	addPart morph (morph listPane)
+	setGrabRule (morph listPane) 'ignore'
 
-  setMinExtent morph (520 * scale) (420 * scale)
-  setExtent morph (520 * scale) (420 * scale)
+	addShortcutButtons this
+	addFolderReadoutAndParentButton this
+	if forSaving { addFileNameField this (filePart defaultPath) }
+	okayLabel = 'Open'
+	if forSaving { okayLabel = 'Save' }
+	okayButton = (textButton this 0 0 okayLabel 'okay' true) // default
+	cancelButton = (textButton this 0 0 'Cancel' (action 'destroy' morph))
 
-  if forSaving {
-	defaultPath = (directoryPart defaultPath)
-	if (isEmpty defaultPath) { defaultPath = (microblocksFolder) }
-	if ('Browser' == (platform)) { defaultPath = 'Downloads' }
-  }
-  if (and ((count defaultPath) > 1) (endsWith defaultPath '/')) {
-	defaultPath = (substring defaultPath 1 ((count defaultPath) - 1))
-  }
-  if (isOneOf defaultPath 'Examples' 'Libraries') {
-	useEmbeddedFS = true
-	if ('Browser' == (platform)) { useEmbeddedFS = false }
-  }
-  isTopLevel = (isNil (findFirst defaultPath '/')) // root folder
-  showFolder this defaultPath isTopLevel
-  return this
+	page = (global 'page')
+	minW = (min (520 * scale) (round (0.9 * (width page))))
+	minH = (min (465 * scale) (round (0.8 * (height page))))
+	setMinExtent morph minW minH
+	setExtent morph minW minH
+
+	if forSaving {
+		defaultPath = (directoryPart defaultPath)
+		if (isEmpty defaultPath) { defaultPath = (microblocksFolder) }
+		if ('Browser' == (platform)) { defaultPath = 'Downloads' }
+	}
+	if (and ((count defaultPath) > 1) (endsWith defaultPath '/')) {
+		defaultPath = (substring defaultPath 1 ((count defaultPath) - 1))
+	}
+	if (isOneOf defaultPath 'Examples' 'Libraries') {
+		useEmbeddedFS = true
+		if ('Browser' == (platform)) { useEmbeddedFS = false }
+	}
+	isTopLevel = (isNil (findFirst defaultPath '/')) // root folder
+	showFolder this defaultPath isTopLevel
+	return this
 }
 
 method addFolderReadoutAndParentButton MicroBlocksFilePicker {
-  scale = (global 'scale')
-  x = (110 * scale)
-  y = (32 * scale)
-  fontName = 'Arial Bold'
-  fontSize = (16 * scale)
-  if ('Linux' == (platform)) { fontSize = (12 * scale) }
-  if ('Browser' == (platform)) {
-	fontName = 'Arial'
+	scale = (global 'scale')
+	x = (110 * scale)
+	y = (32 * scale)
+	fontName = 'Arial Bold'
 	fontSize = (16 * scale)
-  }
+	if ('Linux' == (platform)) { fontSize = (12 * scale) }
+	if ('Browser' == (platform)) {
+		fontName = 'Arial'
+		fontSize = (16 * scale)
+	}
 
-  folderReadout = (newText 'Folder Readout')
-  setFont folderReadout fontName fontSize
-  setGrabRule (morph folderReadout) 'ignore'
-  setPosition (morph folderReadout) x y
-  addPart morph (morph folderReadout)
+	folderReadout = (newText 'Folder Readout')
+	setFont folderReadout fontName fontSize
+	setGrabRule (morph folderReadout) 'ignore'
+	setPosition (morph folderReadout) x y
+	addPart morph (morph folderReadout)
 
-  parentButton = (textButton this 0 0 '<' 'parentFolder')
-  parentButtonM = (morph parentButton)
-  setTop parentButtonM (y + (3 * scale))
-  setLeft parentButtonM (x - ((width parentButtonM) + (13 * scale)))
-  addPart morph parentButtonM
+	parentButton = (textButton this 0 0 '<' 'parentFolder')
+	parentButtonM = (morph parentButton)
+	setTop parentButtonM (y - (4 * scale))
+	setLeft parentButtonM (x - ((width parentButtonM) + (18 * scale)))
+	addPart morph parentButtonM
 }
 
 method addFileNameField MicroBlocksFilePicker defaultName {
-  scale = (global 'scale')
-  x = (110 * scale)
-  y = (32 * scale)
-  fontName = 'Arial Bold'
-  fontSize = (15 * scale)
-  if ('Linux' == (platform)) { fontSize = (12 * scale) }
-  if ('Browser' == (platform)) {
-	fontName = 'Arial'
+	scale = (global 'scale')
+	x = (110 * scale)
+	y = (32 * scale)
+	fontName = 'Arial Bold'
 	fontSize = (15 * scale)
-  }
+	if ('Linux' == (platform)) { fontSize = (12 * scale) }
+	if ('Browser' == (platform)) {
+		fontName = 'Arial'
+		fontSize = (15 * scale)
+	}
 
-  // name label
-  nameLabel = (newText (localized 'File name:'))
-  setFont nameLabel (join fontName ' Bold') fontSize
-  setGrabRule (morph nameLabel) 'ignore'
-  addPart morph (morph nameLabel)
+	// name label
+	nameLabel = (newText (localized 'File name:'))
+	setFont nameLabel (join fontName ' Bold') fontSize
+	setGrabRule (morph nameLabel) 'ignore'
+	addPart morph (morph nameLabel)
 
-  // name field
-  border = (2 * scale)
-  nameField = (newText defaultName)
-  setFont nameField fontName fontSize
-  setBorders nameField border border true
-  setEditRule nameField 'line'
-  setGrabRule (morph nameField) 'ignore'
-  nameField = (scrollFrame nameField (gray 250) true)
-  setExtent (morph nameField) (213 * scale) (18 * scale)
-  addPart morph (morph nameField)
+	// name field
+	border = (2 * scale)
+	nameField = (newText defaultName)
+	setFont nameField fontName fontSize
+	setBorders nameField border border true
+	setEditRule nameField 'line'
+	setGrabRule (morph nameField) 'ignore'
+	nameField = (scrollFrame nameField (gray 250) true)
+	setExtent (morph nameField) (213 * scale) (18 * scale)
+	addPart morph (morph nameField)
 }
 
 method addShortcutButtons MicroBlocksFilePicker {
-  scale = (global 'scale')
-  hidden = (array 'Cloud') // this can be used to hide selected shortcuts
+	scale = (global 'scale')
+	hidden = (array 'Cloud') // this can be used to hide selected shortcuts
 
-  showMicroBlocks = (and
-	(not (contains hidden 'MicroBlocks'))
-	('Browser' != (platform)))
-  showExamples = (and
-	(not (contains hidden 'Examples'))
-	(not forSaving)
-	(isClass extensions 'Array')
-	(contains extensions '.gpp'))
-  showLibraries = (and
-	(not (contains hidden 'Libraries'))
-	(not forSaving)
-	(isClass extensions 'Array')
-	(contains extensions '.ubl'))
-  showDesktop = (not (contains hidden 'Desktop'))
-  showDownloads = (and
-	(not (contains hidden 'Downloads'))
-	('Linux' != (platform)))
-  showComputer = (not (contains hidden 'Computer'))
+	showMicroBlocks = (and
+		(not (contains hidden 'MicroBlocks'))
+		('Browser' != (platform)))
+		showExamples = (and
+		(not (contains hidden 'Examples'))
+		(not forSaving)
+		(isClass extensions 'Array')
+		(contains extensions '.gpp'))
+		showLibraries = (and
+		(not (contains hidden 'Libraries'))
+		(not forSaving)
+		(isClass extensions 'Array')
+		(contains extensions '.ubl'))
+		showDesktop = (not (contains hidden 'Desktop'))
+		showDownloads = (and
+		(not (contains hidden 'Downloads'))
+		('Linux' != (platform))
+	)
+	showComputer = (not (contains hidden 'Computer'))
 
-  buttonX = ((left morph) + (17 * scale))
-  buttonY = ((top morph) + (55 * scale))
-  dy = (65 * scale)
-  if showExamples {
-	addIconButton this buttonX buttonY 'examplesIcon' (action 'setExamples' this)
-	buttonY += dy
-  }
-  if showLibraries {
-	addIconButton this buttonX buttonY 'libsIcon' (action 'setLibraries' this) 'Libraries'
-	buttonY += dy
-  }
-  if showMicroBlocks {
-	addIconButton this buttonX buttonY 'microblocksFolderIcon' (action 'setMicroBlocksFolder' this) (filePart (microblocksFolder))
-	buttonY += dy
-  }
-  if (not (isOneOf (platform) 'Browser' 'iOS')) {
-	if showDesktop {
-	  addIconButton this buttonX buttonY 'desktopIcon' (action 'setDesktop' this)
-	  buttonY += dy
+	buttonX = ((left morph) + (17 * scale))
+	if forSaving {
+		buttonX = ((left morph) + (32 * scale))
 	}
-	if showDownloads {
-	  addIconButton this buttonX buttonY 'downloadsIcon' (action 'setDownloads' this)
-	  buttonY += dy
-	}
-	if showComputer {
-	  addIconButton this buttonX buttonY 'computerIcon' (action 'setComputer' this)
-	  buttonY += dy
-	}
-  }
-  if (and showComputer ('Browser' == (platform))) {
-	addIconButton this buttonX buttonY 'computerIcon' (action 'setComputer' this)
-	buttonY += dy
-  }
-  if (and showLibraries (not (contains hidden 'Cloud'))) {
-	addIconButton this buttonX buttonY 'cloudIcon' (action 'cloudAction' this) 'Cloud'
-	buttonY += dy
-  }
-  if (and (devMode) showLibraries) {
-	addIconButton this buttonX buttonY 'newLibraryIcon' (action 'newLibrary' this) 'New'
-	buttonY += dy
-  }
+	buttonY = ((top morph) + (60 * scale))
 
-  newFolderButton = (textButton this (buttonX + (2 * scale)) buttonY 'New Folder' 'newFolder')
+	dy = (66 * scale)
+	if showExamples {
+		addIconButton this buttonX buttonY 'examplesIcon' (action 'setExamples' this)
+		buttonY += dy
+	}
+	if showLibraries {
+		addIconButton this buttonX buttonY 'libsIcon' (action 'setLibraries' this) 'Libraries'
+		buttonY += dy
+	}
+	if showMicroBlocks {
+		addIconButton this buttonX buttonY 'microblocksFolderIcon' (action 'setMicroBlocksFolder' this) (filePart (microblocksFolder))
+		buttonY += dy
+	}
+	if (not (isOneOf (platform) 'Browser' 'iOS')) {
+		if showDesktop {
+			addIconButton this buttonX buttonY 'desktopIcon' (action 'setDesktop' this)
+			buttonY += dy
+		}
+		if showDownloads {
+			addIconButton this buttonX buttonY 'downloadsIcon' (action 'setDownloads' this)
+			buttonY += dy
+		}
+		if showComputer {
+			addIconButton this buttonX buttonY 'computerIcon' (action 'setComputer' this)
+			buttonY += dy
+		}
+	}
+	if (and showComputer ('Browser' == (platform))) {
+		addIconButton this buttonX buttonY 'computerIcon' (action 'setComputer' this)
+		buttonY += dy
+	}
+	if (and showLibraries (not (contains hidden 'Cloud'))) {
+		addIconButton this buttonX buttonY 'cloudIcon' (action 'cloudAction' this) 'Cloud'
+		buttonY += dy
+	}
+	if (and (devMode) showLibraries) {
+		addIconButton this buttonX buttonY 'newLibraryIcon' (action 'newLibrary' this) 'New'
+		buttonY += dy
+	}
+
+	buttonX = ((left morph) + (15 * scale))
+	buttonY += (5 * scale)
+	newFolderButton = (textButton this buttonX buttonY 'New Folder' 'newFolder')
 }
 
 method addIconButton MicroBlocksFilePicker x y iconName anAction label {
-  if (isNil label) {
-	s = iconName
-	if (endsWith s 'Icon') { s = (substring s 1 ((count s) - 4)) }
-	s = (join (toUpperCase (substring s 1 1)) (substring s 2))
-	label = s
-  }
-  isChinese = ('简体中文' == (language (authoringSpecs)))
-  scale = (global 'scale')
-  iconBM = (call iconName (new 'MicroBlocksFilePickerIcons'))
-//  iconBM = (scaledIcon this iconName) // don't activate this until warpBitmap works in browsers
-  bm = (newBitmap (70 * scale) (50 * scale))
-  drawBitmap bm iconBM (half ((width bm) - (width iconBM))) 0
-  if (1 == scale) {
-	setFont 'Arial Bold' (9 * scale)
-  } else {
-	setFont 'Arial Bold' (12 * scale)
-  }
-  if ('Browser' == (platform)) {
-	setFont 'Helvetica' (13 * scale)
-  }
-  if (and isChinese ('Win' == (platform))) {
-	setFont 'Arial Bold' (12 * scale)
-  }
-  labelX = (half ((width bm) - (stringWidth (localized label))))
-  labelY = ((height bm) - (fontHeight))
-  drawString bm (localized label) (gray 0) labelX labelY
+	if (isNil label) {
+		s = iconName
+		if (endsWith s 'Icon') { s = (substring s 1 ((count s) - 4)) }
+		s = (join (toUpperCase (substring s 1 1)) (substring s 2))
+		label = s
+	}
+	isChinese = ('简体中文' == (language (authoringSpecs)))
+	scale = (global 'scale')
+	iconBM = (call iconName (new 'MicroBlocksFilePickerIcons'))
+//	iconBM = (scaledIcon this iconName) // don't activate this until warpBitmap works in browsers
+	bm = (newBitmap (70 * scale) (50 * scale))
+	drawBitmap bm iconBM (half ((width bm) - (width iconBM))) 0
+	if (1 == scale) {
+		setFont 'Arial Bold' (9 * scale)
+	} else {
+		setFont 'Arial Bold' (12 * scale)
+	}
+	if ('Browser' == (platform)) {
+		setFont 'Helvetica' (13 * scale)
+	}
+	if (and isChinese ('Win' == (platform))) {
+		setFont 'Arial Bold' (12 * scale)
+	}
+	labelX = (half ((width bm) - (stringWidth (localized label))))
+	labelY = ((height bm) - (fontHeight))
+	drawString bm (localized label) (gray 0) labelX labelY
 
-  button = (newButton '' anAction)
-  setLabel button bm (gray 225) (gray 245)
-  setPosition (morph button) x y
-  addPart morph (morph button)
-  return button
+	button = (newButton '' anAction)
+	setLabel button bm (transparent) (microBlocksColor 'yellow')
+	setPosition (morph button) x y
+	addPart morph (morph button)
+	return button
 }
 
 method scaledIcon MicroBlocksFilePicker iconName {
@@ -319,13 +329,13 @@ method scaledIcon MicroBlocksFilePicker iconName {
 }
 
 method textButton MicroBlocksFilePicker x y label selectorOrAction makeDefault {
-  if (isClass selectorOrAction 'String') {
-	selectorOrAction = (action selectorOrAction this)
-  }
-  result = (pushButton label (gray 130) selectorOrAction nil nil makeDefault)
-  setPosition (morph result) x y
-  addPart morph (morph result)
-  return result
+	if (isClass selectorOrAction 'String') {
+		selectorOrAction = (action selectorOrAction this)
+	}
+	result = (pushButton label selectorOrAction nil (26 * (global 'scale')) makeDefault)
+	setPosition (morph result) x y
+	addPart morph (morph result)
+	return result
 }
 
 // actions
@@ -347,150 +357,163 @@ method onFolderSelect MicroBlocksFilePicker anAction {
 }
 
 method setComputer MicroBlocksFilePicker {
-  if ('Browser' == (platform)) {
-	isDone = true
-	removeFromOwner morph
-	repeat 10 { // hack: need several cycles to remove MicroBlocksFilePicker when file is double-clicked
-		doOneCycle (global 'page')
-		waitMSecs 10 // refresh screen
+	if ('Browser' == (platform)) {
+		isDone = true
+		removeFromOwner morph
+		ext = ''
+		if (notNil extensions) { ext = (first extensions) }
+		if (beginsWith ext '.') { ext = (substring ext 2) }
+		browserReadFile ext
+		return
 	}
-	ext = ''
-	if (notNil extensions) { ext = (first extensions) }
-	if (beginsWith ext '.') { ext = (substring ext 2) }
-	browserReadFile ext
-	return
-  }
-  useEmbeddedFS = false
-  showFolder this '/' true
+	useEmbeddedFS = false
+	showFolder this '/' true
 }
 
 method setDesktop MicroBlocksFilePicker {
-  useEmbeddedFS = false
-  showFolder this (join (userHomePath) '/Desktop') true
+	useEmbeddedFS = false
+	showFolder this (join (userHomePath) '/Desktop') true
 }
 
 method setDownloads MicroBlocksFilePicker {
-  useEmbeddedFS = false
-  showFolder this (join (userHomePath) '/Downloads') true
+	useEmbeddedFS = false
+	showFolder this (join (userHomePath) '/Downloads') true
 }
 
 method setExamples MicroBlocksFilePicker {
-  useEmbeddedFS = true
-  if ('Browser' == (platform)) { useEmbeddedFS = false }
-  showFolder this 'Examples' true
+	useEmbeddedFS = true
+	if ('Browser' == (platform)) { useEmbeddedFS = false }
+	showFolder this 'Examples' true
 }
 
 method setLibraries MicroBlocksFilePicker {
-  useEmbeddedFS = true
-  if ('Browser' == (platform)) { useEmbeddedFS = false }
-  showFolder this 'Libraries' true
+	useEmbeddedFS = true
+	if ('Browser' == (platform)) { useEmbeddedFS = false }
+	showFolder this 'Libraries' true
 }
 
 method setMicroBlocksFolder MicroBlocksFilePicker {
-  useEmbeddedFS = false
-  showFolder this (microblocksFolder) true
+	useEmbeddedFS = false
+	showFolder this (microblocksFolder) true
 }
 
 method newLibrary MicroBlocksFilePicker {
-  scripter = (scripter (findProjectEditor))
+	scripter = (scripter (findProjectEditor))
 
-  libName = (freshPrompt (global 'page') 'New library name?' '')
+	libName = (freshPrompt (global 'page') 'New library name?' '')
 
-  if (libName != '') {
-	  lib = (newMicroBlocksModule libName)
+	if (libName != '') {
+		lib = (newMicroBlocksModule libName)
 
-	  addLibrary (project scripter) lib
-	  updateLibraryList scripter
-	  updateBlocks scripter
-	  selectLibrary scripter lib
+		addLibrary (project scripter) lib
+		updateLibraryList scripter
+		updateBlocks scripter
+		selectLibrary scripter lib
 
-	  showLibraryInfo lib true
+		showLibraryInfo lib true
 
-	  removeFromOwner morph
-	  isDone = true
-  }
+		removeFromOwner morph
+		isDone = true
+	}
 }
 
 method parentFolder MicroBlocksFilePicker {
-  i = (lastIndexOf (letters currentDir) '/')
-  if (isNil i) { return }
-  newPath = (substring currentDir 1 (i - 1))
-  showFolder this newPath false
+	i = (lastIndexOf (letters currentDir) '/')
+	if (isNil i) { return }
+	newPath = (substring currentDir 1 (i - 1))
+	showFolder this newPath false
 }
 
 method showFolder MicroBlocksFilePicker path isTop {
-  currentDir = path
-  if isTop { topDir = path }
-  setText folderReadout (localized (filePart path))
-  updateParentAndNewFolderButtons this
-  setCollection (contents listPane) (folderContents this)
-  changeScrollOffset listPane -100000 -100000 // scroll to top-left
-  if (notNil onFolderSelect) {
-	call onFolderSelect (join path)
-  }
+	currentDir = path
+	if isTop { topDir = path }
+	setText folderReadout (localizeDir this (filePart path))
+	updateParentAndNewFolderButtons this
+	setCollection (contents listPane) (folderContents this)
+	changeScrollOffset listPane -100000 -100000 // scroll to top-left
+	if (notNil onFolderSelect) {
+		call onFolderSelect (join path)
+	}
+}
+
+method localizeDir MicroBlocksFilePicker folderName {
+	if (beginsWith currentDir '/') { return folderName }
+	return (localized (join folderTranslationPrefix folderName))
 }
 
 method folderContents MicroBlocksFilePicker {
-  result = (list)
-  if useEmbeddedFS {
-	dirsAndFiles = (embeddedFilesAndDirs this (join currentDir '/'))
-	dirList = (at dirsAndFiles 1)
-	fileList = (at dirsAndFiles 2)
-  } else {
-	dirList = (listDirectories currentDir)
-	fileList = (listFiles currentDir)
-  }
-  for dir (sorted dirList 'caseInsensitiveSort') {
-	if (not (beginsWith dir '.')) {
-	  add result (array (join '[ ] ' (localized dir)) (join '[ ] ' dir))
+	result = (list)
+	showExtension = (or
+		(isNil extensions)
+		(not (or
+			(contains extensions '.ubl')
+			(contains extensions '.ubp')
+			(contains extensions '.gpp'))
+		)
+	)
+	if useEmbeddedFS {
+		dirsAndFiles = (embeddedFilesAndDirs this (join currentDir '/'))
+		dirList = (at dirsAndFiles 1)
+		fileList = (at dirsAndFiles 2)
+	} else {
+		dirList = (listDirectories currentDir)
+		fileList = (listFiles currentDir)
 	}
-  }
-  for fn (sorted fileList 'caseInsensitiveSort') {
-	if (not (beginsWith fn '.')) {
-	  if (or (isNil extensions) (hasExtension fn extensions)) {
-		add result (array (localized (withoutExtension fn)) fn)
-	  }
+	for dir (sorted dirList 'caseInsensitiveSort') {
+		if (not (beginsWith dir '.')) {
+			add result (array (join '[ ] ' (localizeDir this dir)) (join '[ ] ' dir))
+		}
 	}
-  }
-  return result
+	for fn (sorted fileList 'caseInsensitiveSort') {
+		if (not (beginsWith fn '.')) {
+			if (or (isNil extensions) (hasExtension fn extensions)) {
+				if showExtension {
+					add result (array fn fn)
+				} else {
+					add result (array (localized (withoutExtension fn)) fn)
+				}
+			}
+		}
+	}
+	return result
 }
 
 method embeddedFilesAndDirs MicroBlocksFilePicker prefix {
-  dirsSeen = (dictionary)
-  dirList = (list)
-  fileList = (list)
-  offset = ((count prefix) + 1)
-  for fn (listEmbeddedFiles) {
-	if (beginsWith fn prefix) {
-	  fn = (substring fn offset)
-	  i = (findFirst fn '/')
-	  if (isNil i) {
-		add fileList fn
-	  } else {
-		dirName = (substring fn 1 (i - 1))
-		if (not (contains dirsSeen dirName)) {
-		  add dirList dirName
-		  add dirsSeen dirName
+	dirsSeen = (dictionary)
+	dirList = (list)
+	fileList = (list)
+	offset = ((count prefix) + 1)
+	for fn (listEmbeddedFiles) {
+		if (beginsWith fn prefix) {
+			fn = (substring fn offset)
+			i = (findFirst fn '/')
+			if (isNil i) {
+				add fileList fn
+			} else {
+				dirName = (substring fn 1 (i - 1))
+				if (not (contains dirsSeen dirName)) {
+					add dirList dirName
+					add dirsSeen dirName
+				}
+			}
 		}
-	  }
 	}
-  }
-  return (list dirList fileList)
+	return (list dirList fileList)
 }
 
 method newFolder MicroBlocksFilePicker {
-  newFolderName = (prompt (global 'page') 'Folder name?')
-  if ('' == newFolderName) { return }
-  for ch (letters newFolderName) {
-    if (notNil (findFirst './\:' ch)) {
-      inform 'Folder name cannot contain: .  /  \  or  :'
-      return
-    }
-  }
-  newPath = (join currentDir '/' newFolderName)
-  makeDirectory newPath
-  useEmbeddedFS = false
-  showFolder this newPath false
+	newFolderName = (prompt (global 'page') 'Folder name?')
+	if ('' == newFolderName) { return }
+	for ch (letters newFolderName) {
+		if (notNil (findFirst './\:' ch)) {
+			inform 'Folder name cannot contain: .  /  \  or  :'
+			return
+		}
+	}
+	newPath = (join currentDir '/' newFolderName)
+	makeDirectory newPath
+	useEmbeddedFS = false
+	showFolder this newPath false
 }
 
 method okay MicroBlocksFilePicker {
@@ -547,99 +570,106 @@ method fileOrFolderSelected MicroBlocksFilePicker {
 }
 
 method fileOrFolderDoubleClicked MicroBlocksFilePicker {
-  sel = (selection (contents listPane))
-  if (isClass sel 'Array') { sel = (at sel 2) }
-  if (beginsWith sel '[ ] ') {
-	sel = (substring sel 5)
-	if (or (endsWith sel ':')) {
-	  showFolder this sel true
-	} else {
-	  showFolder this (join currentDir '/' sel) false
+	sel = (selection (contents listPane))
+	if (isClass sel 'Array') { sel = (at sel 2) }
+	if (beginsWith sel '[ ] ') {
+		sel = (substring sel 5)
+		if (or (endsWith sel ':')) {
+			showFolder this sel true
+		} else {
+			showFolder this (join currentDir '/' sel) false
+		}
+	} else { // file selected
+		if (not forSaving) {
+			answer = (join currentDir '/' sel)
+			if useEmbeddedFS { answer = (join '//' answer) }
+			if (notNil action) { call action answer }
+			removeFromOwner morph
+		}
 	}
-  } else { // file selected
-	if (not forSaving) {
-	  answer = (join currentDir '/' sel)
-	  if useEmbeddedFS { answer = (join '//' answer) }
-	  if (notNil action) { call action answer }
-	  removeFromOwner morph
-	}
-  }
 }
 
 method updateParentAndNewFolderButtons MicroBlocksFilePicker {
-  // parent button
-  if (and (beginsWith currentDir topDir) ((count currentDir) > (count topDir))) {
-	show (morph parentButton)
-  } else {
-	hide (morph parentButton)
-  }
-
-  // new folder button
-  if (notNil newFolderButton) {
-	if (and forSaving
-			('Browser' != (platform))
-			(not (contains (splitWith currentDir '/') 'runtime'))
-			(currentDir != '/')
-	) {
-	  show (morph newFolderButton)
+	// parent button
+	if (and (beginsWith currentDir topDir) ((count currentDir) > (count topDir))) {
+		show (morph parentButton)
 	} else {
-	  hide (morph newFolderButton)
+		hide (morph parentButton)
 	}
-  }
+
+	// new folder button
+	if (notNil newFolderButton) {
+		if (and forSaving
+				('Browser' != (platform))
+				(not (contains (splitWith currentDir '/') 'runtime'))
+				(currentDir != '/')
+		) {
+			show (morph newFolderButton)
+		} else {
+			hide (morph newFolderButton)
+		}
+	}
 }
 
 // Layout
 
 method redraw MicroBlocksFilePicker {
-  scale = (global 'scale')
-  fixLayout window
-  redraw window
-  topInset = (24 * scale)
-  inset = (6 * scale)
-  bm = (costumeData morph)
-  fillRect bm (gray 230) inset topInset ((width bm) - (inset + inset)) ((height bm) - (topInset + inset))
-  costumeChanged morph
-  fixLayout this
+	scale = (global 'scale')
+	fixLayout window
+	redraw window
+	topInset = (24 * scale)
+	inset = (6 * scale)
+	bm = (costumeData morph)
+	fillRect bm (microBlocksColor 'blueGray' 50) inset topInset ((width bm) - (inset + inset)) ((height bm) - (topInset + inset))
+	costumeChanged morph
+	fixLayout this
 }
 
 method fixLayout MicroBlocksFilePicker {
-  scale = (global 'scale')
+	scale = (global 'scale')
 
-  // file list
-  topInset = (55 * scale)
-  bottomInset = (40 * scale)
-  leftInset = (110 * scale)
-  if (notNil nameLabel) {
-    leftInset = (max leftInset ((width (morph nameLabel)) + (23 * scale)))
-  }
-  rightInset = (20 * scale)
-  setPosition (morph listPane) ((left morph) + leftInset) ((top morph) + topInset)
-  setExtent (morph listPane) ((width morph) - (leftInset + rightInset)) ((height morph) - (topInset + bottomInset))
-  updateSliders listPane
+	// file list
+	topInset = (60 * scale)
+	bottomInset = (48 * scale)
+	leftInset = (113 * scale)
+	if forSaving {
+		leftInset = (140 * scale)
+	}
+	if (notNil nameLabel) {
+		leftInset = (max leftInset ((width (morph nameLabel)) + (23 * scale)))
+	}
+	rightInset = (20 * scale)
+	setPosition (morph listPane) ((left morph) + leftInset) ((top morph) + topInset)
+	setExtent (morph listPane) ((width morph) - (leftInset + rightInset)) ((height morph) - (topInset + bottomInset))
+	updateSliders listPane
 
-  // parentButton and folder readout
-  parentButtonM = (morph parentButton)
-  setLeft (morph folderReadout) (left (morph listPane))
-  setLeft parentButtonM ((left (morph listPane)) - ((width parentButtonM) + (13 * scale)))
+	// parentButton and folder readout
+	parentButtonM = (morph parentButton)
+	setLeft (morph folderReadout) (left (morph listPane))
+	setLeft parentButtonM ((left (morph listPane)) - ((width parentButtonM) + (13 * scale)))
 
-  // nameLabel and nameField
-  if (notNil nameLabel) {
-	x = ((left morph) + leftInset)
-	y = ((bottom morph) - (32 * scale))
-	setPosition (morph nameField) x y
+	// nameLabel and nameField
+	if (notNil nameLabel) {
+		x = ((left morph) + leftInset)
+		y = ((bottom morph) - (32 * scale))
+		setPosition (morph nameField) x y
 
-	x += (- ((width (morph nameLabel)) + (8 * scale)))
-	y = (y - (1 * scale))
-	setPosition (morph nameLabel) x y
-  }
+		x += (- ((width (morph nameLabel)) + (8 * scale)))
+		y = (y - (1 * scale))
+		setPosition (morph nameLabel) x y
+	}
 
-  // okay and cancel buttons
-  space = (10 * scale)
-  y = ((bottom morph) - (28 * scale))
-  x = ((right morph) - ((width (morph okayButton)) + (25 * scale)))
-  setPosition (morph okayButton) x y
-  x = (x - ((width (morph cancelButton)) + space))
-  setPosition (morph cancelButton) x y
+	// okay and cancel buttons
+	space = (10 * scale)
+	y = ((bottom morph) - (35 * scale))
+	x = ((right morph) - ((width (morph okayButton)) + (20 * scale)))
+	setPosition (morph okayButton) x y
+	x = (x - ((width (morph cancelButton)) + space))
+	setPosition (morph cancelButton) x y
+
+	// new folder button
+	w = (width (morph newFolderButton))
+	setLeft (morph newFolderButton) (+ (left morph) (half (leftInset - w)) (3 * scale))
 }
 
 method listPane MicroBlocksFilePicker { return listPane }
@@ -647,7 +677,7 @@ method listPane MicroBlocksFilePicker { return listPane }
 defineClass MicroBlocksFilePickerIcons
 
 method computerIcon MicroBlocksFilePickerIcons {
-  data = '
+	data = '
 iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAO
 xAAADsQBlSsOGwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAANtSURBVFiF5ZZb
 aBxlFMd/c/m+3Z2dJLVoG1MDBaUo8UVBTVNbW4pIRLyXSqBioC9SiVWUesPijVIKKlYKeak1SiFSbdGi
@@ -665,7 +695,7 @@ JICQYXKeR2rWwjCbCr41M0U4YgJw94bNtK99FNexC/Hhoc9QFIWOezbNg13EJNR1wdqNXezd0x2oUFEU
 HnhsOwAf977I9NSFwHOu66AAv/z0TcBf3nIjW7buKgpQ9ji+fNbLUARV1QBwHBvPdUpWNl+aLhAiOEPy
 x3HZHtB0HU03i8aECC146WKkSikzlpWovLLKsqwEISnTWkND9JaR38+tWn3X7XpjY/Fqq62x8Ul6ntuZ
 npiYOgRgmKaxLxo1Zpg78Gp+RaPGjGka+wDjH/YDRFusMm44AAAAAElFTkSuQmCC'
-  dataRetina = '
+	dataRetina = '
 iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAd
 eQAAHXkBKkJFPwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAZgSURBVHic7Zt7
 bBRFHMc/+7iWa3vt9SEFgRILAlFQBAzYNrQUEMNDwEBRNCYY64Mi8ZmY8IcGE/9RE6IRApqIii8gSnkp
@@ -696,12 +726,12 @@ zFGXqw1RFHu8g5RgTUUUA8/sveoB/ljik3XbSLJMYlLfOZI7EApH2oFIIwIKgKL23ePuwcavrYoIXAI4
 WdH5+92dyonfK73JagkYAWScrDjN4oVzsFjibm15B/B3TS3PvfAWDocT4HMBSAIqgOEpKUmsLljBjOxH
 sFr7/p6+HhoamigqLuOT9Zupq7ODp+dP9D4fC5yhDxxjDdN1Bhhzs0hmoADPv78a+oCTwb4agGJgZUdb
 AfgXKCaphJhXjRgAAAAASUVORK5CYII='
-  if (2 == (global 'scale')) { data = dataRetina }
-  return (readFrom (new 'PNGReader') (base64Decode data))
+	if ((global 'scale') > 1) { data = dataRetina }
+	return (readFrom (new 'PNGReader') (base64Decode data))
 }
 
 method libsIcon MicroBlocksFilePickerIcons {
-  data = '
+	data = '
 iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAO
 nAAADpwBB5RT3QAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAToSURBVFiFvZdb
 TBRXHMZ/s8zOzuyyRQSBZUG5o9LW+61oi7Va0mjS1KqNTUvbpOk1qTW2sUk1sTZNa1vBNhp9wJBaU632
@@ -726,7 +756,7 @@ w2bXv1NOm72M6vMlI/pCTkK/OoAhbMRpErzWP7raYR1dzhv8fOgrRFGi/MQhfeGqysWqYhbn5t0/gMEQ
 RnLqdPx+Vfc+ECaKrFi5jokpj4wMIEnGXmfXbXNExNB3NWJcDE8sfUlXsB45nV2YJKlXsFotRQ9nZa7e
 vm2TkpgQ+D/wINTkaGX9h5/0XaquPQCgKIqyw2xWnPzza/3AT7NZcSqKUgAofwNEK90nvFaEEAAAAABJ
 RU5ErkJggg=='
-  dataRetina = '
+	dataRetina = '
 iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAd
 dwAAHXcBjssJwQAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAnESURBVHic5Zt7
 cFTVHcc/e3ezz7zfPLIJpLwRIUASwhiwRKAqRaS1o2grVluVStWO04fTqZ1pmbEzDuOo1ToyqGitVqtl
@@ -771,12 +801,12 @@ irnoI+/+gQ9f5MCHL8oOxl8UCgUbNz2CWjPemz2BIckAjdaAUqkMeR5QrdaSND2dtXn3kpp+Y1A0JRmQ
 m7eN3LxtQQlgshEABzApWd3JYkRbHQLQAFBecWrSAgo1FmuV52u9EkgBcqzl1WzZvIGIiPDJiywE2C62
 8PNfPMXlnl6A1zwvI1YAM+PjY3ns0ftZuyab2JjoSQ002HR1X6KgsIQX/v46nZ3d4O753hUd84DTTIGl
 rCHaTgNzR5ukA3bgfkG6ewoEGeytCzgCPMqIV4P/B7Gu5sILeBMvAAAAAElFTkSuQmCC'
-  if (2 == (global 'scale')) { data = dataRetina }
-  return (readFrom (new 'PNGReader') (base64Decode data))
+	if ((global 'scale') > 1) { data = dataRetina }
+	return (readFrom (new 'PNGReader') (base64Decode data))
 }
 
 method desktopIcon MicroBlocksFilePickerIcons {
-  data = '
+	data = '
 iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAO
 xAAADsQBlSsOGwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAGpSURBVFiF7dM/
 SBthHMbxby6XN+a9SyxibZsiOBVKJh1a/yx1KJKlW6E4dC+C2K4tCJau4iR0EbHQyYqgQ0AQFIqKSqm0
@@ -787,7 +817,7 @@ L8A2nD+Bm9uZQVEC/739fmKumv7x076ico7N3+W19bRSte1F0yw+vRRQi1hWhRdDo6Xlla0PdQEA7OV/
 EIFIpMH9upEifueWJ+UXyWTztD9Inn9D8/A7iuLtOjiOQ6w5Qd2W8CI+wAf4AB/gA3yAD6g/QAhxahgF
 z4sNo0BYiFIwGtXub33bvtf1sEONxXRPyjPZPIMvh0u53P40gNR1Oa5p8ghwvTiaJo90XY4D8gxLrakS
 AQRhKAAAAABJRU5ErkJggg=='
-  dataRetina = '
+	dataRetina = '
 iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAd
 eQAAHXkBKkJFPwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAMwSURBVHic7Ztd
 SFNhGMd/c5Zfm85pqflFaRqRVFJkaml+ENgXhjddGhikIiF01UVSl110ERhkFxVCEFEIKd2UWC0tw7RM
@@ -804,8 +834,8 @@ kBaQRgUgLSCNCkBaQBoVgLSANCoAaQFpVADSAtKoAKQFpFEBSAtIowKQFpBGBSAtII0KQFpAGhWAtIA0
 KgBpAWlUANIC0oQAVgCrLXBfd/c2bnO1hgCfAPoHhsSE/E3fy0Fn+VELpAL5/QNDVB7Zj16v+33nCuDL
 2DjHT5xmenoG4KoGMAIDQEp8vJGGumr2Fe3GYIgWFfU2FssUnV3dXGq+xsSEGRxn/jbn/mxgmAB4jdVP
 YxjI+jGkCKAOx7+/LAEg6e1hAbqA2sW5AvANHNVzCuI7b40AAAAASUVORK5CYII='
-  if (2 == (global 'scale')) { data = dataRetina }
-  return (readFrom (new 'PNGReader') (base64Decode data))
+	if ((global 'scale') > 1) { data = dataRetina }
+	return (readFrom (new 'PNGReader') (base64Decode data))
 }
 
 method downloadsIcon MicroBlocksFilePickerIcons {
@@ -814,7 +844,7 @@ method downloadsIcon MicroBlocksFilePickerIcons {
 }
 
 method examplesIcon MicroBlocksFilePickerIcons {
-  data = '
+	data = '
 iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAO
 xAAADsQBlSsOGwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAS/SURBVFiFtZd7
 bFNVHMc/vW1v29vbFvbQoa4o726y8ZhsjI2XTIliYkAhAYn+IfvHR8Q/1GDEkKD4CELQTIPGICFqFEwI
@@ -838,7 +868,7 @@ xAEIgp60Bauor/bE9F25XEJ6Rh6CoMlSGwDA5LgkmhovoSjRoTZFidJ8rRq7PUGrHQatCYIg0NJcx2fb
 +ZS5j+JwJDLTlakZQPN94LZKi49QVPgjAEuf3ERW7lrNHnKcC50oin2NdWfNDodNs8Hg4AAABoNRc67f
 H2C6K7dPb7NZXVWXamZlZS4w2O2yJhNB0CMIes3FfS3tvLF1e19b6/UjAJIsy19brVI3t36tJ/yxWqVu
 WZYKAOkfzVHeLEHJtboAAAAASUVORK5CYII='
-  dataRetina = '
+	dataRetina = '
 iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAd
 dwAAHXcBjssJwQAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAqPSURBVHic3Zt7
 UFTXHcc/d1kWdpfHuq6IUfBV34r4AhQUjKkSjQ+wSRPbNEmbNmNsNM1MppN2OpNO28ykM500k8YkTt5N
@@ -887,12 +917,12 @@ IAfsgFyqzcfhEASBlLXZJKftoONGf7Z3QoykFSHDMaitdhlQD1BqqgwaAQBBkKHRxqLRxga18QDGknL3
 x7oQIA5YU1JaQdb2TURGRgSVTLDRcK2Jn/3ieTo6LQBvu19GNAHTdDotzzz9OBnpKWgnaL5TooFG+42b
 nDqt57X979PWdgNcPX+gnn8ecJG7oJQ1SMdFYO5wkZTAHlwvSN+4C0gG+mgHzgBPM+jV4P8CMZNSfiX/
 tJIAAAAASUVORK5CYII='
-  if (2 == (global 'scale')) { data = dataRetina }
-  return (readFrom (new 'PNGReader') (base64Decode data))
+	if ((global 'scale') > 1) { data = dataRetina }
+	return (readFrom (new 'PNGReader') (base64Decode data))
 }
 
 method microblocksFolderIcon MicroBlocksFilePickerIcons {
-  data = '
+	data = '
 iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAO
 xAAADsQBlSsOGwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAATzSURBVFiF7ZVp
 UJR1HMc/z+6yz+6zF4cJBMi1qKCZY2jkoEaOEZPUlJpmM9aMY3lMGjKMTo40luabNB0dKdNCO7RBlDCm
@@ -917,7 +947,7 @@ B7LHRYBai1YyMnzkeMY8Na3bdvSGfh3COxEeYSY8wozT5cBoDGFYzGgO7t/MwvfyyM/LJmnM5H6L+zEg
 A35Ex47maOluLlWfweN28vGqTAAknXHAXPdlIM48jibLNULDY4mKTkIrDVzYj/9/xwq1Wu1oaWkddGGr
 1YYoqu1Kg0GXWPFH1fCUp8epjEb9oIj/U9vAu1m59vo6SyGApNfr83Q6qRnwDcan00nNer20DZD+BcCd
 6BrJe+ugAAAAAElFTkSuQmCC'
-  dataRetina = '
+	dataRetina = '
 iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAd
 dwAAHXcBjssJwQAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAApjSURBVHic7Zt5
 UFRHHsc/czEwwyGHQUBAbhFFDQp4RAkqRvGOS9bd7K6blKkk5jDZuFWpraTiZrOpbBI3G42blNlkc7tK
@@ -965,8 +995,8 @@ sIhYZPKxWaG3a63BoTP5w3N7cFA6WVw3HAvY3ez9J0C3Am6NzzCG+NkAY01grCEFugCjW/r/gH66dknp
 uThQWnZhzAjZG8Ul5b2PNTLEuz5zS0rPs3b1UlxcnMeOmR1w9doPPPjQVlrEWyrvSgAPoAyY6OXlweOP
 biRhYTwe7kPbybnV0dR8neycAnbs+jeNjc0gtnzj5YQIxEtPY36U1U6hAvFmqgmcgM2IN0ibbwGSox2a
 EC9ZP0q/q8H/Awj8JV/kA4nHAAAAAElFTkSuQmCC'
-  if (2 == (global 'scale')) { data = dataRetina }
-  return (readFrom (new 'PNGReader') (base64Decode data))
+	if ((global 'scale') > 1) { data = dataRetina }
+	return (readFrom (new 'PNGReader') (base64Decode data))
 }
 
 method homeIcon MicroBlocksFilePickerIcons {
@@ -975,7 +1005,7 @@ method homeIcon MicroBlocksFilePickerIcons {
 }
 
 method cloudIcon MicroBlocksFilePickerIcons {
-  data = '
+	data = '
 iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAO
 xAAADsQBlSsOGwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAOYSURBVFiF5ZZd
 TFt1GMZ/PS0Helo6vloKCwy2bGYBMhiZY2qMuCyKF5sxc2HLYuRiF5vJoviVOJOp08R4gXrhxJiI2xKj
@@ -994,7 +1024,7 @@ QE5uAZ7JUVR1ra6AoKoKHvcoObnW+AB5lmKMxmx6OtvWDKDbYcOUZSbXXLTEW/ZntO/AC5z7+GWmpyao
 qHqYDL0hoeD50Cz9vd9ybfBHDh95e9mamJtwLujH8cNFRq71EI3MJwQgpuvZuHk7ux7cj2Qw3ebFXcXJ
 1q1VLIrivN8fSGk4gN8fIF0UQ9rMTMPW/l+ubtm1c7vOZDKmJHzc6eb4cydDLtfkBQDJaJROGwySF1BT
 8RgMktdolE4D0t+OiolPtJLckwAAAABJRU5ErkJggg=='
-  dataRetina = '
+	dataRetina = '
 iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAd
 eQAAHXkBKkJFPwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAgWSURBVHic7Zt7
 UFTXHcc/yy6PhV1Y2JWXvGR5iNHEt4ACChofadQYZlrzmIitnVGTNHWmnWb8I9Z0Op3ptM4kNWlNUzFj
@@ -1032,12 +1062,12 @@ SSFIqUKCd+YINmz03O3g5o3LXL70reOLmLtgNYuWviKqLKeWxS/VVVB6eLdjKXu0CVVHsXjZj0mdKmyL
 H8AMYLaM3ePu7mZYXc0+QDNAdU39qAXkbc6eqxtKNkmBWCCzuqae51YtRakce4sd7uSmvo31P/0FXV3d
 AH+VAGFADRCj0YTx+uYCFuVkoFKNzpq/pzCZOik/Vsm77xXS3m4Ee8ufPvQ8FbjIGDjG6qXrIpDyfZHk
 wGbs//4yjYEg3X2ZgGPApvt1BeBfy0VRnxa1jVQAAAAASUVORK5CYII='
-  if (2 == (global 'scale')) { data = dataRetina }
-  return (readFrom (new 'PNGReader') (base64Decode data))
+	if ((global 'scale') > 1) { data = dataRetina }
+	return (readFrom (new 'PNGReader') (base64Decode data))
 }
 
 method newLibraryIcon MicroBlocksFilePickerIcons {
-  data = '
+	data = '
 iVBORw0KGgoAAAANSUhEUgAAACMAAAAjCAYAAAAe2bNZAAAACXBIWXMAABAnAAAQJwFR8a7xAAAAGXRF
 WHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAABARJREFUWIXtln1M1HUcx1+/33G/23HccccB
 hxhNRQWEIsAHkIcawpKHHMLWTMyNJms92dbc2lrTVZabNKgtWy6NRsBWUDFK0B0+jFQEhbDSMhggIHIc
@@ -1058,7 +1088,7 @@ ZF2c+2E2xWehUCj5+cdGmi/VoNb4crG+cs6PEuDBqGSiNmx1P4ykULIxPguN1o/TNR/xRfkh5JKCpJRc
 dD7/wkcJEBoeT2h4vFuK/1PzDuSSJA129/S5pdDN7ltIkmSezzPvtC6K4vM+PtrDr+1/SXl/UOCiQA68
 XjgxPDyyz+FwvL8gGACZTLZbrfLMnxKY+w7fRcIUJsuvo0eB0oWu8f/WH7ozRDZHhK3AAAAAAElFTkSu
 QmCC'
-  dataRetina = '
+	dataRetina = '
 iVBORw0KGgoAAAANSUhEUgAAAEYAAABGCAYAAABxLuKEAAAACXBIWXMAACBPAAAgTwGUeoKrAAAAGXRF
 WHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAB5VJREFUeJztm3tQVNcdxz/7ZnnKsiQR5BUQ
 8E2DIHRxGpqIM9YncWItNkkfSaetzcTO9DE600mnqWmn04yjZVKShvThq63PQEwNtlYJIQqiiEp9hAjy
@@ -1095,6 +1125,6 @@ WHLnerYwHxQOh4PXXt/Cth37wPWk2/eBNjGx/H2QazPwA4DEhCnkWbLQ66Rfno+HgcFBqj6u5XKzZ+G4
 CVg3yimyogZexfWgplLPO471ugX8DD8nFqke/YsFVgCpgEGimL4yAJwH9gLtY/QNECBAgAfK/wB5A4H5
 TI/+pAAAAABJRU5ErkJggg=
 ='
-  if (2 == (global 'scale')) { data = dataRetina }
-  return (readFrom (new 'PNGReader') (base64Decode data))
+	if ((global 'scale') > 1) { data = dataRetina }
+	return (readFrom (new 'PNGReader') (base64Decode data))
 }

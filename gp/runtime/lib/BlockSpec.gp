@@ -42,341 +42,343 @@ method isReporter BlockSpec { return ('r' == blockType) }
 method slotCount BlockSpec { return (count slotInfo) }
 
 method hintAt BlockSpec i {
-  if (i > (count slotInfo)) { return '' }
-  return (at (at slotInfo i) 3)
+	if (i > (count slotInfo)) { return '' }
+	return (at (at slotInfo i) 3)
 }
 
 to blockSpecFor function {
-  if (isClass function 'String') {
-    function = (functionNamed function)
-  }
-  if (not (isClass function 'Function')) {
-    error 'Argument must be a function name or Function'
-  }
-  return (initializeForFunction (new 'BlockSpec') function)
+	if (isClass function 'String') {
+		function = (functionNamed function)
+	}
+	if (not (isClass function 'Function')) {
+		error 'Argument must be a function name or Function'
+	}
+	return (initializeForFunction (new 'BlockSpec') function)
 }
 
 to blockSpecFromStrings blockOp blockType specString typeString defaults {
-  specs = (splitWith specString ':')
-  for i (count specs) {
-    atPut specs i (trim (at specs i))
-  }
-  repeatLastSpec = false
-  if (and ((count specs) > 0) ('...' == (last specs))) {
-	repeatLastSpec = true
-    specs = (copyArray specs ((count specs) - 1))
-  }
-  result = (new 'BlockSpec' blockType blockOp specs repeatLastSpec (array))
-  setSlotInfo result typeString defaults
-  return result
+	specs = (splitWith specString ':')
+	for i (count specs) {
+		atPut specs i (trim (at specs i))
+	}
+	repeatLastSpec = false
+	if (and ((count specs) > 0) ('...' == (last specs))) {
+		repeatLastSpec = true
+		specs = (copyArray specs ((count specs) - 1))
+	}
+	result = (new 'BlockSpec' blockType blockOp specs repeatLastSpec (array))
+	setSlotInfo result typeString defaults
+	return result
 }
 
 method setSlotInfo BlockSpec typeString defaults {
-  types = (words typeString)
-  for i (count types) {
-    parts = (splitWith (at types i) '.')
-	if ((count parts) > 1) {
-	  atPut types i (joinStringArray parts ' ')
+	types = (words typeString)
+	for i (count types) {
+		parts = (splitWith (at types i) '.')
+		if ((count parts) > 1) {
+			atPut types i (joinStringArray parts ' ')
+		}
 	}
-  }
-  n = (max (count types) (count defaults) (countAllSpecSlots this))
-  slotInfo = (newArray n)
-  for i n {
-    type = nil
-	default = nil
-	hint = nil
-	menuSelector = nil
-	if (i <= (count types)) { type = (at types i) }
-	if (i <= (count defaults)) { default = (at defaults i) }
-	if (isNil type) {
-	  if (isNumber default) {
-		type = 'num'
-	  } else {
-	    type = 'any'
-	    if (isClass default 'String') { hint = default }
-	    default = nil
-	  }
-	} else {
-	  w = (words type)
-	  type = (first w)
-	  if ((count w) == 2) {
-		menuSelector = (at w 2)
-	  }
-	  if (not (contains (array 'num' 'str' 'auto' 'bool' 'color' 'cmd' 'var' 'menu' 'microbitDisplay') type)) {
-		hint = type
-		type = 'any'
-	  }
+	n = (max (count types) (count defaults) (countAllSpecSlots this))
+	slotInfo = (newArray n)
+	for i n {
+		type = nil
+		default = nil
+		hint = nil
+		menuSelector = nil
+		if (i <= (count types)) { type = (at types i) }
+		if (i <= (count defaults)) { default = (at defaults i) }
+		if (isNil type) {
+			if (isNumber default) {
+			type = 'num'
+			} else {
+				type = 'any'
+				if (isClass default 'String') { hint = default }
+				default = nil
+			}
+		} else {
+			w = (words type)
+			type = (first w)
+			if ((count w) == 2) {
+				menuSelector = (at w 2)
+			}
+			if (not (contains (array 'num' 'cmt' 'str' 'auto' 'bool' 'color' 'cmd' 'var' 'menu' 'microbitDisplay') type)) {
+				hint = type
+				type = 'any'
+			}
+		}
+		atPut slotInfo i (array type default hint menuSelector)
 	}
-    atPut slotInfo i (array type default hint menuSelector)
-  }
 }
 
 method copyWithOp BlockSpec newOp oldName newName {
-  // Return a deep copy of this BlockSpec with newOp as its blockOp and
-  // newName substituted for oldName in both spec strings and the slot info.
+	// Return a deep copy of this BlockSpec with newOp as its blockOp and
+	// newName substituted for oldName in both spec strings and the slot info.
 
-  result = (clone this)
-  setField result 'blockOp' newOp
+	result = (clone this)
+	setField result 'blockOp' newOp
 
-  newSlotInfo = (copy slotInfo)
-  for i (count newSlotInfo) {
-	newEntry = (copy (at slotInfo i))
-	for j (count newEntry) {
-	  if ((at newEntry j) == oldName) {
-		atPut newEntry j newName
-	  }
+	newSlotInfo = (copy slotInfo)
+	for i (count newSlotInfo) {
+		newEntry = (copy (at slotInfo i))
+		for j (count newEntry) {
+			if ((at newEntry j) == oldName) {
+				atPut newEntry j newName
+			}
+		}
+		atPut newSlotInfo i newEntry
 	}
-	atPut newSlotInfo i newEntry
-  }
-  setField result 'slotInfo' newSlotInfo
+	setField result 'slotInfo' newSlotInfo
 
-  newSpecs = (copy specs)
-  for i (count newSpecs) {
-	if ((at newSpecs i) == oldName) {
-		atPut newSpecs i newName
+	newSpecs = (copy specs)
+	for i (count newSpecs) {
+		if ((at newSpecs i) == oldName) {
+			atPut newSpecs i newName
+		}
 	}
-  }
-  setField result 'specs' newSpecs
-  return result
+	setField result 'specs' newSpecs
+	return result
 }
 
 method inputSlot BlockSpec slotIndex blockColor isFormalParameter argNames {
-  if (isNil isFormalParameter) {isFormalParameter = false}
-  info = (slotInfoForIndex this slotIndex)
-  editRule = 'static'
-  slotType = (at info 1)
-  if isFormalParameter {slotType = 'var'}
-  slotContent = (at info 3) // hint
-  menuSelector = (at info 4)
-  if ('num' == slotType) {
-    editRule = 'numerical'
-    slotContent = (at info 2)
-  }
-  if ('str' == slotType) {
-    editRule = 'editable'
-    slotContent = (at info 2)
-  }
-  if ('auto' == slotType) {
-    editRule = 'auto'
-    slotContent = (at info 2)
-  }
-  if ('bool' == slotType) {
-    slotContent = (at info 2)
-    if (isNil slotContent) {slotContent = true}
-    return (newBooleanSlot slotContent)
-  }
-  if ('color' == slotType) {
-    return (newColorSlot)
-  }
-  if ('microbitDisplay' == slotType) {
-    slotContent = (at info 2)
-    return (newMicroBitDisplaySlot slotContent)
-  }
-  if ('menu' == slotType) {
-    slotContent = (at info 2)
-  }
-  if ('cmd' == slotType) {
-    return (newCommandSlot blockColor)
-  }
-  if ('var' == slotType) {
-    if isFormalParameter {
-      if (or (isNil argNames) ((count argNames) < slotIndex)) {
-        argName = 'args'
-      } else {
-        argName = (at argNames slotIndex)
-      }
-      rep = (toBlock (newReporter 'v' argName))
-    } else {
-      rep = (toBlock (newReporter 'v' (at info 2)))
-    }
-    setGrabRule (morph rep) 'template'
-    return rep
-  }
-  inp = (newInputSlot slotContent editRule blockColor menuSelector)
-  setGrabRule (morph inp) 'ignore'
-  return inp
+	if (isNil isFormalParameter) {isFormalParameter = false}
+	info = (slotInfoForIndex this slotIndex)
+	editRule = 'static'
+	slotType = (at info 1)
+	if isFormalParameter {slotType = 'var'}
+	slotContent = (at info 3) // hint
+	menuSelector = (at info 4)
+	if ('num' == slotType) {
+		editRule = 'numerical'
+		slotContent = (at info 2)
+	}
+	if (or ('str' == slotType) ('cmt' == slotType)) {
+		editRule = 'editable'
+		slotContent = (at info 2)
+	}
+	if ('auto' == slotType) {
+		editRule = 'auto'
+		slotContent = (at info 2)
+	}
+	if ('bool' == slotType) {
+		slotContent = (at info 2)
+		if (isNil slotContent) {slotContent = true}
+		return (newBooleanSlot slotContent)
+	}
+	if ('color' == slotType) {
+		slotContent = (at info 2)
+		return (newColorSlot slotContent)
+	}
+	if ('microbitDisplay' == slotType) {
+		slotContent = (at info 2)
+		return (newMicroBitDisplaySlot slotContent)
+	}
+	if ('menu' == slotType) {
+		slotContent = (at info 2)
+	}
+	if ('cmd' == slotType) {
+		return (newCommandSlot blockColor)
+	}
+	if ('var' == slotType) {
+		if isFormalParameter {
+			if (or (isNil argNames) ((count argNames) < slotIndex)) {
+				argName = 'args'
+			} else {
+				argName = (at argNames slotIndex)
+			}
+			rep = (toBlock (newReporter 'v' argName))
+		} else {
+			rep = (toBlock (newReporter 'v' (at info 2)))
+		}
+		setGrabRule (morph rep) 'template'
+		return rep
+	}
+	inp = (newInputSlot slotContent editRule blockColor menuSelector)
+	setGrabRule (morph inp) 'ignore'
+	if ('cmt' == slotType) { setComment inp }
+	return inp
 }
 
 method slotInfoForIndex BlockSpec slotIndex {
-  if (slotIndex <= (count slotInfo)) {
-    return (at slotInfo slotIndex)
-  }
-  if (not repeatLastSpec) { error 'Slot index is out of range' }
-  repeatedSlotCount = (countInputSlots this (last specs))
-  if (repeatedSlotCount == 0) { error 'The repeated slot spec must have at least one input slot' }
-  firstRepeatedSlot = ((((count slotInfo) - repeatedSlotCount)) + 1)
-  i = (firstRepeatedSlot + ((slotIndex - firstRepeatedSlot) % repeatedSlotCount))
-  if (i < 1) { return (array 'auto' '' nil nil) } // default if no slot info
-  return (at slotInfo i)
+	if (slotIndex <= (count slotInfo)) {
+		return (at slotInfo slotIndex)
+	}
+	if (not repeatLastSpec) { error 'Slot index is out of range' }
+	repeatedSlotCount = (countInputSlots this (last specs))
+	if (repeatedSlotCount == 0) { error 'The repeated slot spec must have at least one input slot' }
+	firstRepeatedSlot = ((((count slotInfo) - repeatedSlotCount)) + 1)
+	i = (firstRepeatedSlot + ((slotIndex - firstRepeatedSlot) % repeatedSlotCount))
+	if (i < 1) { return (array 'auto' '' nil nil) } // default if no slot info
+	return (at slotInfo i)
 }
 
 method translatedSlotInfo BlockSpec {
-  // Return a copy of my slotInfo with the default string values translated.
-  // However, do not translate default values for slots with menus.
+	// Return a copy of my slotInfo with the default string values translated.
+	// However, do not translate default values for slots with menus.
 
-  result = (clone slotInfo)
-  for i (count result) {
-    entry = (at result i)
-    slotDefault = (at entry 2)
-    slotMenu = (at entry 4)
-    if (and (isClass slotDefault 'String') (isNil slotMenu)) {
-      newEntry = (clone entry)
-      atPut newEntry 2 (localized slotDefault)
-      atPut result i newEntry
-    }
-  }
-  return result
+	result = (clone slotInfo)
+	for i (count result) {
+		entry = (at result i)
+		slotDefault = (at entry 2)
+		slotMenu = (at entry 4)
+		if (and (isClass slotDefault 'String') (isNil slotMenu)) {
+			newEntry = (clone entry)
+			atPut newEntry 2 (localized slotDefault)
+			atPut result i newEntry
+		}
+	}
+	return result
 }
 
 method initializeForFunction BlockSpec function {
-  blockOp = (functionName function)
-  blockType = ' '
-  if (returnsValue function) { blockType = 'r' }
-  collectSpecs this function
-  collectSlotInfo this function
-  if ((count specs) == 0) { error 'empty spec list' }
-  if repeatLastSpec {
-    if ((countInputSlots this (last specs)) == 0) {
-      error 'no input slots in the repeated last spec'
-    }
-  }
-  return this
+	blockOp = (functionName function)
+	blockType = ' '
+	if (returnsValue function) { blockType = 'r' }
+	collectSpecs this function
+	collectSlotInfo this function
+	if ((count specs) == 0) { error 'empty spec list' }
+	if repeatLastSpec {
+		if ((countInputSlots this (last specs)) == 0) {
+			error 'no input slots in the repeated last spec'
+		}
+	}
+	return this
 }
 
 method collectSpecs BlockSpec function {
-  repeatLastSpec = false
-  if ((count (argNames function)) > 0) {
-    repeatLastSpec = (endsWith (last (argNames function)) '...')
-  }
-  if (isInfix this function) {
-	specs = (array (join '_ ' (functionName function) ' _'))
-	return
-  }
-  if (isNil (functionName function)) {
-	parts = (list '')
-  }  else {
-	parts = (list (separateCamelCase (functionName function)))
-  }
-  for argName (argNames function) {
-	if (not (endsWith argName '...')) {
-	  if ('this' != argName) {
-		add parts ' '
-		add parts argName
-	  }
-	  add parts ' _'
+	repeatLastSpec = false
+	if ((count (argNames function)) > 0) {
+		repeatLastSpec = (endsWith (last (argNames function)) '...')
 	}
-  }
-  specs = (array (joinStringArray (toArray parts)))
-  if repeatLastSpec {
-	specs = (copyWith specs '_')
-  }
+	if (isInfix this function) {
+		specs = (array (join '_ ' (functionName function) ' _'))
+		return
+	}
+	if (isNil (functionName function)) {
+		parts = (list '')
+	}  else {
+		parts = (list (separateCamelCase (functionName function)))
+	}
+	for argName (argNames function) {
+		if (not (endsWith argName '...')) {
+			if ('this' != argName) {
+				add parts ' '
+				add parts argName
+			}
+			add parts ' _'
+		}
+	}
+	specs = (array (joinStringArray (toArray parts)))
+	if repeatLastSpec {
+		specs = (copyWith specs '_')
+	}
 }
 
 method isInfix BlockSpec function {
-  if ((count (argNames function)) != 2) { return false }
-  if (isNil (functionName function)) { return false }
-  for ch (letters (functionName function)) {
-    if (not (isSymbol ch)) { return false }
-  }
-  return true
+	if ((count (argNames function)) != 2) { return false }
+	if (isNil (functionName function)) { return false }
+	for ch (letters (functionName function)) {
+		if (not (isSymbol ch)) { return false }
+	}
+	return true
 }
 
 method collectSlotInfo BlockSpec function {
-  n = (countAllSpecSlots this)
-  slotInfo = (newArray n)
-  for i n {
-    type = 'auto'
-	default = 1
-	hint = nil
-	if (and (i == 1) (isMethod function)) {
-	  className = (className (class (classIndex function)))
-	  if ('String' == className) {
-		default = 'Hello'
-	  } ('Boolean' == className) {
-		type = 'bool'
-		default = false
-	  } ('Color' == className) {
-		type = 'color'
-	  } ('Integer' == className) {
+	n = (countAllSpecSlots this)
+	slotInfo = (newArray n)
+	for i n {
+		type = 'auto'
 		default = 1
-	  } ('Float' == className) {
-		default = 1.0
-	  } else {
-		type = 'any'
-		default = nil
-		hint = 'this'
-	  }
+		hint = nil
+		if (and (i == 1) (isMethod function)) {
+			className = (className (class (classIndex function)))
+			if ('String' == className) {
+				default = 'Hello'
+			} ('Boolean' == className) {
+				type = 'bool'
+				default = false
+			} ('Color' == className) {
+				type = 'color'
+			} ('Integer' == className) {
+				default = 1
+			} ('Float' == className) {
+				default = 1.0
+			} else {
+				type = 'any'
+				default = nil
+				hint = 'this'
+			}
+		}
+		atPut slotInfo i (array type default hint nil)
 	}
-    atPut slotInfo i (array type default hint nil)
-  }
 }
 
 method countAllSpecSlots BlockSpec {
-  // Return the total number input slots in all slot specs.
-  return (countInputSlots this (joinStringArray specs))
+	// Return the total number input slots in all slot specs.
+	return (countInputSlots this (joinStringArray specs))
 }
 
 method countInputSlots BlockSpec specString {
-  // Return the number of underscores (input slots) in the given string.
-  result = 0
-  for w (words specString) {
-	if ('_' == w) { result += 1 }
-  }
-  return result
+	// Return the number of underscores (input slots) in the given string.
+	result = 0
+	for w (words specString) {
+		if ('_' == w) { result += 1 }
+	}
+	return result
 }
 
 method specDefinitionString BlockSpec className {
-  // Return a spec definition string for an exported class.
-  // The className argument is provided for methods; it is nil for shared functions.
+	// Return a spec definition string for an exported class.
+	// The className argument is provided for methods; it is nil for shared functions.
 
-  result = (list 'spec')
-  add result (printString blockType)
-  add result (printString blockOp)
+	result = (list 'spec')
+	add result (printString blockType)
+	add result (printString blockOp)
 
-  specString = ''
-  for i (count specs) {
-	specString = (join specString (at specs i))
-	if (i < (count specs)) { specString = (join specString ' : ') }
-  }
-  if repeatLastSpec  { specString = (join specString ' : ...') }
-  add result (printString specString)
-
-  if (not (isEmpty slotInfo)) {
-	slotTypes = (list)
-	defaultValues = (list)
-	for info slotInfo {
-	  slotType = (at info 1)
-	  if (isOneOf slotType 'auto' 'menu' 'str') {
-		add defaultValues (printString (at info 2))
-	  } (isOneOf slotType 'bool' 'num' 'microbitDisplay') {
-		add defaultValues (toString (at info 2))
-	  } else {
-		add defaultValues 'nil'
-	  }
-	  if (notNil (at info 4)) { // has a menu
-		slotType = (join slotType '.' (at info 4))
-	  }
-	  add slotTypes slotType
+	specString = ''
+	for i (count specs) {
+		specString = (join specString (at specs i))
+		if (i < (count specs)) { specString = (join specString ' : ') }
 	}
-	if (notNil className) { atPut slotTypes 1 className } // for methods, first type is the class name
-	add result (printString (joinStrings slotTypes ' '))
+	if repeatLastSpec  { specString = (join specString ' : ...') }
+	add result (printString specString)
 
-	// remove trailing nil's from defaultValues, then add them
-	while (and (notEmpty defaultValues) ('nil' == (last defaultValues))) {
-		removeLast defaultValues
+	if (not (isEmpty slotInfo)) {
+		slotTypes = (list)
+		defaultValues = (list)
+		for info slotInfo {
+			slotType = (at info 1)
+			if (isOneOf slotType 'auto' 'menu' 'str' 'cmt') {
+				add defaultValues (printString (at info 2))
+			} (isOneOf slotType 'bool' 'num' 'microbitDisplay') {
+				add defaultValues (toString (at info 2))
+			} else {
+				add defaultValues 'nil'
+			}
+				if (notNil (at info 4)) { // has a menu
+				slotType = (join slotType '.' (at info 4))
+			}
+			add slotTypes slotType
+		}
+		if (notNil className) { atPut slotTypes 1 className } // for methods, first type is the class name
+		add result (printString (joinStrings slotTypes ' '))
+
+		// remove trailing nil's from defaultValues, then add them
+		while (and (notEmpty defaultValues) ('nil' == (last defaultValues))) {
+			removeLast defaultValues
+		}
+		for v defaultValues { add result v }
 	}
-	for v defaultValues { add result v }
-  }
-  return (joinStrings result ' ')
+	return (joinStrings result ' ')
 }
 
 method updateClassHint BlockSpec aDictionary {
-  // Use the given dictionary to map the hint slot of my first slot (the receiver of a method)
-  // from and old to new class name if there is an entry for the hint in the given dictionary.
+	// Use the given dictionary to map the hint slot of my first slot (the receiver of a method)
+	// from and old to new class name if there is an entry for the hint in the given dictionary.
 
-  if (isEmpty slotInfo) { return }
-  oldClassName = (at (first slotInfo) 3)
-  if (contains aDictionary oldClassName) {
-	atPut (first slotInfo) 3 (at aDictionary oldClassName)
-  }
+	if (isEmpty slotInfo) { return }
+	oldClassName = (at (first slotInfo) 3)
+	if (contains aDictionary oldClassName) {
+		atPut (first slotInfo) 3 (at aDictionary oldClassName)
+	}
 }

@@ -151,7 +151,7 @@ method checkForNewerLibraryVersions MicroBlocksProject autoConfirm {
 			if (or
 				autoConfirm
 				(confirm (global 'page') nil (join
-					(localized 'Found a newer version of ') libName (newline)
+					(localized 'Found a newer version of %1.' libName) (newline)
 					(localized 'Do you want me to update the one in the project?')))
 			) {
 				addLibrary this newVersion
@@ -181,42 +181,46 @@ method functionNamed MicroBlocksProject functionName {
 	return nil
 }
 
+method libForFunction MicroBlocksProject aFunc {
+	funcName = (functionName aFunc)
+	for lib (values libraries) {
+		if (notNil (functionNamed lib funcName)) {
+			return (moduleName lib)
+		}
+	}
+	return ''
+}
+
 method metaInfoForFunction MicroBlocksProject aFunc {
-	// Return a tab-delimited string with meta information about the given function:
-	//	libraryName libraryCategory blockType funcName specString argTypes
-	// Return the empty string if the function doesn't have a block spec (shouldn't happen).
+	// Return a tab-delimited block spec string for the given function:
+	//	blockType specString argTypes
 
 	funcName = (functionName aFunc)
 	spec = (at blockSpecs funcName)
-	if (isNil spec) { // no spec, so create one
+	if (isNil spec) { // no spec (very unlikely), so create one
 		specString = funcName
 		typeString = ''
-		defaults = (list)
 		for argName (argNames aFunc) {
 			specString = (join specString ' _')
 			typeString = (join typeString ' auto')
 		}
+		defaults = (list)
 		spec = (blockSpecFromStrings funcName ' ' specString typeString defaults)
 	}
 
 	parts = (toList (argList (first (parse (specDefinitionString spec)))))
+	// parts is a list of: blockType functionName specString argTypes [defaultValues...]
 	if ((count parts) < 4) {
 		add parts '' // add empty arg types string for a parmeterless function
 	} else {
-		parts = (copyFromTo parts 1 4) // remove default arg values
+		parts = (copyFromTo parts 1 4) // remove any default arg values
 	}
+	// parts is now a list of: blockType functionName specString argTypes
+	removeAt parts 2 // remove the function name
+	// parts is now a list of: blockType specString argTypes
 
-	libName = ''
-	libCat = ''
-	for pair (sortedPairs libraries) {
-		lib = (first pair)
-		if (notNil (functionNamed lib funcName)) {
-			libName = (last pair)
-			libCat = (moduleCategory lib)
-		}
-	}
-	parts = (join (list libName libCat) parts)
-	return (joinStrings parts (string 9)) // join fields with tab delimiter
+	// join the blockType, specString, and argType strings with tab delimiters
+	return (joinStrings parts (string 9))
 }
 
 // Variables
@@ -457,7 +461,7 @@ method equal MicroBlocksProject proj {
 
 // MicroBlocksModule Class
 
-defineClass MicroBlocksModule moduleName moduleCategory dependencies version author description tags path variableNames blockList functions scripts blockSpecs choices
+defineClass MicroBlocksModule moduleName moduleCategory dependencies version author description tags path variableNames blockList functions scripts blockSpecs choices translationSources
 
 to newMicroBlocksModule modName {
 	return (initialize (new 'MicroBlocksModule') modName)
@@ -477,6 +481,7 @@ method initialize MicroBlocksModule name {
 	blockSpecs = (dictionary)
 	functions = (array)
 	scripts = (array)
+	translationSources = (dictionary)
 	return this
 }
 
@@ -866,6 +871,9 @@ method loadModuleNameAndCategory MicroBlocksModule cmdList {
 			if ((count (argList cmd)) > 1) {
 				cat = (at (argList cmd) 2)
 				if (isClass cat 'Reporter') { cat = (first (argList cat)) } // unquoted var (see above)
+ 				if (beginsWith cat 'cat;') {
+					cat = (substring cat 5) // remove leading 'cat;' prefix used for translation
+				}
 				moduleCategory = cat
 			}
 		}
@@ -1053,6 +1061,8 @@ method loadBlockList MicroBlocksModule cmdList {
 	for cmd cmdList {
 		if ('space' == (primName cmd)) {
 			add blockList '-' // spacer
+		} ('advanced' == (primName cmd)) {
+			add blockList 'advanced'
 		} ('spec' == (primName cmd)) {
 			add blockList (at (argList cmd) 2)
 		}
@@ -1101,6 +1111,7 @@ method newPrimFor MicroBlocksModule oldPrim {
 	} ('fillArray' == oldPrim) { return 'fillList'
 	} ('sendBroadcastSimple' == oldPrim) { return 'sendBroadcast'
 	} ('split' == oldPrim) { return '[data:split]'
+	} ('printIt' == oldPrim) { return 'graphIt'
 	}
 	return nil
 }
@@ -1137,9 +1148,10 @@ method equal MicroBlocksModule otherMod {
 		e1 = (at sortedScripts1 i)
 		e2 = (at sortedScripts2 i)
 		if (not (and ((at e1 1) == (at e2 1))
-					 ((at e1 2) == (at e2 2))
-					 ((at e1 3) == (at e2 3))
-					 )) {
+					((at e1 2) == (at e2 2))
+					((at e1 3) == (at e2 3))
+				)
+		) {
 			print 'script mismatch' e1 e2
 			return false
 		}
@@ -1155,4 +1167,18 @@ method functionsEqual MicroBlocksModule f1 f2 {
 	if ((cmdList f1) != (cmdList f1)) { return false }
 	if ((module f1) != (module f1)) { return false }
 	return true
+}
+
+// localization
+
+method setTranslations MicroBlocksModule translationsDict {
+	translationSources = translationsDict
+}
+
+method getTranslationSources MicroBlocksModule langCode {
+	return (at translationSources langCode)
+}
+
+method hasTranslationFor MicroBlocksModule langCode {
+	return (contains (keys translationSources) langCode)
 }

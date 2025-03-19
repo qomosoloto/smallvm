@@ -17,7 +17,9 @@ to startSelecting aScripter aHand {
 }
 
 to cancelSelection {
-	scripter = (scripter (findMicroBlocksEditor))
+	editor = (findMicroBlocksEditor)
+	if (isNil editor) { return }
+	scripter = (scripter editor)
 	for p (allMorphs (morph (scriptEditor scripter))) {
 		if (isClass (handler p) 'Block') { unselect (handler p) }
 	}
@@ -60,6 +62,11 @@ method handUpOn MicroBlocksSelection aHand {
 	return true
 }
 
+method handMoveOver MicroBlocksSelection aHand {
+	updateSelection this aHand
+	return true
+}
+
 // selecting
 
 method updateSelection MicroBlocksSelection aHand {
@@ -69,8 +76,24 @@ method updateSelection MicroBlocksSelection aHand {
 		setWidth rectangle (abs ((x aHand) - (oldX aHand)))
 		setHeight rectangle (abs ((y aHand) - (oldY aHand)))
 		intersect rectangle (bounds (morph (scriptsFrame scripter)))
+		highlightBlocksInside this
 	}
 	fixLayout this
+}
+
+method highlightBlocksInside MicroBlocksSelection {
+	if ((area rectangle) > 1) {
+		for p (allMorphs (morph (scriptEditor scripter))) {
+			if (isClass (handler p) 'Block') {
+				tb = (topBlock (handler p))
+				if (intersects rectangle (bounds p)) {
+					select tb
+				} else {
+					unselect tb
+				}
+			}
+		}
+	}
 }
 
 method endSelection MicroBlocksSelection {
@@ -91,6 +114,24 @@ method endSelection MicroBlocksSelection {
 	destroy this
 }
 
+method toggleAddBlock MicroBlocksSelection aBlock {
+	tb = (topBlock aBlock)
+	if (contains blocks tb) {
+		removeBlock this tb
+	} else {
+		addBlock this tb
+	}
+}
+
+method addBlock MicroBlocksSelection aBlock {
+	add blocks aBlock
+	select aBlock
+}
+
+method removeBlock MicroBlocksSelection aBlock {
+	remove blocks aBlock
+	unselect aBlock
+}
 
 // debugging
 
@@ -127,26 +168,24 @@ method containsBlocks MicroBlocksSelection {
 	return false
 }
 
-// events
-
-method handUpOn MicroBlocksSelection aHand {
-	endSelection this
-	return true
-}
-
-method handMoveOver MicroBlocksSelection aHand {
-	updateSelection this aHand
-	return true
-}
-
 // actions
 
-method contextMenu MicroBlocksSelection {
+method contextMenu MicroBlocksSelection isBlockDefinition {
 	menu = (menu nil this)
-	addItem menu 'duplicate selection' 'duplicateBlocks'
-	addItem menu 'drag selection' 'dragBlocks'
-	addLine menu
-	addItem menu 'delete selection' 'deleteBlocks'
+	if (isNil isBlockDefinition) { isBlockDefinition = false }
+	if isBlockDefinition {
+		addItem menu 'drag selection' 'dragBlocks'
+		addItem menu 'hide block definition' 'hideBlockDefinitions'
+	} else {
+		addItem menu 'run selected' 'startProcesses'
+		addItem menu 'stop selected' 'stopProcesses'
+		addItem menu 'toggle selected' 'toggleProcesses'
+		addLine menu
+		addItem menu 'duplicate selection' 'duplicateBlocks'
+		addItem menu 'drag selection' 'dragBlocks'
+		addLine menu
+		addItem menu 'delete selection' 'deleteBlocks'
+	}
 	return menu
 }
 
@@ -158,16 +197,46 @@ method deleteBlocks MicroBlocksSelection {
 	cancelSelection
 }
 
+method stopProcesses MicroBlocksSelection {
+	runtime = (smallRuntime)
+	for block blocks {
+		if (isRunning runtime block) {
+			stopRunningChunk runtime (lookupChunkID runtime block)
+		}
+	}
+	cancelSelection
+}
+
+method startProcesses MicroBlocksSelection {
+	runtime = (smallRuntime)
+	for block blocks {
+		if (not (isRunning runtime block)) {
+			evalOnBoard runtime block
+		}
+	}
+	cancelSelection
+}
+
+method toggleProcesses MicroBlocksSelection {
+	runtime = (smallRuntime)
+	for block blocks {
+		if (isRunning runtime block) {
+			stopRunningChunk runtime (lookupChunkID runtime block)
+		} else {
+			evalOnBoard runtime block
+		}
+	}
+	cancelSelection
+}
+
 method duplicateBlocks MicroBlocksSelection {
 	cancelSelection
-	showTrashcan (findMicroBlocksEditor)
 	contents = (initialize (new 'MicroBlocksSelectionContents') blocks true scripter)
 	grab (hand (global 'page')) contents
 }
 
 method dragBlocks MicroBlocksSelection {
 	cancelSelection
-	showTrashcan this
 	if ((count blocks) == 1) {
 		grab (hand (global 'page')) (first blocks)
 	} else {
@@ -176,16 +245,14 @@ method dragBlocks MicroBlocksSelection {
 	}
 }
 
-method showTrashcan MicroBlocksSelection {
-	purpose = 'delete'
-	containsDefs = (containsDefinitions this)
-	containsBlocks = (containsBlocks this)
-	if (and containsDefs containsBlocks) {
-		purpose = 'hideAndDelete'
-	} containsDefs {
-		purpose = 'hide'
+method hideBlockDefinitions MicroBlocksSelection {
+	cancelSelection
+	pe = (findProjectEditor)
+	if (isNil pe) { return }
+	for b blocks {
+		proto = (editedPrototype b)
+		if (notNil proto) { hideDefinition (scripter pe) (functionName (function proto)) }
 	}
-	showTrashcan (findMicroBlocksEditor) purpose
 }
 
 defineClass MicroBlocksSelectionContents morph
@@ -193,10 +260,13 @@ defineClass MicroBlocksSelectionContents morph
 method initialize MicroBlocksSelectionContents someBlocks duplicating aScripter {
 	morph = (newMorph this)
 	for block someBlocks {
-		if duplicating {
-			addPart morph (morph (duplicate block))
-		} else {
-			addPart morph (morph block)
+		// prevent block definition header parameters from being duplicated as rogue variables
+		if (not (isClass (handler (owner (morph block))) 'BlockSectionDefinition')) {
+			if duplicating {
+				addPart morph (morph (duplicate block))
+			} else {
+				addPart morph (morph block)
+			}
 		}
 	}
 	addPart (morph (scriptEditor aScripter)) morph // just so it can be animated back to its owner
@@ -215,7 +285,6 @@ method justDropped MicroBlocksSelectionContents aHand {
 		restoreScripts scripter
 		scriptChanged scripter
 	}
-	hideTrashcan (findMicroBlocksEditor)
 }
 
 method destroy MicroBlocksSelectionContents {

@@ -20,10 +20,10 @@ The simplest way to use TJR is to use the tjr_atPath() function to extract data 
 JSON structure via a dot-delimited path. For example, if jsonData is:
 
 	{ "points":
-	  [
-		{ "x": 1, "y": 2 },
-		{ "x": 3, "y": 4 }
-	  ]
+		[
+			{ "x": 1, "y": 2 },
+			{ "x": 3, "y": 4 }
+		]
 	}
 
 then tjr_atPath(jsonData "points.1.x") would get the "x" property of the second element of

@@ -24,7 +24,7 @@ whenStarted
 comment 'Open the graph to see how steady your beat is.
 If you keep it very steady the graph will be almost flat.'
 forever {
-  printIt clapsPerMinute
+  graphIt clapsPerMinute
   waitMillis 25
 }
 }

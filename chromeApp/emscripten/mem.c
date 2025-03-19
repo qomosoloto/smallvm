@@ -25,13 +25,13 @@ gp_boolean gcNeeded = false;
 
 #ifdef DEBUG
 ADDR a(OBJ oop) {
-  return ((ADDR)(((unsigned long)(oop)) + (unsigned long)baseAddress));
+	return ((ADDR)(((unsigned long)(oop)) + (unsigned long)baseAddress));
 }
 OBJ o(ADDR addr) {
-  return ((OBJ)((unsigned long)addr) - (unsigned long)baseAddress);
+	return ((OBJ)((unsigned long)addr) - (unsigned long)baseAddress);
 }
 OBJ atat(OBJ oop, int index) {
-  return FIELD(oop, index);
+	return FIELD(oop, index);
 }
 #endif
 

@@ -6,8 +6,8 @@
 // single "application" file.
 //
 // Embedded file system primitives (implemented in prims.c):
-// 	- appPath
-//  - listEmbeddedFiles
+//	- appPath
+//	- listEmbeddedFiles
 //	- readEmbeddedFile <fileName>
 
 #include <stdio.h>
@@ -138,8 +138,8 @@ static int getAppPath(char *path, int pathSize) {
 
 	// replace backslashes with GP-standard forward slashes
 	for (int i = 0; i < len; i++) {
-	  int ch = path[i];
-	  if ('\\' == ch) path[i] = '/';
+		int ch = path[i];
+		if ('\\' == ch) path[i] = '/';
 	}
 	return true;
 #elif defined(__linux__) || defined(IOS)
@@ -198,7 +198,7 @@ static long readDirEntry(FILE *f, char *name, int nameMax) {
 	// Read a directory file entry from f. Assume f is positioned at the start of an entry.
 	// Store the file name in name (up to nameMax characters) and return the file size.
 
-	if (DIR_ENTRY_ID != readInt32(f)) {  // bad directory entry
+	if (DIR_ENTRY_ID != readInt32(f)) { // bad directory entry
 		name[0] = 0; // null terminate
 		return -1;
 	}
@@ -227,7 +227,7 @@ static OBJ extractFileData(FILE *f, long fileEntryPos, int isBinary) {
 	// Return the file contents or nil if extraction fails.
 
 	fseek(f, fileEntryPos, SEEK_SET);
-	if (FILE_ENTRY_ID != readInt32(f)) return nilObj;  // bad local file header
+	if (FILE_ENTRY_ID != readInt32(f)) return nilObj; // bad local file header
 	readInt16(f); // versionNeeded
 	int flags = readInt16(f);
 	int compressionMethod = readInt16(f);
@@ -335,7 +335,7 @@ static gp_boolean loadLibraryFrom(FILE *f) {
 // Public Functions
 
 OBJ appPath() {
-    char path[APP_PATH_SIZE];
+	char path[APP_PATH_SIZE];
 	int ok = getAppPath(path, sizeof(path));
 	return ok ? newString(path) : nilObj;
 }
@@ -390,7 +390,7 @@ gp_boolean importLibrary() {
 }
 
 FILE * openAppFile() {
-    char path[APP_PATH_SIZE];
+	char path[APP_PATH_SIZE];
 	int ok = getAppPath(path, sizeof(path));
 	if (!ok) return NULL; // should not happen
 

@@ -1,8 +1,9 @@
 module OctoStudio Comm
 author wwj718
-version 1 9 
+version 1 10 
 choices octo_shapes circle square star heart triangle clover diamond moon 
-description 'Communicate with OctoStudio (https://octostudio.org/)'
+description 'Communicate with OctoStudio (https://octostudio.org/)
+'
 variables _octoGroup _octoLastBeamShape _octoLastBeamGroup _octoShapes _octoIsBeaming 
 
   spec ' ' 'octoSendBeam' 'Octo beam to phones _ : duration _ ms : group _' 'menu.octo_shapes num num' 'heart' 200 0
@@ -94,7 +95,7 @@ to octoLastGroup {
 }
 
 to octoSendBeam shape optionalDuration optionalGroup {
-  local 'duration' (argOrDefault 2 200)
+  local 'duration' (argOrDefault 2 500)
   local 'group' (argOrDefault 3 ('[data:convertType]' _octoGroup 'number'))
   if (_octoIsBeaming == 1) {
     sayIt 'waiting...'

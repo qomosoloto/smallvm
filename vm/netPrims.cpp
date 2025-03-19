@@ -521,16 +521,22 @@ static OBJ primHttpResponse(int argCount, OBJ *args) {
 
 // UDP
 
-WiFiUDP udp;
+static WiFiUDP udp;
+static bool udpPortOpen = false;
+static IPAddress lastRemoteIPAddress;
+static int lastRemotePort = -1;
 
 static OBJ primUDPStart(int argCount, OBJ *args) {
 	if (NO_WIFI()) return fail(noWiFi);
-	if (!isConnectedToWiFi()) return falseObj;
+	if (!isConnectedToWiFi()) return fail(wifiNotConnected);
 
 	if (argCount < 1) return fail(notEnoughArguments);
 	int port = evalInt(args[0]);
 	if (port > 0) {
 		udp.begin(port);
+		udpPortOpen = true;
+		memset(&lastRemoteIPAddress, 0, sizeof(lastRemoteIPAddress));
+		lastRemotePort = -1;
 	}
 	return falseObj;
 }
@@ -540,12 +546,14 @@ static OBJ primUDPStop(int argCount, OBJ *args) {
 	if (!isConnectedToWiFi()) return falseObj;
 
 	udp.stop();
+	udpPortOpen = false;
 	return falseObj;
 }
 
 static OBJ primUDPSendPacket(int argCount, OBJ *args) {
 	if (NO_WIFI()) return fail(noWiFi);
 	if (!isConnectedToWiFi()) return fail(wifiNotConnected);
+	if (!udpPortOpen) return fail(udpPortNotOpen);
 
 	if (argCount < 3) return fail(notEnoughArguments);
 	OBJ data = args[0];
@@ -570,11 +578,15 @@ static OBJ primUDPSendPacket(int argCount, OBJ *args) {
 
 static OBJ primUDPReceivePacket(int argCount, OBJ *args) {
 	if (NO_WIFI()) return fail(noWiFi);
-	if (!isConnectedToWiFi()) return (OBJ) &noDataString;
+	if (!isConnectedToWiFi()) return fail(wifiNotConnected);
+	if (!udpPortOpen) return fail(udpPortNotOpen);
 
 	int useBinary = ((argCount > 0) && (trueObj == args[0]));
 	int byteCount = udp.parsePacket();
 	if (!byteCount) return (OBJ) &noDataString;
+
+	lastRemoteIPAddress = udp.remoteIP();
+	lastRemotePort = udp.remotePort();
 
 	OBJ result = falseObj;
 	if (useBinary) {
@@ -595,18 +607,21 @@ static OBJ primUDPReceivePacket(int argCount, OBJ *args) {
 static OBJ primUDPRemoteIPAddress(int argCount, OBJ *args) {
 	if (NO_WIFI()) return fail(noWiFi);
 	if (!isConnectedToWiFi()) return fail(wifiNotConnected);
+	if (!udpPortOpen) return fail(udpPortNotOpen);
 
 	char s[100];
-	IPAddress ip = udp.remoteIP();
-	sprintf(s, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
+	sprintf(s, "%d.%d.%d.%d",
+		lastRemoteIPAddress[0], lastRemoteIPAddress[1],
+		lastRemoteIPAddress[2], lastRemoteIPAddress[3]);
 	return newStringFromBytes(s, strlen(s));
 }
 
 static OBJ primUDPRemotePort(int argCount, OBJ *args) {
 	if (NO_WIFI()) return fail(noWiFi);
 	if (!isConnectedToWiFi()) return fail(wifiNotConnected);
+	if (!udpPortOpen) return fail(udpPortNotOpen);
 
-	return int2obj(udp.remotePort());
+	return int2obj(lastRemotePort);
 }
 
 // Websocket support for ESP32

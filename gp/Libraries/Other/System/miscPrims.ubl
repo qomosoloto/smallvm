@@ -1,6 +1,6 @@
 module 'Misc Primitives'
 author MicroBlocks
-version 1 7 
+version 1 8
 description 'Miscellaneous system primitives.
 '
 
@@ -21,3 +21,4 @@ description 'Miscellaneous system primitives.
   spec ' ' '[misc:broadcastToIDE]' 'broadcast _ to IDE only' 'str' ''
   space
   spec ' ' '[display:mbEnableDisplay]' 'enable LED display _' 'bool' false
+  spec ' ' '[display:neoPixelSetMaxBrightness]' 'set NeoPixel max brightness _ (10-255)' 'num' 40

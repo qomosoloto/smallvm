@@ -1,11 +1,12 @@
 module Lists Data
 author MicroBlocks
-version 1 7 
+version 1 8 
 choices pick 'a few' some most 
 description 'Useful functions for working with lists.
 '
 
   spec 'r' 'list_contains' 'list _ contains _' 'auto auto' 'aList' 'cat'
+  spec 'r' 'list_equals' 'list _ equals _' 'auto auto' 'list1' 'list2'
   space
   spec 'r' 'list_circular' 'circular item _ of _' 'auto auto' '10' 'aListOrString'
   space
@@ -57,6 +58,30 @@ to list_contains aList aValue {
   return (booleanConstant false)
 }
 
+to list_equals list1 list2 {
+  comment 'Recursively compare two list structures and return true if they are equal.
+Note: May not terminate if a list includes itself, either directly or indirectly,
+but such circular list structures are rare in MicroBlocks.'
+  if (list1 == list2) {
+    return (booleanConstant true)
+  }
+  if ((size list1) != (size list2)) {
+    return (booleanConstant false)
+  }
+  for i (size list1) {
+    item1 = (at i list1)
+    item2 = (at i list2)
+    if (item1 != item2) {
+      if (and (isType item1 'list') (isType item2 'list')) {
+        if (not (list_equals item1 item2)) {return (booleanConstant false)}
+      } else {
+        return (booleanConstant false)
+      }
+    }
+  }
+  return (booleanConstant true)
+}
+
 to list_filter src selectionFunction {
   local 'result' ('[data:makeList]')
   for item src {
@@ -102,6 +127,15 @@ to list_pick selection list {
     local 'amount' (minimum (size list) (maximum 1 (((size list) * (at ('[data:find]' selection ('[data:makeList]' 'a few' 'some' 'most')) ('[data:makeList]' 20 50 80))) / 100)))
     return (list_sorted ('[data:copyFromTo]' (list_shuffled list) 1 amount))
   }
+}
+
+to list_replace 'a list' indices replacement {
+  if (indices == '') {return (v 'a list')}
+  local 'new list' ('[data:copyFromTo]' (v 'a list') 1)
+  for i (ifExpression (isType indices 'list') indices ('[data:split]' ('[data:convertType]' indices 'string') ',')) {
+    atPut i (v 'new list') replacement
+  }
+  return (v 'new list')
 }
 
 to list_reverse aList {
@@ -161,14 +195,5 @@ to list_uniqued list {
   local 'unique' ('[data:copyFromTo]' list 1)
   list_unique unique
   return unique
-}
-
-to list_replace 'a list' indices replacement {
-  if (indices == '') {return (v 'a list')}
-  local 'new list' ('[data:copyFromTo]' (v 'a list') 1)
-  for i (ifExpression (isType indices 'list') indices ('[data:split]' ('[data:convertType]' indices 'string') ',')) {
-    atPut i (v 'new list') replacement
-  }
-  return (v 'new list')
 }
 

@@ -6,7 +6,7 @@ choices smarthome_fan clockwise 'counter-clockwise' stop
 choices smarthome_notes c 'c#' d 'd#' e f 'f#' g 'g#' a 'a#' b
 choices smarthome_onoff on off
 choices smarthome_power 'voltage (V)' 'current (mA)' 'power (mW)'
-choices smarthome_lr left right
+choices smarthome_lr 'shbutton;left' 'shbutton;right'
 choices smarthome_window open close
 description 'Library for Keyestudio IoT Smart Home Kit for ESP32 STEAMakers
 
@@ -39,7 +39,7 @@ variables _smarthomeInitialized
   space
   spec 'r' 'smarthome_readRFID' 'Home read RFID card : _' 'bool' true
   spec 'r' 'smarthome_motion' 'Home movement detected?'
-  spec 'r' 'smarthome_button' 'Home _ button pressed?' 'menu.smarthome_lr' 'left'
+  spec 'r' 'smarthome_button' 'Home _ button pressed?' 'menu.smarthome_lr' 'shbutton;left'
   spec 'r' 'smarthome_gasDetected' 'Home gas detected?'
   space
   spec ' ' 'smarthome_setNeoPixels' 'Home set NeoPixels _ _ _ _' 'color color color color'
@@ -68,9 +68,9 @@ to 'read samples' sampleCount pin {
 }
 
 to smarthome_button button {
-  if (button == 'left') {
+  if (button == 'shbutton;left') {
     local 'pin' 16
-  } (button == 'right') {
+  } (button == 'shbutton;right') {
     local 'pin' 27
   } else {
     return false

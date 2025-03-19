@@ -78,7 +78,7 @@ static OBJ primWiFiStatus(int argCount, OBJ *args) {
 static OBJ primGetIP(int argCount, OBJ *args) {
 	OBJ result = newString(0);
 	char ip[16];
-    struct ifaddrs *address, *each;
+	struct ifaddrs *address, *each;
 
 	if (!connected || getifaddrs(&address) == -1) {
 		result = newString(7);

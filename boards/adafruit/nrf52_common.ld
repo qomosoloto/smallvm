@@ -21,7 +21,7 @@ OUTPUT_FORMAT ("elf32-littlearm", "elf32-bigarm", "elf32-littlearm")
  * with other linker script that defines memory regions FLASH and RAM.
  * It references following symbols, which must be defined in code:
  *   Reset_Handler : Entry of reset handler
- *
+ * 
  * It defines following symbols, which code can use without definition:
  *   __exidx_start
  *   __exidx_end
@@ -47,7 +47,7 @@ OUTPUT_FORMAT ("elf32-littlearm", "elf32-bigarm", "elf32-littlearm")
 ENTRY(Reset_Handler)
 
 /* Adafruit
- * Stack is used by ISR and SoftDevice only, other code run on thread's allocated stack from heap.
+ * Stack is used by ISR and SoftDevice only, other code run on thread's allocated stack from heap. 
  * Maximum stack used by S132's spec is 1536 byte. Therefore 2KB should be enough
  */
 __StackSize = 1024*2;
@@ -157,7 +157,7 @@ SECTIONS
         . = ALIGN(__StackLimit);
         __HeapLimit = .;
     } > RAM
-
+    
     /* .stack_dummy section doesn't contains any symbols. It is only
      * used for linker to calculate size of stack sections, and assign
      * values to stack symbols later */
@@ -167,11 +167,7 @@ SECTIONS
         KEEP(*(.stack*))
     } > RAM
     */
-
-myStackLimit = __StackLimit;
-myHeapLimit = __HeapLimit;
-myBSSEnd = __bss_end__;
-
+    
     /* Check if data + heap + stack exceeds RAM limit */
     ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")
     ASSERT(__StackLimit >= __bss_end__, "region RAM overflowed with stack")

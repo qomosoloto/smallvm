@@ -3,71 +3,110 @@
 defineClass FilePicker morph window folderReadout listPane parentButton newFolderButton nameLabel nameField cancelButton okayButton topDir currentDir action forSaving extensions isDone answer
 
 to pickFileToOpen anAction defaultPath extensionList {
-  // Pick an existing file to open starting at defaultPath, if provided. If anAction is not
-  // nil, invoke it on the full path of the choosen file. If it is nil, wait synchronously
-  // until a file is chosen and return its full path, or the empty string if no file is chosen.
+	// Pick an existing file to open starting at defaultPath, if provided. If anAction is not
+	// nil, invoke it on the full path of the choosen file. If it is nil, wait synchronously
+	// until a file is chosen and return its full path, or the empty string if no file is chosen.
 
-  return (pickFile anAction defaultPath extensionList false)
+	if (isMicroBlocks) {
+		return (microBlocksPickFile anAction defaultPath extensionList false)
+	}
+	return (pickFile anAction defaultPath extensionList false)
 }
 
 to fileToWrite defaultPath extensionList {
-  // Ask the user to enter a file name and location for writing. If provided, defaultPath is
-  // offered as a starting point. Wait synchronously until a file is specified and return its
-  // full path, or the empty string if the user cancels the operation.
+	// Ask the user to enter a file name and location for writing. If provided, defaultPath is
+	// offered as a starting point. Wait synchronously until a file is specified and return its
+	// full path, or the empty string if the user cancels the operation.
 
-  if (and (isClass extensionList 'String') (notNil defaultPath) ((count defaultPath) > 0)) {
-	// there is a single extension and the default path is not nil or empty
-	extension = extensionList
-	if (not (endsWith defaultPath extension)) {
-	  // addpend the extension to the default path
-	  defaultPath = (join defaultPath extension)
+	if (isMicroBlocks) {
+		return (microBlocksFileToWrite defaultPath extensionList)
 	}
-  }
-  return (pickFile nil defaultPath extensionList true)
+
+	if (and (isClass extensionList 'String') (notNil defaultPath) ((count defaultPath) > 0)) {
+		// there is a single extension and the default path is not nil or empty
+		extension = extensionList
+		if (not (endsWith defaultPath extension)) {
+			// append the extension to the default path
+			defaultPath = (join defaultPath extension)
+		}
+	}
+	return (pickFile nil defaultPath extensionList true)
 }
 
 to pickFile anAction defaultPath extensionList saveFlag {
-  if (isNil saveFlag) { saveFlag = false }
-  page = (global 'page')
-  picker = (initialize (new 'FilePicker') anAction defaultPath extensionList saveFlag)
-  addPart page picker
-  pickerM = (morph picker)
-  setPosition pickerM (half ((width page) - (width pickerM))) (40 * (global 'scale'))
+	if (isNil saveFlag) { saveFlag = false }
+	page = (global 'page')
+	picker = (initialize (new 'FilePicker') anAction defaultPath extensionList saveFlag)
+	addPart page picker
+	pickerM = (morph picker)
+	setPosition pickerM (half ((width page) - (width pickerM))) (40 * (global 'scale'))
 
-  if (and saveFlag (isNil anAction)) {
-	// modal version -- waits until done and returns result or nil
-    setField (hand page) 'lastTouchTime' nil
-    while (not (isDone picker)) { doOneCycle page }
-    destroy pickerM
-    return (answer picker)
-  }
+	if (and saveFlag (isNil anAction)) {
+		// modal version -- waits until done and returns result or nil
+		setField (hand page) 'lastTouchTime' nil
+		while (not (isDone picker)) { doOneCycle page }
+		destroy pickerM
+		return (answer picker)
+	}
 }
 
 // function to return the user's GP folder
 
 to gpFolder {
-  if ('iOS' == (platform)) { return '.' }
-  path = (userHomePath)
+	if (not (isMicroBlocks)) { return (classicGPFolder) }
 
-  hidden = (global 'hideFolderShortcuts')
-  if (and (notNil hidden) (contains hidden 'GP')) { return '/' } // if GP hidden, use computer
+	if ('iOS' == (platform)) { return '.' }
+	path = (userHomePath)
 
-  // Look for <home>/Documents
-  if (contains (listDirectories path) 'Documents') {
-	path = (join path '/Documents')
-  }
-  if (not (contains (listDirectories path) 'GP')) {
-	// create the GP folder if it does not already exist
-	makeDirectory (join path '/GP')
-  }
-  if (contains (listDirectories path) 'GP') {
-	path = (join path '/GP')
-  }
-  return path
+	hidden = (global 'hideFolderShortcuts')
+	if (and (notNil hidden) (contains hidden 'Projects')) { return '/' } // if GP hidden, use computer
+
+	// Look for <home>/Documents
+	if (contains (listDirectories path) 'Documents') {
+		path = (join path '/Documents')
+	}
+	if (not (contains (listDirectories path) 'MicroBlocks')) {
+		if (contains (listDirectories path) 'MicroBlocks Projects') {
+			// if it exists, rename old 'MicroBlocks Projects' folder to 'MicroBlocks'
+			renameFile (join path '/MicroBlocks Projects') (join path '/MicroBlocks')
+		} else {
+			// create the MicroBlocks folder if it does not already exist
+			makeDirectory (join path '/MicroBlocks')
+		}
+	}
+	if (contains (listDirectories path) 'MicroBlocks') {
+		// create the Libraries subfolder, if it does not already exist
+		if (not (contains (listDirectories (join path '/MicroBlocks') 'Libraries'))) {
+			makeDirectory (join path '/MicroBlocks/Libraries')
+		}
+		path = (join path '/MicroBlocks')
+	}
+	return path
+}
+
+to classicGPFolder {
+	if ('iOS' == (platform)) { return '.' }
+	path = (userHomePath)
+
+	hidden = (global 'hideFolderShortcuts')
+	if (and (notNil hidden) (contains hidden 'GP')) { return '/' } // if GP hidden, use computer
+
+	// Look for <home>/Documents
+	if (contains (listDirectories path) 'Documents') {
+		path = (join path '/Documents')
+	}
+	if (not (contains (listDirectories path) 'GP')) {
+		// create the GP folder if it does not already exist
+		makeDirectory (join path '/GP')
+	}
+	if (contains (listDirectories path) 'GP') {
+		path = (join path '/GP')
+	}
+	return path
 }
 
 to gpExamplesFolder {
-  return (join (absolutePath '.') '/Examples')
+	return (join (absolutePath '.') '/Examples')
 }
 
 // support for synchronous ("modal") calls
@@ -79,353 +118,357 @@ method answer FilePicker { return answer }
 // initialization
 
 method initialize FilePicker anAction defaultPath extensionList saveFlag {
-  if (isNil defaultPath) { defaultPath = (absolutePath '.') }
-  if (isNil saveFlag) { saveFlag = false }
-  scale = (global 'scale')
+	if (isNil defaultPath) { defaultPath = (absolutePath '.') }
+	if (isNil saveFlag) { saveFlag = false }
+	scale = (global 'scale')
 
-  forSaving = saveFlag
-  if forSaving {
-	title = 'File Save'
-  } else {
-	title = 'File Open'
-  }
-  window = (window title)
-  morph = (morph window)
-  setHandler morph this
-  setClipping morph true
-  clr = (gray 250)
+	forSaving = saveFlag
+	if forSaving {
+		title = 'File Save'
+	} else {
+		title = 'File Open'
+	}
+	window = (window title)
+	morph = (morph window)
+	setHandler morph this
+	setClipping morph true
 
-  action = anAction
-  extensions = extensionList
-  topDir = ''
-  isDone = false
-  answer = ''
+	action = anAction
+	extensions = extensionList
+	topDir = ''
+	isDone = false
+	answer = ''
 
-  lbox = (listBox (array) nil (action 'fileOrFolderSelected' this) clr)
-  onDoubleClick lbox (action 'fileOrFolderDoubleClicked' this)
-  setFont lbox 'Arial' 16
-  listPane = (scrollFrame lbox clr)
-  addPart morph (morph listPane)
-  setGrabRule (morph listPane) 'ignore'
+	listBoxColor = (gray 250) // very light gray
+	lbox = (listBox (array) nil (action 'fileOrFolderSelected' this) listBoxColor)
+	onDoubleClick lbox (action 'fileOrFolderDoubleClicked' this)
+	setFont lbox 'Arial' 16
+	listPane = (scrollFrame lbox listBoxColor)
+	addPart morph (morph listPane)
+	setGrabRule (morph listPane) 'ignore'
 
-  addShortcutButtons this
-  addFolderReadoutAndParentButton this
-  if forSaving { addFileNameField this (filePart defaultPath) }
-  okayButton = (textButton this 0 0 'Okay' 'okay')
-  cancelButton = (textButton this 0 0 'Cancel' (action 'destroy' morph))
+	addShortcutButtons this
+	addFolderReadoutAndParentButton this
+	if forSaving { addFileNameField this (filePart defaultPath) }
+	okayButton = (textButton this 0 0 'Okay' 'okay')
+	cancelButton = (textButton this 0 0 'Cancel' (action 'destroy' morph))
 
-  setMinExtent morph (460 * scale) (366 * scale)
-  setExtent morph (460 * scale) (366 * scale)
+	setMinExtent morph (460 * scale) (415 * scale)
+	setExtent morph (460 * scale) (415 * scale)
 
-  if forSaving {
-	defaultPath = (directoryPart defaultPath)
-	if (isEmpty defaultPath) { defaultPath = (gpFolder) }
-	if ('Browser' == (platform)) { defaultPath = 'Downloads' }
-  }
-  if (and ((count defaultPath) > 1) (endsWith defaultPath '/')) {
-	defaultPath = (substring defaultPath 1 ((count defaultPath) - 1))
-  }
-  showFolder this defaultPath true
-  return this
+	if forSaving {
+		defaultPath = (directoryPart defaultPath)
+		if (isEmpty defaultPath) { defaultPath = (gpFolder) }
+		if ('Browser' == (platform)) { defaultPath = 'Downloads' }
+	}
+	if (and ((count defaultPath) > 1) (endsWith defaultPath '/')) {
+		defaultPath = (substring defaultPath 1 ((count defaultPath) - 1))
+	}
+	showFolder this defaultPath true
+	return this
 }
 
 method addFolderReadoutAndParentButton FilePicker {
-  scale = (global 'scale')
-  x = (110 * scale)
-  y = (32 * scale)
+	scale = (global 'scale')
+	x = (110 * scale)
+	y = (32 * scale)
 
-  folderReadout = (newText 'Folder Readout')
-  setFont folderReadout 'Arial Bold' (16 * scale)
-  setGrabRule (morph folderReadout) 'ignore'
-  setPosition (morph folderReadout) x y
-  addPart morph (morph folderReadout)
+	folderReadout = (newText 'Folder Readout')
+	setFont folderReadout 'Arial Bold' (16 * scale)
+	setGrabRule (morph folderReadout) 'ignore'
+	setPosition (morph folderReadout) x y
+	addPart morph (morph folderReadout)
 
-  parentButton = (textButton this 0 0 '<' 'parentFolder')
-  parentButtonM = (morph parentButton)
-  setTop parentButtonM (y + (3 * scale))
-  setLeft parentButtonM (x - ((width parentButtonM) + (13 * scale)))
-  addPart morph parentButtonM
+	parentButton = (textButton this 0 0 '<' 'parentFolder')
+	parentButtonM = (morph parentButton)
+	setTop parentButtonM (y + (3 * scale))
+	setLeft parentButtonM (x - ((width parentButtonM) + (13 * scale)))
+	addPart morph parentButtonM
 }
 
 method addFileNameField FilePicker defaultName {
-  scale = (global 'scale')
-  x = (110 * scale)
-  y = (32 * scale)
+	scale = (global 'scale')
+	x = (110 * scale)
+	y = (32 * scale)
 
-  // name label
-  nameLabel = (newText 'File name:')
-  setFont nameLabel 'Arial Bold' (15 * scale)
-  setGrabRule (morph nameLabel) 'ignore'
-  addPart morph (morph nameLabel)
+	// name label
+	nameLabel = (newText 'File name:')
+	setFont nameLabel 'Arial Bold' (15 * scale)
+	setGrabRule (morph nameLabel) 'ignore'
+	addPart morph (morph nameLabel)
 
-  // name field
-  border = (2 * scale)
-  nameField = (newText defaultName)
-  setFont nameField 'Arial' (15 * scale)
-  setBorders nameField border border true
-  setEditRule nameField 'line'
-  setGrabRule (morph nameField) 'ignore'
-  nameField = (scrollFrame nameField (gray 250) true)
-  setExtent (morph nameField) (213 * scale) (18 * scale)
-  addPart morph (morph nameField)
+	// name field
+	border = (2 * scale)
+	nameField = (newText defaultName)
+	setFont nameField 'Arial' (15 * scale)
+	setBorders nameField border border true
+	setEditRule nameField 'line'
+	setGrabRule (morph nameField) 'ignore'
+	nameField = (scrollFrame nameField (gray 250) true)
+	setExtent (morph nameField) (213 * scale) (18 * scale)
+	addPart morph (morph nameField)
 }
 
 method addShortcutButtons FilePicker {
-  scale = (global 'scale')
-  hidden = (global 'hideFolderShortcuts')
-  if (isNil hidden) { hidden = (array) }
+	scale = (global 'scale')
+	hidden = (global 'hideFolderShortcuts')
+	if (isNil hidden) { hidden = (array) }
 
-  showGP = (and
-	(not (contains hidden 'GP'))
-	('Browser' != (platform)))
-  showExamples = (and
-	(not (contains hidden 'Examples'))
-	(not forSaving)
-	(isClass extensions 'Array')
-	(contains extensions '.gpp'))
-  showDesktop = (not (contains hidden 'Desktop'))
-  showDownloads = (and
-	(not (contains hidden 'Downloads'))
-	('Linux' != (platform)))
-  showcComputer = (not (contains hidden 'Computer'))
+	showGP = (and
+		(not (contains hidden 'GP'))
+		('Browser' != (platform)))
+	showExamples = (and
+		(not (contains hidden 'Examples'))
+		(not forSaving)
+		(isClass extensions 'Array')
+		(contains extensions '.gpp'))
+	showDesktop = (not (contains hidden 'Desktop'))
+	showDownloads = (and
+		(not (contains hidden 'Downloads'))
+		('Linux' != (platform)))
+	showcComputer = (not (contains hidden 'Computer'))
 
-  buttonX = ((left morph) + (22 * scale))
-  buttonY = ((top morph) + (55 * scale))
-  dy = (60 * scale)
-  if showGP {
-	addIconButton this buttonX buttonY 'gpFolderIcon' (action 'setGPFolder' this) 'GP'
-	buttonY += dy
-  }
-  if showExamples {
-	addIconButton this buttonX buttonY 'examplesIcon' (action 'setExamples' this)
-	buttonY += dy
-  }
-  if (not (isOneOf (platform) 'Browser' 'iOS')) {
-	if showDesktop {
-	  addIconButton this buttonX buttonY 'desktopIcon' (action 'setDesktop' this)
-	  buttonY += dy
+	buttonX = ((left morph) + (22 * scale))
+	buttonY = ((top morph) + (55 * scale))
+	dy = (60 * scale)
+	if showGP {
+		addIconButton this buttonX buttonY 'gpFolderIcon' (action 'setGPFolder' this) 'GP'
+		buttonY += dy
 	}
-	if showDownloads {
-	  addIconButton this buttonX buttonY 'downloadsIcon' (action 'setDownloads' this)
-	  buttonY += dy
+	if showExamples {
+		addIconButton this buttonX buttonY 'examplesIcon' (action 'setExamples' this)
+		buttonY += dy
 	}
-	if showcComputer {
-	  addIconButton this buttonX buttonY 'computerIcon' (action 'setComputer' this)
-	  buttonY += dy
+	if (not (isOneOf (platform) 'Browser' 'iOS')) {
+		if showDesktop {
+			addIconButton this buttonX buttonY 'desktopIcon' (action 'setDesktop' this)
+			buttonY += dy
+		}
+		if showDownloads {
+			addIconButton this buttonX buttonY 'downloadsIcon' (action 'setDownloads' this)
+			buttonY += dy
+		}
+		if showcComputer {
+			addIconButton this buttonX buttonY 'computerIcon' (action 'setComputer' this)
+			buttonY += dy
+		}
 	}
-  }
-  newFolderButton = (textButton this (buttonX + (2 * scale)) buttonY 'New Folder' 'newFolder')
+	newFolderButton = (textButton this (buttonX + (2 * scale)) buttonY 'New Folder' 'newFolder')
 }
 
 method addIconButton FilePicker x y iconName anAction label {
-  if (isNil label) {
-	s = iconName
-	if (endsWith s 'Icon') { s = (substring s 1 ((count s) - 4)) }
-	s = (join (toUpperCase (substring s 1 1)) (substring s 2))
-	label = s
-  }
-  scale = (global 'scale')
-  iconBM = (scaleAndRotate (call iconName (new 'FilePickerIcons')) (0.75 * scale))
-  bm = (newBitmap (62 * scale) (40 * scale))
-  drawBitmap bm iconBM (half ((width bm) - (width iconBM))) 0
-  setFont 'Arial Bold' (12 * scale)
-  labelX = (half ((width bm) - (stringWidth label)))
-  labelY = ((height bm) - (fontHeight))
-  drawString bm label (gray 0) labelX labelY
+	if (isNil label) {
+		s = iconName
+		if (endsWith s 'Icon') { s = (substring s 1 ((count s) - 4)) }
+		s = (join (toUpperCase (substring s 1 1)) (substring s 2))
+		label = s
+	}
+	scale = (global 'scale')
+	iconBM = (scaleAndRotate (call iconName (new 'FilePickerIcons')) (0.75 * scale))
+	bm = (newBitmap (62 * scale) (40 * scale))
+	drawBitmap bm iconBM (half ((width bm) - (width iconBM))) 0
+	setFont 'Arial Bold' (12 * scale)
+	labelX = (half ((width bm) - (stringWidth label)))
+	labelY = ((height bm) - (fontHeight))
+	drawString bm label (gray 0) labelX labelY
 
-  button = (newButton '' anAction)
-  setLabel button bm (gray 225) (gray 245)
-  setPosition (morph button) x y
-  addPart morph (morph button)
-  return button
+	button = (newButton '' anAction)
+	setLabel button bm (microBlocksColor 'blueGray' 100) (microBlocksColor 'yellow')
+	setPosition (morph button) x y
+	addPart morph (morph button)
+	return button
 }
 
 method textButton FilePicker x y label selectorOrAction {
-  if (isClass selectorOrAction 'String') {
-	selectorOrAction = (action selectorOrAction this)
-  }
-  result = (pushButton label (gray 130) selectorOrAction)
-  setPosition (morph result) x y
-  addPart morph (morph result)
-  return result
+	if (isClass selectorOrAction 'String') {
+		selectorOrAction = (action selectorOrAction this)
+	}
+	if ('<' == label) {
+		result = (pushButton label selectorOrAction 0 0)
+	} else {
+		result = (pushButton label selectorOrAction)
+	}
+	setPosition (morph result) x y
+	addPart morph (morph result)
+	return result
 }
 
 // actions
 
 method setComputer FilePicker {
-  showFolder this '/' true
+	showFolder this '/' true
 }
 
 method setDesktop FilePicker {
-  showFolder this (join (userHomePath) '/Desktop') true
+	showFolder this (join (userHomePath) '/Desktop') true
 }
 
 method setDownloads FilePicker {
-  showFolder this (join (userHomePath) '/Downloads') true
+	showFolder this (join (userHomePath) '/Downloads') true
 }
 
 method setExamples FilePicker {
-  showFolder this (gpExamplesFolder) true
+	showFolder this (gpExamplesFolder) true
 }
 
 method setGPFolder FilePicker {
-  showFolder this (gpFolder) true
+	showFolder this (gpFolder) true
 }
 
 method parentFolder FilePicker {
-  i = (lastIndexOf (letters currentDir) '/')
-  if (isNil i) { return }
-  newPath = (substring currentDir 1 (i - 1))
-  showFolder this newPath false
+	i = (lastIndexOf (letters currentDir) '/')
+	if (isNil i) { return }
+	newPath = (substring currentDir 1 (i - 1))
+	showFolder this newPath false
 }
 
 method showFolder FilePicker path isTop {
-  currentDir = path
-  if isTop { topDir = path }
-  setText folderReadout (filePart path)
-  newContents = (list)
-  for dir (sorted (listDirectories currentDir)) {
-	if (not (beginsWith dir '.')) {
-	  add newContents (join '[ ] ' dir)
+	currentDir = path
+	if isTop { topDir = path }
+	setText folderReadout (filePart path)
+	newContents = (list)
+	for dir (sorted (listDirectories currentDir)) {
+		if (not (beginsWith dir '.')) {
+			add newContents (join '[ ] ' dir)
+		}
 	}
-  }
-  for fn (sorted (listFiles currentDir)) {
-	if (not (beginsWith fn '.')) {
-	  if (or (isNil extensions) (hasExtension fn extensions)) {
-		add newContents fn
-	  }
+	for fn (sorted (listFiles currentDir)) {
+		if (not (beginsWith fn '.')) {
+			if (or (isNil extensions) (hasExtension fn extensions)) {
+			add newContents fn
+			}
+		}
 	}
-  }
-  updateParentAndNewFolderButtons this
-  setCollection (contents listPane) newContents
+	updateParentAndNewFolderButtons this
+	setCollection (contents listPane) newContents
 }
 
 method newFolder FilePicker {
-  newFolderName = (prompt (global 'page') 'Folder name?')
-  if ('' == newFolderName) { return }
-  for ch (letters newFolderName) {
-	if (isOneOf ch '.' '/' '\' ':') { error 'Bad folder name' }
-  }
-  newPath = (join currentDir '/' newFolderName)
-  makeDirectory newPath
-  showFolder this newPath false
+	newFolderName = (prompt (global 'page') 'Folder name?')
+	if ('' == newFolderName) { return }
+	for ch (letters newFolderName) {
+		if (isOneOf ch '.' '/' '\' ':') { error 'Bad folder name' }
+	}
+	newPath = (join currentDir '/' newFolderName)
+	makeDirectory newPath
+	showFolder this newPath false
 }
 
 method okay FilePicker {
-  removeFromOwner morph
-  answer = ''
-  if forSaving {
-	answer = (join currentDir '/' (text (contents nameField)))
-  } else {
-	sel = (selection (contents listPane))
-	if (and (notNil sel) (not (beginsWith sel '[ ] '))) {
-	  answer = (join currentDir '/' sel)
+	removeFromOwner morph
+	answer = ''
+	if forSaving {
+		answer = (join currentDir '/' (text (contents nameField)))
+	} else {
+		sel = (selection (contents listPane))
+		if (and (notNil sel) (not (beginsWith sel '[ ] '))) {
+			answer = (join currentDir '/' sel)
+		}
 	}
-  }
-  if (and (notNil action) ('' != answer)) { call action answer }
-  isDone = true
+	if (and (notNil action) ('' != answer)) { call action answer }
+	isDone = true
 }
 
 method fileOrFolderSelected FilePicker {
-  sel = (selection (contents listPane))
-  if (beginsWith sel '[ ] ') {
-	sel = (substring sel 5)
-	if (or (endsWith sel ':')) {
-	  showFolder this sel true
-	} else {
-	  showFolder this (join currentDir '/' sel) false
+	sel = (selection (contents listPane))
+	if (beginsWith sel '[ ] ') {
+		sel = (substring sel 5)
+		if (or (endsWith sel ':')) {
+			showFolder this sel true
+		} else {
+			showFolder this (join currentDir '/' sel) false
+		}
 	}
-  }
 }
 
 method fileOrFolderDoubleClicked FilePicker {
-  sel = (selection (contents listPane))
-  if (beginsWith sel '[ ] ') {
-	sel = (substring sel 5)
-	if (or (endsWith sel ':')) {
-	  showFolder this sel true
-	} else {
-	  showFolder this (join currentDir '/' sel) false
+	sel = (selection (contents listPane))
+	if (beginsWith sel '[ ] ') {
+		sel = (substring sel 5)
+		if (or (endsWith sel ':')) {
+			showFolder this sel true
+		} else {
+			showFolder this (join currentDir '/' sel) false
+		}
+	} else { // file selected
+		if (not forSaving) {
+			if (notNil action) { call action (join currentDir '/' sel) }
+			removeFromOwner morph
+		}
 	}
-  } else { // file selected
-	if (not forSaving) {
-	  if (notNil action) { call action (join currentDir '/' sel) }
-	  removeFromOwner morph
-	}
-  }
 }
 
 method updateParentAndNewFolderButtons FilePicker {
-  // parent button
-  if (and (beginsWith currentDir topDir) ((count currentDir) > (count topDir))) {
-	show (morph parentButton)
-  } else {
-	hide (morph parentButton)
-  }
-
-  // new folder button
-  if (notNil newFolderButton) {
-	if (and forSaving
-			('Browser' != (platform))
-			(not (contains (splitWith currentDir '/') 'runtime'))
-			(currentDir != '/')
-	) {
-	  show (morph newFolderButton)
+	// parent button
+	if (and (beginsWith currentDir topDir) ((count currentDir) > (count topDir))) {
+		show (morph parentButton)
 	} else {
-	  hide (morph newFolderButton)
+		hide (morph parentButton)
 	}
-  }
+
+	// new folder button
+	if (notNil newFolderButton) {
+		if (and forSaving
+				('Browser' != (platform))
+				(not (contains (splitWith currentDir '/') 'runtime'))
+				(currentDir != '/')
+		) {
+			show (morph newFolderButton)
+		} else {
+			hide (morph newFolderButton)
+		}
+	}
 }
 
 // Layout
 
 method redraw FilePicker {
-  scale = (global 'scale')
-  fixLayout window
-  redraw window
-  topInset = (24 * scale)
-  inset = (6 * scale)
-  bm = (costumeData morph)
-  fillRect bm (gray 230) inset topInset ((width bm) - (inset + inset)) ((height bm) - (topInset + inset))
-  costumeChanged morph
-  fixLayout this
+	scale = (global 'scale')
+	fixLayout window
+	redraw window
+	topInset = (24 * scale)
+	inset = (6 * scale)
+	bm = (costumeData morph)
+	fillRect bm (microBlocksColor 'blueGray' 50) inset topInset ((width bm) - (inset + inset)) ((height bm) - (topInset + inset))
+	costumeChanged morph
+	fixLayout this
 }
 
 method fixLayout FilePicker {
-  scale = (global 'scale')
+	scale = (global 'scale')
 
-  // file list
-  topInset = (55 * scale)
-  bottomInset = (40 * scale)
-  leftInset = (110 * scale)
-  rightInset = (20 * scale)
-  setPosition (morph listPane) ((left morph) + leftInset) ((top morph) + topInset)
-  setExtent (morph listPane) ((width morph) - (leftInset + rightInset)) ((height morph) - (topInset + bottomInset))
+	// file list
+	topInset = (55 * scale)
+	bottomInset = (55 * scale)
+	leftInset = (110 * scale)
+	rightInset = (20 * scale)
+	setPosition (morph listPane) ((left morph) + leftInset) ((top morph) + topInset)
+	setExtent (morph listPane) ((width morph) - (leftInset + rightInset)) ((height morph) - (topInset + bottomInset))
 
-  // nameLabel and nameField
-  if (notNil nameLabel) {
-	x = ((left morph) + leftInset)
-	y = ((bottom morph) - (32 * scale))
-	setPosition (morph nameField) x y
+	// nameLabel and nameField
+	if (notNil nameLabel) {
+		x = ((left morph) + leftInset)
+		y = ((bottom morph) - (32 * scale))
+		setPosition (morph nameField) x y
 
-	x += (- ((width (morph nameLabel)) + (8 * scale)))
-	y = (y - (1 * scale))
-	setPosition (morph nameLabel) x y
-  }
+		x += (- ((width (morph nameLabel)) + (8 * scale)))
+		y = (y - (1 * scale))
+		setPosition (morph nameLabel) x y
+	}
 
-  // okay and cancel buttons
-  space = (10 * scale)
-  y = ((bottom morph) - (28 * scale))
-  x = ((right morph) - ((width (morph okayButton)) + (25 * scale)))
-  setPosition (morph okayButton) x y
-  x = (x - ((width (morph cancelButton)) + space))
-  setPosition (morph cancelButton) x y
+	// okay and cancel buttons
+	space = (10 * scale)
+	y = ((bottom morph) - (40 * scale))
+	x = ((right morph) - ((width (morph okayButton)) + (25 * scale)))
+	setPosition (morph okayButton) x y
+	x = (x - ((width (morph cancelButton)) + space))
+	setPosition (morph cancelButton) x y
 }
 
 defineClass FilePickerIcons
 
 method computerIcon FilePickerIcons {
-  data = '
+	data = '
 iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAGcUlEQVR4nO2Wy6tlVxHGf1VrrX3O7dtv
 88BoREFMJomdYAh5GFQkqAiBDJzoSBD/AkGMD4wggjNn4siBEyHRmZqBIebhJKAziRNjOklHu5Pc9O17
 ztlr1cPB6did7oAgiZlYk713wV7721999VXB/+M9Drky8fnvP/oz4KP/4b1nfvO9Bx96xwHc/51f3rJ7
@@ -455,11 +498,11 @@ de/cedfd3PfZTxO+AZbUpsQYeElibLWCVawmZRhORcIpk+CSpFVaNXwGz5lpucv+/nlePv0KZs6Ifmkc
 f+Rz39aMmGNeHax93tUInvvLn0ChaCPSyKFQHXNoVEYxKoKZbr29JAsN0gpdt1tIkUJVQWswPEgKYpBF
 KcuaGVsEAvDh+7/1APB1YIf/Xfzq+cd++BNh601HgOuA42x3i3czAngDOAvsCVsWGtu/ny4CejcjgQ6s
 L17f2/gXyOtCx6O7RQgAAAAASUVORK5CYII='
-  return (readFrom (new 'PNGReader') (base64Decode data))
+	return (readFrom (new 'PNGReader') (base64Decode data))
 }
 
 method desktopIcon FilePickerIcons {
-  data = '
+	data = '
 iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAGcUlEQVR4nO2Wy6tlVxHGf1VrrX3O7dtv
 88BoREFMJomdYAh5GFQkqAiBDJzoSBD/AkGMD4wggjNn4siBEyHRmZqBIebhJKAziRNjOklHu5Pc9O17
 ztlr1cPB6did7oAgiZlYk713wV7721999VXB/+M9Drky8fnvP/oz4KP/4b1nfvO9Bx96xwHc/51f3rJ7
@@ -489,11 +532,11 @@ de/cedfd3PfZTxO+AZbUpsQYeElibLWCVawmZRhORcIpk+CSpFVaNXwGz5lpucv+/nlePv0KZs6Ifmkc
 f+Rz39aMmGNeHax93tUInvvLn0ChaCPSyKFQHXNoVEYxKoKZbr29JAsN0gpdt1tIkUJVQWswPEgKYpBF
 KcuaGVsEAvDh+7/1APB1YIf/Xfzq+cd++BNh601HgOuA42x3i3czAngDOAvsCVsWGtu/ny4CejcjgQ6s
 L17f2/gXyOtCx6O7RQgAAAAASUVORK5CYII='
-  return (readFrom (new 'PNGReader') (base64Decode data))
+	return (readFrom (new 'PNGReader') (base64Decode data))
 }
 
 method downloadsIcon FilePickerIcons {
-  data = '
+	data = '
 iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAHSklEQVR4nO2W249fVRXHP2vvc87v9+tM
 O+20UGg77fTKTVEiGhS8xAfUhIQIiS/6ZGL8C0yMeImYGBPffDM++eCLCcgbCRFJxWKioCAWaMVO7xcK
 zHRmfr9zzt57reXDFFqKiYkBefH7ci7JOftzvt+11zrwf33AkmtvfOmHj/4C2Pcfnnvm8R888NB7DnDv
@@ -527,11 +570,11 @@ EXOhy067usJqu8xrS4t4qairQu5BvacZToEFpDilKNnSlf+B3V/8bnCz3vrJuNV+KpihrEKAGGrMW9JK
 gEopCoUJS0uvUSGUEqhFyNEZhLU5kEKBAlkiVRBCZbQrHU5ECngMxGHlbmsEAjB/73fuB74JjPjf6TfH
 n/jxz+RyIa4Hrgc2AvF9XtiAS8BFYElYc6Fm7euby0DvpxxIQHv5+MHqX/OFuc65fm3hAAAAAElFTkSu
 QmCC'
-  return (readFrom (new 'PNGReader') (base64Decode data))
+	return (readFrom (new 'PNGReader') (base64Decode data))
 }
 
 method examplesIcon FilePickerIcons {
-  data = '
+	data = '
 iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAG3klEQVR4nO2Vy69eVRnGf+9aa+/vOz2n
 Pee0tCCltGiBWgNY0MQoGqOGoDEhMmCiIxPjX2BixEvExJg4c2YcOXBiAjpQiSgSjGFEDAFj0UQ5vVku
 DW3Pd77LXuu9ODglLS2JiQGZ+EzW3it7rfXs533W+8D/8S5Drp747Hcf+wlw+D+se+bx7zz48NtO4L5v
@@ -563,11 +606,11 @@ YzyDt4bl4ORLJzjbJ9CCliAvlL+88CLiRu4FkyBa0BWlDWAx0I+XwROigarRvF6O41vu/2YK98GH2XRu
 w3Jyx9iCBDl1eMypkwTFUIOOwtagFATVtN3bczBKji0yNSkoNMmUJKTizCcLgowoRE7kcYnwbQYCcOi+
 bzwAfBVY4n+HX2w88f0fySUj7gT2AWtAfocPduAi8BpwQdhWoWP77/tLhN5JBFCB+aXx3cW/AeX3f9I8
 jvGZAAAAAElFTkSuQmCC'
-  return (readFrom (new 'PNGReader') (base64Decode data))
+	return (readFrom (new 'PNGReader') (base64Decode data))
 }
 
 method gpFolderIcon FilePickerIcons {
-  data = '
+	data = '
 iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAGeUlEQVR4nO2W28umVRnGf/e91nreb+ZT
 ZyMlbsZtGyEdEwqCbEMH0saUDPTAjoLoLwgi25BBBJ11Fh11IFGgWRCFB4kRHnnQ2ZibHCgRsnBmvvne
 93nWujcdvOpMM0IQmifdJ88G1rOu57qu+7oX/L/e4ZILX3zmu4/+BHjPf1j31G+/c++DbzmAO7/1i1t3
@@ -597,11 +640,11 @@ D4oFEUL6BeN4fzhTDcyMKVdkSSLXCDs8++LzxBh4SWJsvYJVrCZlGE5FwimT4JKkVVo1vIPnwrSzC6GI
 JWbOiH7uPHDDp7+pGbHEst7f+LKrEThnQaFoI3JD31Oojjk0KmcXoyKY6TbbS7LSwOdCVwODIYWqgtZg
 szeTFMQgi1J2amZsEQjA9Xd+4x7gq8AB/nf1y5OPf/9HwrYTLgXeDRwGytu8cQCngVeAU8KWhcb27yfe
 mOhvWyXQgc1r13e2/gVQdXt4J1UXiQAAAABJRU5ErkJggg=='
-  return (readFrom (new 'PNGReader') (base64Decode data))
+	return (readFrom (new 'PNGReader') (base64Decode data))
 }
 
 method homeIcon FilePickerIcons {
-  data = '
+	data = '
 iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAGwElEQVR4nO2WzY9mRRnFf09V3ft2093T
 PTPdAwMMYYAw+IGIwZVojAuiiUpk4UZXJsa/wMSIHxETY+LOnXHlwo0J6I6EBAmokCABDJgQ0DDKMMOH
 gWG6+31vVT0fLl5gYCAxMSAbn03de5O6z6lzTp0q+H99wCUXfvjCj+76JXDNf5j34N0/vO329xzALd//
@@ -632,5 +675,5 @@ gyzGE39/BlLCXZmbk9VxF+JtEriz342xOKrKGDMiBx5znnn6JGVYnm6WA+9Lr6AFLUHuilEQN/IomASh
 haEoVsGiMq6sgSdEA1Wje3vzOC7HP/+9FO7V63x/YXUtuWPsQYKcBjwWtN0ExVCDgcJeVQqC6lL/noNZ
 cmzKtKSg0CVTkpCKs9idCDKiEDmRV0qELxEIwJW3fPdW4FvAKv+7+u3Je37yc2GZhhvAEWALyO9zYwde
 A14GzgpLFgaWqx9fB/R+VgANWLw+frD1bzxSo16udU7bAAAAAElFTkSuQmCC'
-  return (readFrom (new 'PNGReader') (base64Decode data))
+	return (readFrom (new 'PNGReader') (base64Decode data))
 }

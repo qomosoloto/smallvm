@@ -1,6 +1,6 @@
 module MQTT Comm
 author wwj718
-version 1 6 
+version 1 7 
 depends WiFi 
 tags mqtt network 
 description 'A simple MQTT client.
@@ -15,7 +15,7 @@ description 'A simple MQTT client.
   spec 'r' '[net:MQTTLastEvent]' 'MQTT event : binary _' 'bool' false
   spec 'r' 'MQTT event topic' 'topic for MQTT event _' 'str' ''
   spec 'r' 'MQTT event payload' 'payload for MQTT event _' 'str' ''
-  spec ' ' '_MQTT set will' 'MQTT set will topic _ payload _ : retain _ QoS _: buffer sizes _' 'str auto bool num num' 'testWill' 'Last will!' false 0 128
+  spec ' ' '_MQTT set will' 'MQTT set will topic _ payload _ : retain _ QoS _ : buffer sizes _' 'str auto bool num num' 'testWill' 'Last will!' false 0 128
 
 to 'MQTT connect to' broker buffer_sizes client_id username password {
   if ((getIPAddress) != '0.0.0.0') {
@@ -41,7 +41,7 @@ to 'MQTT connected' {
 }
 
 to 'MQTT disconnect' {
-  callCustomCommand '[net:MQTTdisconnect]'
+  callCustomCommand '[net:MQTTDisconnect]'
 }
 
 to 'MQTT event payload' event {
@@ -87,12 +87,11 @@ to 'MQTT unsub' topic {
   if ((callCustomReporter '[net:MQTTUnsub]' ('[data:makeList]' topic)) != (booleanConstant true)) {sayIt 'unsub failure!'}
 }
 
-
 to '_MQTT set will' topic payload retain qos buffer_sizes {
   if ('MQTT connected') {
-      sayIt 'set will has to be called before calling connect'
-      return ''
-    }
+    sayIt 'set will has to be called before calling connect'
+    return ''
+  }
   if ((pushArgCount) < 4) {
     okay = (callCustomReporter '[net:MQTTSetWill]' ('[data:makeList]' topic payload))
   } ((pushArgCount) == 4) {
@@ -104,3 +103,4 @@ to '_MQTT set will' topic payload retain qos buffer_sizes {
     sayIt 'set will failure!'
   }
 }
+

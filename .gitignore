@@ -26,7 +26,7 @@ precompiled/node_modules
 precompiled/package-lock.json
 data/*
 BUILD
-WorkInProgress
+JohnWorkInProgress
 *.swp
 *.swo
 *.exe
@@ -34,3 +34,4 @@ WorkInProgress
 *.pem
 .vscode/*
 .DS_Store
+vm.ino.cpp

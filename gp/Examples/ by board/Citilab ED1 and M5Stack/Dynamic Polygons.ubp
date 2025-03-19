@@ -35,14 +35,14 @@ to polygon sides size xoffset {
   'pen up'
 }
 
-script 492 40 {
+script 496 50 {
 whenCondition (('[sensors:tiltZ]') < -140)
 deco += 1
 deco = (deco % 4)
 waitMillis 200
 }
 
-script 46 47 {
+script 50 57 {
 comment '    By José García Yeste - Citilab
 ===========================
 A cool Turtle library demo!
@@ -54,12 +54,12 @@ node styles. Press the OK button to
 change the polygon color.'
 }
 
-script 493 191 {
+script 497 201 {
 whenCondition ('OK button')
 setPenToRandomColor
 }
 
-script 46 199 {
+script 50 209 {
 whenStarted
 deco = 1
 'set pen color to' (colorSwatch 195 188 254 255)
@@ -73,7 +73,7 @@ forever {
 }
 }
 
-script 493 282 {
+script 497 292 {
 whenButtonPressed 'A'
 setPenToRandomColor
 }
@@ -159,7 +159,7 @@ to 'up button' {
 
 module 'LED Display' Output
 author MicroBlocks
-version 1 8 
+version 1 9 
 choices led_imageMenu heart 'small heart' yes no happy sad confused angry asleep surprised silly fabulous meh 't-shirt' 'roller skate' duck house tortoise butterfly 'stick figure' ghost sword giraffe skull umbrella snake rabbit cow 'quarter note' 'eight note' pitchfork target triangle 'left triangle' 'chess board' diamond 'small diamond' square 'small square' scissors 
 description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) support these primitives with a simulated "fat pixel" display.'
 variables _stop_scrolling_text 
@@ -175,11 +175,10 @@ variables _stop_scrolling_text
   spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
   spec ' ' 'stopScrollingText' 'stop scrolling'
   space
-  spec ' ' '_set display color' 'set display color _' 'color'
-  space
   spec 'r' '_led_image' 'led image _' 'microbitDisplay' 15237440
   spec 'r' '_led_namedImage' '_led_namedImage _' 'menu.led_imageMenu' 'happy'
   spec 'r' '_led_imageData' '_led_imageData'
+  spec ' ' 'set display color' 'set display color _' 'color'
 
 to '_led_image' twentyFiveBitInt {
   comment 'An LED image is a 25-bit integer'
@@ -200,10 +199,6 @@ to '_led_namedImage' name {
   local 'start' (('[data:find]' ':' data i) + 1)
   local 'end' (('[data:find]' ',' data i) - 1)
   return ('[data:convertType]' ('[data:copyFromTo]' data start end) 'number')
-}
-
-to '_set display color' color {
-  callCustomCommand '[display:mbSetColor]' ('[data:makeList]' color)
 }
 
 to displayCharacter s {
@@ -248,6 +243,10 @@ to scroll_text text optionalDelay {
   }
 }
 
+to 'set display color' color {
+  callCustomCommand '[display:mbSetColor]' ('[data:makeList]' color)
+}
+
 to stopScrollingText {
   _stop_scrolling_text = (booleanConstant true)
   waitMillis 10
@@ -257,7 +256,7 @@ to stopScrollingText {
 
 module TFT Output
 author MicroBlocks
-version 1 9 
+version 1 11 
 description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 
   spec ' ' '[tft:clear]' 'clear TFT display'
@@ -274,6 +273,7 @@ description 'Draw graphics and write text on boards with a TFT display, such as 
 Line 2' 50 20 nil 2
   space
   spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'num num color' 10 10
+  spec ' ' '[tft:pixelRow]' 'draw pixel row _ x _ y _ : bytesPerPixel _ : palette _' 'auto num num num str' 'aList' 0 0 4
   spec ' ' '[tft:drawBitmap]' 'draw bitmap _ palette _ on TFT at x _ y _' 'str str num num' 'aBitmap' 'a list of colors' 10 10
   space
   spec 'r' 'tft_colorSwatch' '_' 'color'
