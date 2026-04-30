@@ -1,8 +1,9 @@
 module 'ED1 Fantàstic'
 author 'José García'
-version 1 0 
+version 1 1 
 depends 'ED1 Stepper Motor' 
-description 'Blocks to make the Citilab Fantàstic robot move and turn.'
+description 'Blocks to make the Citilab Fantàstic robot move and turn.
+'
 
   spec ' ' 'fantastic turn' 'turn fantàstic _ degrees' 'auto' 90
   spec ' ' 'fantastic move' 'move fantàstic _ mm' 'auto' 10
@@ -10,15 +11,15 @@ description 'Blocks to make the Citilab Fantàstic robot move and turn.'
 to 'fantastic move' mm {
   local 'steps' ((mm * 230) / 100)
   if (steps > 0) {
-    'move motor ' 'counter-clockwise' 'clockwise' steps
+    'move motor ' 'clockwise' 'counter-clockwise' steps
   } (steps < 0) {
-    'move motor ' 'clockwise' 'counter-clockwise' (0 - steps)
+    'move motor ' 'counter-clockwise' 'clockwise' (0 - steps)
   }
   waitMillis 100
 }
 
 to 'fantastic turn' angle {
-  local 'steps' ((angle * 192) / 100)
+  local 'steps' ((angle * 196) / 100)
   if (steps > 0) {
     'move motor ' 'counter-clockwise' 'counter-clockwise' steps
   } (steps < 0) {

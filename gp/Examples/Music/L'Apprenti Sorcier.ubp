@@ -63,7 +63,7 @@ forever {
 
 module Tone Output
 author MicroBlocks
-version 1 9 
+version 1 10 
 tags tone sound music audio note speaker 
 choices tone_NoteName 'nt;c' 'nt;c#' 'nt;d' 'nt;d#' 'nt;e' 'nt;f' 'nt;f#' 'nt;g' 'nt;g#' 'nt;a' 'nt;a#' 'nt;b' 
 description 'Audio tone generation. Make music with MicroBlocks!
@@ -180,6 +180,8 @@ to 'attach buzzer to pin' pinNumber {
       _tonePin = 25
     } ((boardType) == 'D1-Mini') {
       _tonePin = 12
+    } ((boardType) == 'CodingBox') {
+      _tonePin = 32
     } else {
       _tonePin = -1
     }

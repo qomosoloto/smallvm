@@ -14,6 +14,12 @@
 #include "mem.h"
 #include "interp.h"
 
+#ifdef ESP8266
+	#define IS_INTERRUPT IRAM_ATTR
+#else
+	#define IS_INTERRUPT
+#endif
+
 /*
  * A quadrature incremental encoder
  *
@@ -60,6 +66,9 @@ public:
 		if ((interruptA == -1) || (fullRes && (interruptB == -1))) {
 			return -2; // a pin does not support interrupts
 		}
+
+		setPinMode(pinA, INPUT);
+		setPinMode(pinB, INPUT);
 
 		interruptHandler handler = encoderInterruptHandlerFor(encoderIndex);
 		attachInterrupt(interruptA, handler, CHANGE);
@@ -146,10 +155,10 @@ public:
 static Encoder encoders[NUM_ENCODERS];
 
 // Each encoder has an interrupt handler function that calls updateCount().
-static void interruptHandler_0() { encoders[0].updateCount(); }
-static void interruptHandler_1() { encoders[1].updateCount(); }
-static void interruptHandler_2() { encoders[2].updateCount(); }
-static void interruptHandler_3() { encoders[3].updateCount(); }
+static IS_INTERRUPT void interruptHandler_0() { encoders[0].updateCount(); }
+static IS_INTERRUPT void interruptHandler_1() { encoders[1].updateCount(); }
+static IS_INTERRUPT void interruptHandler_2() { encoders[2].updateCount(); }
+static IS_INTERRUPT void interruptHandler_3() { encoders[3].updateCount(); }
 
 static interruptHandler encoderInterruptHandlerFor(int encoderIndex) {
 	switch(encoderIndex) {
@@ -162,10 +171,10 @@ static interruptHandler encoderInterruptHandlerFor(int encoderIndex) {
 }
 
 // Each pulse counter has an interrupt handler function that increments the count.
-static void pulseInterruptHandler_0() { encoders[0].count++; }
-static void pulseInterruptHandler_1() { encoders[1].count++; }
-static void pulseInterruptHandler_2() { encoders[2].count++; }
-static void pulseInterruptHandler_3() { encoders[3].count++; }
+static IS_INTERRUPT void pulseInterruptHandler_0() { encoders[0].count++; }
+static IS_INTERRUPT void pulseInterruptHandler_1() { encoders[1].count++; }
+static IS_INTERRUPT void pulseInterruptHandler_2() { encoders[2].count++; }
+static IS_INTERRUPT void pulseInterruptHandler_3() { encoders[3].count++; }
 
 static interruptHandler pulseInterruptHandlerFor(int encoderIndex) {
 	switch(encoderIndex) {

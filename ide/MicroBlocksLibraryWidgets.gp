@@ -262,10 +262,20 @@ method queryNewItem MicroBlocksListItemViewer {
 	}
 }
 
+method queryRemoveItem MicroBlocksListItemViewer {
+	menu = (menu nil (action 'removeItem' this) true)
+	for lib contents {
+		addItem menu lib
+	}
+	popUpAtHand menu (global 'page')
+}
+
 method removeItem MicroBlocksListItemViewer itemName {
 	for item contents {
 		if ((renderedItemName this item) == itemName) {
 			contents = (copyWithout contents item)
+			buildListView this
+			fixLayout this
 		}
 	}
 }
@@ -297,9 +307,14 @@ method itemDropped MicroBlocksListItemViewer itemMorph aHand {
 
 method renderedItemName MicroBlocksListItemViewer item {
 	if (notNil itemRenderer) {
-		return (call itemRenderer item)
+		itemName = (call itemRenderer item)
 	} else {
-		return item
+		itemName = item
+	}
+	if ((at itemName 1) == '_') {
+		return (substring itemName 2)
+	} else {
+		return itemName
 	}
 }
 
@@ -317,6 +332,9 @@ method buildListView MicroBlocksListItemViewer {
 		addPart morph (morph (newLibraryItem (renderedItemName this item) this editFlag))
 	}
 	if editFlag {
+		if (not (isEmpty contents)) {
+			addPart morph (morph (newLibraryItem '-' this false (action 'queryRemoveItem' this)))
+		}
 		addPart morph (morph (newLibraryItem '+' this false (action 'queryNewItem' this)))
 	}
 }

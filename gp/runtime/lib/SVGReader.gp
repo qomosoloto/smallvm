@@ -40,7 +40,18 @@ to newSVGImage iconName fgColor bgColor iconScale strokeOverideFlag {
 defineClass SVGImage morph
 
 method initialize SVGImage iconName fgColor bgColor iconScale strokeOverideFlag {
-	bitmap = (readSVGIcon iconName fgColor bgColor iconScale strokeOverideFlag)
+	// Maintain a cache of already loaded SVGs to prevent constantly reading
+	// and parsing from files. This is especially important in libraries.
+	// The cache takes in account file name, colors and scale.
+	// We invalidate the cache upon block scale change.
+	if (isNil (global 'svgCache')) { setGlobal 'svgCache' (dictionary) }
+	cache = (global 'svgCache')
+	key = (join iconName fgColor bgColor iconScale)
+	bitmap = (at cache key)
+	if (isNil bitmap) { 
+		bitmap = (readSVGIcon iconName fgColor bgColor iconScale strokeOverideFlag)
+		atPut cache key bitmap
+	}
 	morph = (newMorph)
 	setCostume morph bitmap
 	return this

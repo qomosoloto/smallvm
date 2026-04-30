@@ -344,6 +344,9 @@ method processEvent Hand evt {
 	}
 	x = (at evt 'x')
 	y = (at evt 'y')
+	if (and (hasActiveMenu page) (isMobile)) {
+		y += (-12 * (global 'scale')) // offset vertically so menu item is not under finger
+	}
 	setPosition morph x y
 	if (type == 'mouseMove') {
 		processMove this
@@ -504,14 +507,6 @@ method processTouchHold Hand currentObj {
 	lastTouchTime = nil
 	if (isMobile) {
 		processRightClicked this currentObj
-	} else {
-		// try to grab object
-		toBeGrabbed = (rootForGrab this lastTouched)
-		if (isClass toBeGrabbed 'Block') {
-			grab this (topBlock toBeGrabbed)
-			lastTouched = nil
-			lastTouchTime = nil
-		}
 	}
 }
 
@@ -643,86 +638,86 @@ method processEvent Keyboard evt {
 		} (type == 'keyDown') {
 			// Arrow key navigation in scrollable morph under mouse pointer
 			if (and (key >= 33) (key <= 40) (isNil focus)) {
-			morph = (ownerThatIsA (morph (objectAt (hand (global 'page')))) 'ScrollFrame')
-			if (notNil morph) {
-				scrollFrame = (handler morph)
-				if (33 === key) { // page up
-					scrollPage scrollFrame -1
-				} (34 === key) { // page down
-					scrollPage scrollFrame 1
-				} (35 === key) { // end
-					scrollEnd scrollFrame
-				} (36 === key) { // home
-					scrollHome scrollFrame
-				} (37 === key) { // left arrow
-					arrowKey scrollFrame 1 0
-				} (38 === key) { // up arrow
-					arrowKey scrollFrame 0 1
-				} (39 === key) { // right arrow
-					arrowKey scrollFrame -1 0
-				} (40 === key) { // down arrow
-					arrowKey scrollFrame 0 -1
+				morph = (ownerThatIsA (morph (objectAt (hand (global 'page')))) 'ScrollFrame')
+				if (notNil morph) {
+					scrollFrame = (handler morph)
+					if (33 === key) { // page up
+						scrollPage scrollFrame -1
+					} (34 === key) { // page down
+						scrollPage scrollFrame 1
+					} (35 === key) { // end
+						scrollEnd scrollFrame
+					} (36 === key) { // home
+						scrollHome scrollFrame
+					} (37 === key) { // left arrow
+						arrowKey scrollFrame 1 0
+					} (38 === key) { // up arrow
+						arrowKey scrollFrame 0 1
+					} (39 === key) { // right arrow
+						arrowKey scrollFrame -1 0
+					} (40 === key) { // down arrow
+						arrowKey scrollFrame 0 -1
+					}
 				}
-			}
 			}
 
 			if (and (at currentKeys key) (8 != key)) { return } // suppress duplicated keyDown events on Gnome and some other Linux desktops
 			atPut currentKeys key true
 
 			if (isNil focus) {
-			pe = (findProjectEditor)
-			if (27 == key) { // escape key
-				if (notNil (flasher (smallRuntime))) {
-					confirmRemoveFlasher (smallRuntime)
-				} (not (decompilerDone (smallRuntime))) {
-					stopDecompilation (smallRuntime)
-				} (notNil (findMorph 'MicroBlocksFilePicker')) {
-					destroy (findMorph 'MicroBlocksFilePicker')
-				} (notNil (findMorph 'MicroBlocksSpinner')) {
-					destroy (handler (findMorph 'MicroBlocksSpinner'))
-				} (notNil (findMorph 'Prompter')) {
-					cancel (handler (findMorph 'Prompter'))
-				} (notNil (selection (scripter pe))) {
-					stopProcesses (selection (scripter pe))
-				} else {
-					stopAndSyncScripts (smallRuntime)
-				}
-			} (13 == key) { // enter key
-				if (notNil (findMorph 'Prompter')) {
-					accept (handler (findMorph 'Prompter'))
-				}
-				for morphName (array 'FilePicker' 'MicroBlocksFilePicker' 'MicroBlocksLibraryImportDialog') {
-					if (isNil filePicker) { filePicker = (findMorph morphName) }
-				}
-				if (notNil filePicker) {
-					okay (handler filePicker)
-				}
-				if (notNil (selection (scripter pe))) {
-					if (shiftKeyDown this) {
-						toggleProcesses (selection (scripter pe))
+				pe = (findProjectEditor)
+				if (27 == key) { // escape key
+					if (notNil (flasher (smallRuntime))) {
+						confirmRemoveFlasher (smallRuntime)
+					} (not (decompilerDone (smallRuntime))) {
+						stopDecompilation (smallRuntime)
+					} (notNil (findMorph 'MicroBlocksFilePicker')) {
+						destroy (findMorph 'MicroBlocksFilePicker')
+					} (notNil (findMorph 'MicroBlocksSpinner')) {
+						destroy (handler (findMorph 'MicroBlocksSpinner'))
+					} (notNil (findMorph 'Prompter')) {
+						cancel (handler (findMorph 'Prompter'))
+					} (notNil (selection (scripter pe))) {
+						stopProcesses (selection (scripter pe))
 					} else {
-						startProcesses (selection (scripter pe))
+						stopAndSyncScripts (smallRuntime)
+					}
+				} (13 == key) { // enter key
+					if (notNil (findMorph 'Prompter')) {
+						accept (handler (findMorph 'Prompter'))
+					}
+					for morphName (array 'FilePicker' 'MicroBlocksFilePicker' 'MicroBlocksLibraryImportDialog') {
+						if (isNil filePicker) { filePicker = (findMorph morphName) }
+					}
+					if (notNil filePicker) {
+						okay (handler filePicker)
+					}
+					if (notNil (selection (scripter pe))) {
+						if (shiftKeyDown this) {
+							toggleProcesses (selection (scripter pe))
+						} else {
+							startProcesses (selection (scripter pe))
+						}
+					}
+				} (or (46 == key) (8 == key)) { // delete and backspace
+					if (notNil (selection (scripter pe))) {
+						deleteBlocks (selection (scripter pe))
 					}
 				}
-			} (or (46 == key) (8 == key)) { // delete and backspace
-				if (notNil (selection (scripter pe))) {
-					deleteBlocks (selection (scripter pe))
+				if (and (111 == (at evt 'char')) (or (controlKeyDown this) (commandKeyDown this))) {
+					// cmd-O or ctrl-O - open file dialog
+					(openProjectMenu pe)
 				}
-			}
-			if (and (111 == (at evt 'char')) (or (controlKeyDown this) (commandKeyDown this))) {
-				// cmd-O or ctrl-O - open file dialog
-				(openProjectMenu pe)
-			}
-			if (and (115 == (at evt 'char')) (or (controlKeyDown this) (commandKeyDown this))) {
-				// cmd-S or ctrl-S - save file dialog
-				(saveProjectToFile pe)
-			}
-			if (and (122 == (at evt 'char'))
-				(or (controlKeyDown this) (commandKeyDown this))
-				(isNil (grabbedObject (hand (global 'page'))))) {
-					// cmd-Z or ctrl-Z - undo last drop
-					if (notNil pe) { undrop (scriptEditor (scripter pe)) }
-			}
+				if (and (115 == (at evt 'char')) (or (controlKeyDown this) (commandKeyDown this))) {
+					// cmd-S or ctrl-S - save file dialog
+					(saveProjectToFile pe)
+				}
+				if (and (122 == (at evt 'char'))
+					(or (controlKeyDown this) (commandKeyDown this))
+					(isNil (grabbedObject (hand (global 'page'))))) {
+						// cmd-Z or ctrl-Z - undo last drop
+						if (notNil pe) { undrop (scriptEditor (scripter pe)) }
+				}
 			}
 		}
 	}
@@ -1397,7 +1392,7 @@ method prompt Page question default editRule callback details {
 	edit (textBox p) hand
 	selectAll (textBox p)
 	if (isNil callback) {
-		cancelTouchHold hand
+		focusOn hand nil
 		while (not (isDone p)) {doOneCycle this}
 		destroy (morph p)
 		return (answer p)
@@ -1411,7 +1406,7 @@ method confirm Page title question yesLabel noLabel callback {
 	setPosition (morph p) (half ((width morph) - (width (morph p)))) (40 * (global 'scale'))
 	addPart morph (morph p)
 	if (isNil callback) {
-		cancelTouchHold hand
+		focusOn hand nil
 		while (not (isDone p)) {doOneCycle this}
 		destroy (morph p)
 		return (answer p)
@@ -1423,7 +1418,7 @@ method inform Page details title yesLabel nonBlocking {
 	initializeForInform p title details yesLabel
 	setPosition (morph p) (half ((width morph) - (width (morph p)))) (40 * (global 'scale'))
 	addPart morph (morph p)
-	cancelTouchHold hand
+	focusOn hand nil
 	if (nonBlocking == true) { return true }
 	while (not (isDone p)) {doOneCycle this}
 	destroy (morph p)
@@ -1440,7 +1435,7 @@ method swipe Page {return true}
 
 method wantsDropOf Page aHandler {
 	return (or
-		(devMode)
+		(and (devMode) (not (isClass aHandler 'Block')))
 		(isClass aHandler 'ColorPicker')
 		(and
 			(hasField aHandler 'window')

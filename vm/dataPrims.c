@@ -47,7 +47,7 @@ static inline int matches(const char *s, OBJ obj) {
 	return IS_TYPE(obj, StringType) && (0 == strcmp(s, obj2str(obj)));
 }
 
-static inline char * nextUTF8(char *s) {
+inline char * nextUTF8(char *s) {
 	// Return a pointer to the start of the UTF8 character following the given one.
 	// If s points to a null byte (i.e. end of the string) return it unchanged.
 
@@ -58,7 +58,7 @@ static inline char * nextUTF8(char *s) {
 	return s;
 }
 
-static int countUTF8(char *s) {
+int countUTF8(char *s) {
 	int count = 0;
 	while (*s) {
 		s = nextUTF8(s);
@@ -67,7 +67,21 @@ static int countUTF8(char *s) {
 	return count;
 }
 
-static int unicodeCodePoint(char *s) {
+OBJ charAt(OBJ stringObj, int i) {
+	char *start = obj2str(stringObj);
+	while (i-- > 1) { // find start of the ith Unicode character
+		if (!*start) return fail(indexOutOfRangeError); // end of string
+		start = nextUTF8(start);
+	}
+	int byteCount = nextUTF8(start) - start;
+	OBJ result = newString(byteCount);
+	if (result) {
+		memcpy(obj2str(result), start, byteCount);
+	}
+	return result;
+}
+
+int unicodeCodePoint(char *s) {
 	// Return the Unicode code point starting at the given start byte.
 
 	int result = -1; // bad unicode character; should not happen
@@ -116,6 +130,29 @@ static uint8 * appendUTF8(uint8 *s, int unicode) {
 		*s++ = 0x80 | (unicode & 0x3F);
 	}
 	return s;
+}
+
+static int substringIsInteger(char *start, char *end) {
+	// Return true if the substring from start up to end represents an integer.
+
+	if ((start < end) && ('-' == *start)) start++; // skip leading minus sign, if any
+	if (start >= end) return false; // no digits; not an integer
+	while (start < end) {
+		int ch = *start++;
+		if ((ch < '0') || (ch > '9')) return false; // non-digit found
+	}
+	return true;
+}
+
+static int substringToInteger(char *start, char *end) {
+	// Return the integer represented by the substring from start up to end.
+
+	char s[20];
+	int count = end - start;
+	if (count > 19) count = 19;
+	strncpy(s, start, count);
+	s[count] = 0;
+	return strtol(s, NULL, 10);
 }
 
 // Growable Lists:
@@ -526,6 +563,7 @@ OBJ primSplit(int argCount, OBJ *args) {
 	char *s = obj2str(args[0]);
 	char *delim = obj2str(args[1]);
 	int delimLen = strlen(delim);
+	int convertNums = ((argCount > 2) && (trueObj == args[2]));
 
 	// count substrings for result list
 	int resultCount = 0;
@@ -548,7 +586,7 @@ OBJ primSplit(int argCount, OBJ *args) {
 
 	// add substrings to the result list
 	if (delimLen == 0) {
-		// return a list containing the characters of s
+		// no delimiter provided; return a list containing the characters of s
 		char *last = s;
 		char *next = nextUTF8(last);
 		for (int i = 0; i < resultCount; i++) {
@@ -560,26 +598,26 @@ OBJ primSplit(int argCount, OBJ *args) {
 			last = next;
 			next = nextUTF8(last);
 		}
+	} else if (1 == resultCount) { // no delimiter found; return list with unsplit source string
+		FIELD(tempGCRoot, 1) = args[0];
 	} else {
-		if (1 == resultCount) { // no delimiters found; return unsplit source string
-			FIELD(tempGCRoot, 1) = args[0];
-			return tempGCRoot;
-		}
 		int i = 1;
 		char *last = s;
+		char *end = s + strlen(s);
 		char *next = strstr(last, delim);
 		while (next && (i <= resultCount)) {
+			OBJ item;
 			int byteCount = next - last;
-			OBJ item = newStringFromBytes(last, byteCount);
-			if (!item) return falseObj; // allocation failed
+			if (convertNums && (substringIsInteger(last, next))) {
+				item = int2obj(substringToInteger(last, next));
+			} else {
+				item = newStringFromBytes(last, byteCount);
+				if (!item) return falseObj; // allocation failed
+			}
 			FIELD(tempGCRoot, i++) = item;
 			last = next + delimLen;
 			next = strstr(last, delim);
-		}
-		if (i <= resultCount) { //
-			OBJ item = newStringFromBytes(last, strlen(last));
-			if (!item) return falseObj; // allocation failed
-			FIELD(tempGCRoot, i++) = item;
+			if (!next) next = end; // handle string after final delimiter
 		}
 	}
 	return tempGCRoot;
@@ -821,6 +859,7 @@ OBJ primAsByteArray(int argCount, OBJ *args) {
 	} else if (IS_TYPE(arg, ListType)) {
 		byteCount = obj2int(FIELD(arg, 0));
 		result = newObj(ByteArrayType, (byteCount + 3) / 4, falseObj);
+		OBJ arg = args[0]; // update arg in case allocation caused a GC
 		if (result) {
 			setByteCountAdjust(result, byteCount);
 			uint8 *bytes = (uint8 *) &FIELD(result, 0);

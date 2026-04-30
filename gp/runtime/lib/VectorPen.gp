@@ -37,7 +37,7 @@ to newVectorPen bitmap owningMorph noPrimitives {
 }
 
 to newVectorPenForSVG pageW pageH {
-	return (initSVG (intialize (new 'VectorPen')) pageW pageH)
+	return (initSVG (initialize (new 'VectorPen')) pageW pageH)
 }
 
 method x VectorPen { return (penX - offsetX) }

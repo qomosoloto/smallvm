@@ -217,7 +217,7 @@ to snapConnect_sendPinState {}
 
 module 'Basic Sensors' Input
 author MicroBlocks
-version 1 1 
+version 1 2 
 tags tilt acceleration light sensor 
 choices accelerometerRange '1' '2' '4' '8' 
 description 'Provides blocks to read tilt in the three axes, acceleration, temperature and light level. Many boards come with this particular set of sensors, such as the micro:bit, the Circuit Playground Express, the Calliope or the Citilab ED1.'
@@ -229,18 +229,20 @@ description 'Provides blocks to read tilt in the three axes, acceleration, tempe
   spec 'r' '[display:lightLevel]' 'light level'
   spec 'r' '[sensors:temperature]' 'temperature (°C)'
   spec 'r' '[sensors:magneticField]' 'magnetic field'
-  spec ' ' '_setAccelRange' 'set acceleration range _ g = 100' 'menu.accelerometerRange' '1'
+  advanced
+  spec ' ' 'setAccelRange' 'set acceleration range _ g = 100' 'menu.accelerometerRange' '1'
 
-to '_setAccelRange' n {
+to setAccelRange n {
   '[sensors:setAccelerometerRange]' (0 + n)
 }
 
 
 module Touch Input
 author MicroBlocks
-version 1 11 
+version 1 13 
 description 'Support for one or two MPR121 12-channel i2c touch sensors.
-Detects MPR121 chips at I2C addresses 90 and, optionally, 92 to handle up to 24 touch pins.'
+Detects MPR121 chips at I2C addresses 90 and, optionally, 92 to handle up to 24 touch pins.
+'
 variables _touch_pinCount _touch_state _touch_isTouched _touch_eventPending _touch_last_touched_pin _touch_last_released_pin 
 
   spec 'r' 'touch_isTouched' 'is pin _ touched?' 'menu.range:1-24' 1
@@ -306,9 +308,10 @@ to '_touch_init' {
 }
 
 to '_touch_readState' addr {
-  local 'lowByte' (i2cGet addr 0)
-  local 'highBits' ((i2cGet addr 1) & 15)
-  return ((highBits << 8) | lowByte)
+  '[sensors:i2cWrite]' addr ('[data:makeList]' 0)
+  local 'bytes' (newList 2)
+  '[sensors:i2cRead]' addr bytes
+  return (((at 2 bytes) << 8) | (at 1 bytes))
 }
 
 to '_touch_setRegister' reg value {
@@ -347,7 +350,10 @@ to '_touch_update' {
 }
 
 to touch_isTouched pin {
-  if (or (pin < 1) (pin > _touch_pinCount)) {return (booleanConstant false)}
+  '_touch_init'
+  if (or (pin < 1) (pin > _touch_pinCount)) {
+    return (booleanConstant false)
+  }
   '_touch_update'
   return ((_touch_state & (1 << (pin - 1))) != 0)
 }

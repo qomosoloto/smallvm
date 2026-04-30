@@ -1,7 +1,7 @@
 module Pluck Output
 author MicroBlocks
-version 1 1 
-depends Tone 
+version 1 2 
+depends _Tone 
 description 'Uses a simple algorithm to synthesize a plucked-string sound similar to an acoustic guitar (see https://en.wikipedia.org/wiki/Karplus–Strong_string_synthesis).
 
 Note: This library does NOT work on the original micro:bit or Calliope mini!

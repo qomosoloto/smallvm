@@ -7,7 +7,7 @@
 // MicroBlocksSpinner.gp - A modal spinner animation
 // Bernat Romagosa, October 2020
 
-defineClass MicroBlocksSpinner morph label sublabel rotation labelGetter doneGetter task stopAction
+defineClass MicroBlocksSpinner morph label sublabel browserWarning rotation labelGetter doneGetter task stopAction
 
 to newSpinner labelReporter doneReporter {
 	return (initialize (new 'MicroBlocksSpinner') labelReporter doneReporter)
@@ -28,6 +28,11 @@ method initialize MicroBlocksSpinner labelReporter doneReporter {
 	sublabel = (newText (localized '(press ESC to cancel)') 'Arial' (18 * scale) (gray 255))
 	addPart morph (morph sublabel)
 
+	browserWarning = (newText (localized 'Do not switch browser tabs!') 'Arial' (18 * scale) (gray 255))
+	if ('Browser' == (platform)) {
+		addPart morph (morph browserWarning)
+	}
+
 	pageM = (morph (global 'page'))
 	setExtent morph (width (bounds pageM)) (height (bounds pageM))
 
@@ -44,6 +49,9 @@ method fixLayout MicroBlocksSpinner {
 	gotoCenterOf (morph sublabel) pageM
 	moveBy (morph label) 0 105
 	moveBy (morph sublabel) 0 170
+
+	gotoCenterOf (morph browserWarning) pageM
+	moveBy (morph browserWarning) 0 235
 }
 
 method drawOn MicroBlocksSpinner ctx {

@@ -115,6 +115,7 @@ method initialize MicroBlocksFilePicker anAction defaultPath extensionList saveF
 	}
 
 	lbox = (listBox (array) nil (action 'fileOrFolderSelected' this) clr)
+	onPreselect lbox (action 'fileOrFolderSelected' this true)
 	onDoubleClick lbox (action 'fileOrFolderDoubleClicked' this)
 	setFont lbox 'Arial' 16
 	if ('Linux' == (platform)) { setFont lbox 'Arial' 12 }
@@ -542,10 +543,11 @@ method okay MicroBlocksFilePicker {
 	isDone = true
 }
 
-method fileOrFolderSelected MicroBlocksFilePicker {
+method fileOrFolderSelected MicroBlocksFilePicker ignoreDirectories {
 	sel = (selection (contents listPane))
 	if (isClass sel 'Array') { sel = (at sel 2) }
 	if (beginsWith sel '[ ] ') {
+		if ignoreDirectories { return }
 		sel = (substring sel 5)
 		if (endsWith sel ':') {
 			showFolder this sel true

@@ -1,7 +1,7 @@
 module BMP Output
 author 'José García Yeste'
-version 2 9 
-depends TFT Files 
+version 2 10 
+depends _TFT _Files 
 description 'Display BMP files on a TFT screen.
 
 BMP files can be transferred to and from boards with a file systems using the put/get commands in the IDE file menu (available in "show advanced blocks" mode).

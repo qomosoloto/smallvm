@@ -1,7 +1,7 @@
 module AMRadioTone Output
 author MicroBlocks
-version 1 0 
-depends SquareWave 
+version 1 1 
+depends _SquareWave 
 tags tone sound music audio note speaker 
 description 'Tone library extended to broadcast the tone to a nearby AM radio, as well as playing it through a speaker.
 

@@ -481,7 +481,6 @@ to replaceLocaleParams aString params {
 }
 
 
-
 // country codes
 
 method languageCodeForName AuthoringSpecs langName {
@@ -494,40 +493,57 @@ method languageCodeForName AuthoringSpecs langName {
 }
 
 method languageNameForCode AuthoringSpecs langCode {
-	// Return the language name for the given languag codee or the argument if no match found.
+	// Return the language name for the given language code or nil if no match found.
 	// The language name is the file name of the translation file.
 
 	for pair (languageCodeList this) {
 		if (langCode == (at pair 2)) { return (first pair) }
 	}
-	return langCode
+	return nil
 }
 
 method languageCodeList AuthoringSpecs {
 	// Return an array of (<languageName> <abbreviation>) pairs."
 	return (array
-		(array 'عربى' 'ar')
-		(array 'Català' 'ca')
+		(array 'Bahasa Indonesia' 'id')
 		(array 'Castellano' 'es')
+		(array 'Català' 'ca')
 		(array 'Deutsch' 'de')
 		(array 'English' 'en')
 		(array 'Euskara' 'eu')
 		(array 'Français' 'fr')
 		(array 'Galego' 'gl')
 		(array 'Italiano' 'it')
-		(array '日本語' 'ja')
 		(array 'Nederlands' 'nl')
 		(array 'Polski' 'pl')
 		(array 'Português (Brasil)' 'pt-br')
 		(array 'Português' 'pt')
-		(array 'தமிழ்' 'ta')
+		(array 'Română' 'ro')
+		(array 'Suomi' 'fi')
 		(array 'Türkçe' 'tr')
 		(array 'Uzbek' 'uz')
+		(array 'tiếng Việt' 'vi')
 		(array 'Čeština' 'cs')
 		(array 'Ελληνικά' 'el')
 		(array 'Русский' 'ru')
+		(array 'Српски' 'sr')
+		(array 'українська мова' 'uk')
+		(array 'Қазақша' 'kk')
+		(array 'عربى' 'ar')
+		(array 'فارسی' 'fa')
+		(array 'தமிழ்' 'ta')
+		(array '日本語' 'ja')
 		(array '简体中文' 'zh-chs')
 		(array '繁體中文' 'zh-cht')
+		(array '한국어' 'ko')
+	)
+}
+
+method isRTL AuthoringSpecs {
+	langCode = (languageCode this)
+	return (or
+		(langCode == 'ar')
+		(langCode == 'fa')
 	)
 }
 

@@ -62,10 +62,10 @@ method setHighlight MicroBlocksConnectWidget isOn {
 method fixLayout MicroBlocksConnectWidget {
 	scale = (global 'scale')
 	centerY = (24 * scale)
-	space = (6 * scale)
+	space = (8 * scale)
 
 	top = (top (morph this))
-	x = ((left morph) + space)
+	x = (left morph)
 
 	m = indicatorM
 	setPosition m x (centerY - ((height m) / 2))
@@ -77,7 +77,7 @@ method fixLayout MicroBlocksConnectWidget {
 
 	m = dropDownArrowM
 	setPosition m x (centerY - ((height m) / 2))
-	x += ((width m) + space)
+	x += (width m)
 
 	setExtent morph (x - (left morph)) (topBarHeight editor)
 }

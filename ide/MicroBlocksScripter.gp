@@ -6,7 +6,7 @@
 
 // MicroBlocksScripter.gp - MicroBlocks script editor w/ built-in palette
 
-defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categorySelector catResizer libHeader libSelector categoryFrame categoryPane libAddButton libAddIcons lastLibraryFolder blocksFrame blocksResizer scriptsFrame nextX nextY embeddedLibraries selection cornerIcon trashcanIcon spacer topGradient topGradientBitmap bottomGradient bottomGradientBitmap lastLibraryButtonStyle lastLibraryHeaderStyle
+defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categorySelector catResizer libHeader libSelector categoryFrame categoryPane libAddButton libAddIcons lastLibraryFolder blocksFrame blocksResizer scriptsFrame nextX nextY embeddedLibraries selection cornerIcon trashcanIcon spacer topGradient topGradientBitmap bottomGradient bottomGradientBitmap lastLibraryButtonStyle lastLibraryHeaderStyle undoStack
 
 method blockPalette MicroBlocksScripter { return (contents blocksFrame) }
 method scriptEditor MicroBlocksScripter { return (contents scriptsFrame) }
@@ -23,6 +23,7 @@ method setSelection MicroBlocksScripter aSelection { selection = aSelection }
 method initialize MicroBlocksScripter aProjectEditor {
 	mbProject = (newMicroBlocksProject)
 	projectEditor = aProjectEditor
+	undoStack = (list)
 	scale = (global 'scale')
 	morph = (newMorph this)
 	listColor = (gray 240)
@@ -161,9 +162,9 @@ method darkModeChanged MicroBlocksScripter {
 	setAlpha (color scriptingActionsContainer) 200
 	setBorderColor scriptingActionsContainer scriptingActionsContainerBorderColor
 	if libWasSelected {
-	    librarySelected this
+		librarySelected this
 	} else {
-	    categorySelected this
+		categorySelected this
 	}
 
 	removePart morph trashcanIcon
@@ -174,6 +175,13 @@ method languageChanged MicroBlocksScripter {
 	changed categorySelector
 	updateLibraryHeader this
 	computeLibraryButtonSize this
+	// make sure the "Add library" button fits into the category pane
+	setExtent (morph categorySelector)
+		(max
+			(+ (data libAddButton) (32 * (global 'scale')))
+			(width (morph categorySelector)))
+		(height (morph categorySelector))
+	fixLayout this
 	updateLibraryButton this true // force redrawing button label
 
 	// update the scripts
@@ -313,7 +321,7 @@ method hideAllMyBlocks MicroBlocksScripter {
 method removeLibraryNamed MicroBlocksScripter libName {
 	removeLibraryNamed mbProject libName
 	closeAllDialogs projectEditor
-	variablesChanged (smallRuntime)
+	librariesChanged (smallRuntime)
 	updateLibraryList this
 	languageChanged this
 }
@@ -479,6 +487,7 @@ method drawOn MicroBlocksScripter ctx {
 method developerModeChanged MicroBlocksScripter {
 	catList = categorySelector
 	setCollection catList (categories this)
+	updateLibraryList this
 	if (not (or (contains (collection catList) (selection catList))
 				(notNil (selection libSelector)))
 	) {
@@ -767,7 +776,6 @@ method createVariable MicroBlocksScripter srcObj {
 	varName = (trim (freshPrompt (global 'page') 'New variable name?' ''))
 	if (varName != '') {
 		addVariable (main mbProject) (uniqueVarName this varName)
-		variablesChanged (smallRuntime)
 		updateBlocks this
 		if (isClass srcObj 'InputSlot') {
 			setContents srcObj varName
@@ -804,8 +812,7 @@ method deleteVariableMenu MicroBlocksScripter {
 }
 
 method deleteVariable MicroBlocksScripter varName {
-	deleteVariable (main mbProject) varName
-	variablesChanged (smallRuntime)
+	deleteVariable mbProject varName
 	updateBlocks this
 }
 
@@ -864,6 +871,26 @@ method saveScripts MicroBlocksScripter oldScale {
 		}
 	}
 	setScripts (main mbProject) scriptsCopy
+	storeUndoState this
+}
+
+method storeUndoState MicroBlocksScripter {
+	if (count undoStack > 100) { removeFirst undoStack }
+	add undoStack (codeString mbProject)
+}
+
+method undo MicroBlocksScripter {
+	if (notEmpty undoStack) {
+		projectString = (removeLast undoStack)
+		if (notNil projectString) {
+			saveNeeded = false // don't save scripts while project is loading
+			loadFromString mbProject projectString false
+			restoreScripts this
+		}
+	} else {
+		removeAllParts (morph scriptsPane)
+		restoreScripts this false
+	}
 }
 
 method updateFunctionOrMethod MicroBlocksScripter script {
@@ -1043,10 +1070,13 @@ method createFunction MicroBlocksScripter isReporter {
 	if isReporter { blockType = 'r' }
 	spec = (blockSpecFromStrings opName blockType opName '')
 	recordBlockSpec mbProject opName spec
-	addToBottom this (scriptForFunction func)
+	script = (scriptForFunction func)
+	if isReporter {
+		// append an empty return block to reporters
+		setNext script (toBlock (newReporter 'return' 0))
+	}
+	addToBottom this script
 	updateBlocks this
-	saveScripts this
-	restoreScripts this
 }
 
 method copyFunction MicroBlocksScripter definition {
@@ -1251,38 +1281,40 @@ method fixedCmd MicroBlocksScripter oldCmd minArgs argTypes argDefaults isReport
 method updateCallsInScriptingArea MicroBlocksScripter op {
 	// Update scripts in the scripting pane that contain calls to the give op.
 
-	// Workaround for recursive structure crash bug:
-	offsetX = (left (morph (contents scriptsFrame)))
-	offsetY = (top (morph (contents scriptsFrame)))
-	restoreScripts this
-	setLeft (morph (contents scriptsFrame)) offsetX
-	setTop (morph (contents scriptsFrame)) offsetY
-	return
-
-// Caution: the following code can create recursive structure that crash!
+	// collect top-level scripts that call the given function
 	scriptsPane = (contents scriptsFrame)
-	affected = (list)
+	affectedScripts = (list)
 	for m (parts (morph scriptsPane)) {
 		b = (handler m)
-		if (and (isClass b 'Block') (containsPrim b op)) {
-			add affected b
+		if (isClass b 'Block') {
+			if (containsPrim b op) {
+				add affectedScripts b
+			}
+			if ('to' == (primName (expression b))) {
+				add affectedScripts b
+			}
 		}
 	}
-	for each affected {
+
+	// update each top-level script that is affected
+	for each affectedScripts {
 		expr = (expression each)
 		if ('to' == (primName expr)) {
 			func = (functionNamed mbProject (first (argList expr)))
-			block = (scriptForFunction func)
+			newScript = (scriptForFunction func)
 		} else {
-			block = (toBlock expr)
-			setNext block (next each)
+			newScript = (toBlock expr)
 		}
+
+		// update the function definition block and any calls in the scripting area
+		wasHighlighted = (notNil (getHighlight (morph each)))
 		x = (left (morph each))
 		y = (top (morph each))
 		destroy (morph each)
-		setPosition (morph block) x y
-		addPart (morph scriptsPane) (morph block)
-		fixBlockColor block
+		setPosition (morph newScript) x y
+		addPart (morph scriptsPane) (morph newScript)
+		fixBlockColor newScript
+		if wasHighlighted { addHighlight (morph newScript) }
 	}
 }
 
@@ -1318,11 +1350,13 @@ method allFilesInDir MicroBlocksScripter rootDir {
 }
 
 method importEmbeddedLibrary MicroBlocksScripter libName {
+	asImplementation = ((at libName 1) == '_')
+	if asImplementation { libName = (substring libName 2) }
 	if ('Browser' == (platform)) {
 		libFileName = (join libName '.ubl')
 		for filePath (allFilesInDir this 'Libraries') {
 			if (endsWith filePath libFileName) {
-				importLibraryFromFile this filePath nil false
+				importLibraryFromFile this filePath nil false asImplementation
 				return
 			}
 		}
@@ -1330,7 +1364,7 @@ method importEmbeddedLibrary MicroBlocksScripter libName {
 	}
 	for filePath (listEmbeddedFiles) {
 		if (endsWith filePath (join libName '.ubl')) {
-			importLibraryFromFile this (join '//' filePath) nil false
+			importLibraryFromFile this (join '//' filePath) nil false asImplementation
 			return
 		}
 	}
@@ -1359,7 +1393,7 @@ method importLocalizedLibraryFromFile MicroBlocksScripter fileName {
 	setTranslations library translations
 }
 
-method importLibraryFromFile MicroBlocksScripter fileName data updateLastLibFolder {
+method importLibraryFromFile MicroBlocksScripter fileName data updateLastLibFolder asImplementation {
 	// Import a library with the given file path. If data is not nil, it came from
 	// a browser upload or file drop. Use it rather than attempting to read the file.
 
@@ -1376,11 +1410,16 @@ method importLibraryFromFile MicroBlocksScripter fileName data updateLastLibFold
 	}
 
 	libName = (withoutExtension (filePart fileName))
-	if (notNil (libraryNamed mbProject libName)) {
+	existingLib = (libraryNamed mbProject libName)
+	if (notNil existingLib) {
 		// replacing library; first hide its block definitions
 		hideAllLibraryDefinitions this libName
 	}
-	importLibraryFromString this (toString data) libName fileName
+	asImplementation = (and
+		(asImplementation == true)
+		(or (isNil existingLib) (isImplementationLib existingLib))
+	)
+	importLibraryFromString this (toString data) libName fileName asImplementation
 }
 
 method importLibraryFromUrl MicroBlocksScripter fullUrl {
@@ -1423,21 +1462,32 @@ method importLibraryFromUrl MicroBlocksScripter fullUrl {
 	return true
 }
 
-method importLibraryFromString MicroBlocksScripter data libName fileName {
-	addLibraryFromString mbProject (toString data) libName fileName
-	variablesChanged (smallRuntime)
+method importLibraryFromString MicroBlocksScripter data libName fileName asImplementation {
+	moduleName = (addLibraryFromString mbProject (toString data) libName fileName)
+	if asImplementation { beImplementation (libraryNamed mbProject libName) }
+	librariesChanged (smallRuntime)
 
 	// update library list and select the new library
 	updateLibraryList this
 	select categorySelector nil
-	select libSelector libName
+	select libSelector moduleName
 	updateBlocks this
 	saveScripts this
 	restoreScripts this
 }
 
 method updateLibraryList MicroBlocksScripter {
-	libNames = (sorted (keys (libraries mbProject)))
+	if (not (showHiddenBlocksEnabled projectEditor)) {
+		libNames = (list)
+		for libName (sorted (keys (libraries mbProject))) {
+			lib = (at (libraries mbProject) libName)
+			if (not (isImplementationLib lib)) {
+				add libNames (moduleName lib)
+			}
+		}
+	} else {
+		libNames = (sorted (keys (libraries mbProject)))
+	}
 	setCollection libSelector libNames
 	oldSelection = (selection libSelector)
 	if (not (contains libNames oldSelection)) {
@@ -1481,7 +1531,7 @@ method installLibraryNamed MicroBlocksScripter libName {
 	if (notNil (libraryNamed mbProject libName)) { return } // library already installed
 	fileName = (fileNameForLibraryNamed this libName)
 	if (isNil fileName) {
-		print 'Unknown library:' libName
+		print 'Unknown library:' libName 'fileName:' fileName
 		return
 	}
 	if (not (endsWith fileName '.ubl')) { fileName = (join fileName '.ubl') }
@@ -1513,6 +1563,10 @@ method fileNameForLibraryNamed MicroBlocksScripter libName {
 			}
 		}
 	}
+	// renamed libraries
+	if ('HSV Colors' == libName) { libName = 'Color' }
+	if ('VL53L0X' == libName) { libName = 'Distance (VL53L0X)' }
+	if ('CutebotPRO' == libName) { libName = 'Cutebot Pro' }
 	return (at embeddedLibraries libName)
 }
 
@@ -1520,12 +1574,13 @@ method extractLibraryName MicroBlocksScripter libData {
 	if (isNil libData) { return nil }
 	for line (lines libData) {
 		if (beginsWith line 'module') {
-			i = (findFirst line '''')
-			if (notNil i) { // quoted library name
+			libName = (at (words line) 2)
+			if ('''' == (at libName 1)) { // quoted library name
+				i = (findFirst line '''')
 				j = (findLast line '''')
-				if ((j - i) > 2) { return (substring line (i + 1) (j - 1)) }
+				libName = (substring line (i + 1) (j - 1))
 			}
-			return (at (words line) 2)
+			return libName
 		}
 	}
 	return nil
@@ -1603,6 +1658,70 @@ method scriptsBottom MicroBlocksScripter {
 	}
 	return result
 }
+
+// category export
+
+method exportPNGsForBuiltinBlocks MicroBlocksScripter {
+	// Exports PNG's for all built-in blocks at 100% and 50% in one folder per blocks category.
+	// To run:
+	//		exportPNGsForBuiltinBlocks (scripter (first (allInstances 'MicroBlocksEditor')))
+
+	allCategories = (list 'Output' 'Input' 'Pins' 'Comm' 'Control' 'Operators' 'Variables' 'Data')
+	for category allCategories {
+		cat = (join 'cat;' category)
+		exportBlockPNGsForCategory (scripter (first (allInstances 'MicroBlocksEditor'))) cat 1.0
+		exportBlockPNGsForCategory (scripter (first (allInstances 'MicroBlocksEditor'))) cat 0.5
+	}
+}
+
+method exportBlockPNGsForCategory MicroBlocksScripter cat scale {
+	makeDirectory 'block-pngs'
+	folderName = (join './block-pngs/' (substring cat 5))
+	makeDirectory folderName
+	suffix = '.png'
+	oldExportScale = (global 'blockExportScale')
+	setGlobal 'blockExportScale' scale
+	if (scale < 1) {
+		n = (round (100 * scale))
+		suffix = (join '_' n 'p.png')
+	}
+	specList = (specsFor (authoringSpecs) cat)
+	addAll specList (specsFor (authoringSpecs) (join cat '-Advanced'))
+	for spec specList {
+		if (not (isOneOf spec '-')) {
+			blockName = (blockOp spec)
+			i = (findFirst blockName ':')
+			if (and (beginsWith blockName '[') (notNil i)) {
+				blockName = (join
+					(substring blockName 2 (i - 1))
+					'_'
+					(substring blockName (i + 1) ((count blockName) - 1)))
+			}
+			block = (blockForSpec spec)
+			addPart morph (morph block)
+			if ('/' == blockName) { blockName = 'div' }
+			filePath = (toLowerCase (join folderName '/' blockName suffix))
+			print filePath
+			exportAsImageScaled block nil nil filePath
+			removePart morph (morph block)
+		}
+	}
+	setGlobal 'blockExportScale' oldExportScale
+}
+
+// dropping
+
+method wantsDropOf MicroBlocksScripter aHandler {
+	return (isAnyClass aHandler 'Block' 'Monitor' 'MicroBlocksSelectionContents')
+}
+
+method justReceivedDrop MicroBlocksScripter aHandler {
+	// let blockPalette handle this drop
+	justReceivedDrop (blockPalette this) aHandler
+	return
+}
+
+// gradient bitmap
 
 method gradientBitmap MicroBlocksScripter {
 	data = ' iVBORw0KGgoAAAANSUhEUgAAAAEAAAAeCAYAAADtlXTHAAAACXBIWXMAAA7DAAAOwwHHb

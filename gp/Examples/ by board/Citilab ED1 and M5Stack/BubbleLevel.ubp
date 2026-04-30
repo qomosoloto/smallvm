@@ -19,7 +19,7 @@ forever {
 
 module 'Basic Sensors' Input
 author MicroBlocks
-version 1 1 
+version 1 2 
 tags tilt acceleration light sensor 
 choices accelerometerRange '1' '2' '4' '8' 
 description 'Provides blocks to read tilt in the three axes, acceleration, temperature and light level. Many boards come with this particular set of sensors, such as the micro:bit, the Circuit Playground Express, the Calliope or the Citilab ED1.'
@@ -30,16 +30,18 @@ description 'Provides blocks to read tilt in the three axes, acceleration, tempe
   spec 'r' '[sensors:acceleration]' 'acceleration'
   spec 'r' '[display:lightLevel]' 'light level'
   spec 'r' '[sensors:temperature]' 'temperature (°C)'
-  spec ' ' '_setAccelRange' 'set acceleration range _ g = 100' 'menu.accelerometerRange' '1'
+  spec 'r' '[sensors:magneticField]' 'magnetic field'
+  advanced
+  spec ' ' 'setAccelRange' 'set acceleration range _ g = 100' 'menu.accelerometerRange' '1'
 
-to '_setAccelRange' n {
+to setAccelRange n {
   '[sensors:setAccelerometerRange]' (0 + n)
 }
 
 
 module TFT Output
 author MicroBlocks
-version 1 11 
+version 1 12 
 description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 
   spec ' ' '[tft:clear]' 'clear TFT display'
@@ -110,6 +112,7 @@ to tft_colorSwatch color {
 }
 
 to tft_drawText s x y color optionalScale optionalBGColor {
+  s = ('[data:convertType]' s 'string')
   local 'scale' (argOrDefault 5 2)
   local 'bgColor' (argOrDefault 6 '')
   local 'lines' ('[data:split]' s ('[data:unicodeString]' 10))

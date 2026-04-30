@@ -40,7 +40,7 @@ to newProjTest fileName {
 
 // MicroBlocksProject Class
 
-defineClass MicroBlocksProject main libraries blockSpecs
+defineClass MicroBlocksProject main libraries blockSpecs varIndices nextVarIndex
 
 to newMicroBlocksProject {
 	return (initialize (new 'MicroBlocksProject'))
@@ -50,6 +50,8 @@ method initialize MicroBlocksProject {
 	main = (newMicroBlocksModule 'main')
 	libraries = (dictionary)
 	blockSpecs = (dictionary)
+	varIndices = (dictionary)
+	nextVarIndex = 0
 	return this
 }
 
@@ -70,8 +72,12 @@ method extraCategories MicroBlocksProject { return (array) } // called by Author
 
 method hasUserCode MicroBlocksProject {
 	if (isNil main) { return false }
-	if (and (isEmpty (scripts main)) (isEmpty (functions main)) (isEmpty (variableNames main))) {
-		return false
+	if (and
+		(isEmpty (scripts main))
+		(isEmpty (functions main))
+		(isEmpty (variableNames main))
+		(isEmpty libraries)) {
+			return false
 	}
 	return true
 }
@@ -101,7 +107,9 @@ method addLibrary MicroBlocksProject aMicroBlocksModule {
 		updatingLibrary oldLib aMicroBlocksModule
 	}
 	remove libraries libName
-	atPut libraries libName aMicroBlocksModule
+	if (not (isImplementationLib aMicroBlocksModule)) {
+		atPut libraries libName aMicroBlocksModule
+	}
 
 	// the functions in this new library supersede all earlier versions of those functions
 	newFunctionNames = (dictionary)
@@ -243,9 +251,39 @@ method addVariable MicroBlocksProject newVar {
 }
 
 method deleteVariable MicroBlocksProject varName {
+	deleteVariable main varName
 	for lib (values libraries) {
 		deleteVariable lib varName
 	}
+}
+
+method indexForVar MicroBlocksProject varName {
+	// Return a unique index for the given global variable.
+	// Details: Assign indices sequentially without trying to recycle the indices
+	// of variables that have been deleted. When we run out of indices, clear the
+	// dictionary and recompile all scripts. (This is not common since most projects
+	// will not run out of variable indices.)
+
+	result = (at varIndices varName)
+	if (notNil result) { return result }
+	if (nextVarIndex >= 128) {
+		// Rare case: No more variable indices
+		if ((count (allVariableNames this)) > 128) {
+			// Very rare: Too many global variables. Assign 127 to remaining variables.
+			// Code will run strangely but won't crash.
+			return 127
+		}
+		// There are enough indices for all globals (perhaps because variables have been deleted)
+		// Recompile all scripts, to re-assign all global variable indices.
+		varIndices = (dictionary)
+		nextVarIndex = 0
+		recompileNeeded (smallRuntime)
+	}
+	// Common case: Assign the next global variable index to varName
+	varIndex = nextVarIndex
+	nextVarIndex += 1
+	atPut varIndices varName varIndex
+	return varIndex
 }
 
 // Variables
@@ -260,6 +298,173 @@ method allBroadcasts MicroBlocksProject {
 		}
 	}
 	return (toList (sorted (keys result)))
+}
+
+// Collect unused functions
+
+method unusedFunctions MicroBlocksProject paletteBlock {
+	// Return a list of functions that are not used by this project (directly or indirectly).
+	// If the project contains a custom call block, trace the function call if the argument
+	// to the call block is a string constant. Otherise, assume that any function could be
+	// called so there are no unused functions.
+	// The optional paletteBlock argument supports running blocks in the palette.
+
+	// create dictionary with all functions
+	functionCalled = (dictionary)
+	for f (allFunctions this) {
+		atPut functionCalled (functionName f) false
+	}
+
+	scriptsToScan = (toList (copy (scripts main)))
+	if (notNil paletteBlock) {
+		add scriptsToScan (list 0 0 (expression paletteBlock))
+	}
+
+	// mark functions called by scripts
+	todo = (list)
+	for entry scriptsToScan {
+		// a script entry is a three-element list: x, y, script
+		for b (allBlocks (at entry 3)) {
+			op = (primName b)
+			if (isOneOf op 'callCustomCommand' 'callCustomReporter' 'sendBroadcast') {
+				// if argument is a string the call is known; otherwise any function could be called
+				callArg = (first (argList b))
+				if (isClass callArg 'String') {
+					op = callArg
+				} else {
+					return (list)
+				}
+			}
+			if ((at functionCalled op 'notAFunction') == false) {
+				atPut functionCalled op true
+				add todo op
+			}
+		}
+	}
+
+	// mark all reachable functions
+	while (notEmpty todo) {
+		f = (functionNamed this (removeFirst todo))
+		for b (allBlocks (cmdList f)) {
+			op = (primName b)
+			if (isOneOf op 'callCustomCommand' 'callCustomReporter' 'sendBroadcast') {
+				// if argument is a string the call is known; otherwise any function could be called
+				callArg = (first (argList b))
+				if (isClass callArg 'String') {
+					op = callArg
+				} else {
+					return (list)
+				}
+			}
+			if ((at functionCalled op 'notAFunction') == false) {
+				atPut functionCalled op true
+				add todo op
+			}
+		}
+	}
+
+	// remove project user functions from unused list so the decompiler can recover them
+	for f (functions main) {
+		remove functionCalled (functionName f)
+	}
+
+	// return list of uncalled functions
+	result = (list)
+	for k (keys functionCalled) {
+		if (not (at functionCalled k)) { add result k }
+	}
+	return result
+}
+
+method unusedGlobals MicroBlocksProject {
+	// Return a list of global variables that are not used by this project.
+
+	// make a list of globals not owned by any library
+	unusedGlobals = (toList (variableNames main))
+	for lib (values libraries) {
+		for varName (variableNames lib) {
+			remove unusedGlobals varName
+		}
+	}
+
+	// scan scripts
+	for entry (scripts main) {
+		// a script entry is a three-element list: x, y, script
+		for b (allBlocks (at entry 3)) {
+			op = (primName b)
+			if (isOneOf op 'v' '=' '+=') {
+				varName = (first (argList b))
+				remove unusedGlobals varName
+			}
+		}
+	}
+
+	// scan functions
+	for f (allFunctions this) {
+		for b (allBlocks (cmdList f)) {
+			op = (primName b)
+			if (isOneOf op 'v' '=' '+=') {
+				varName = (first (argList b))
+				if (not (or
+					(contains (argNames f) varName)
+					(contains (localNames f) varName))) {
+						remove unusedGlobals varName
+				}
+			}
+		}
+	}
+
+	return unusedGlobals
+}
+
+method globalVarRefsByFunction MicroBlocksProject {
+	// Return a string showing the number of scripts and/or functions use each global variable.
+
+	// make a dictionary of globals not owned by any library
+	// each entry is a list, initially empty, of the functions that use the variable
+	varUsers = (dictionary)
+	for v (variableNames main) {
+		atPut varUsers v (list)
+	}
+	for lib (values libraries) {
+		for varName (variableNames lib) {
+			remove varUsers varName
+		}
+	}
+
+	// scan scripts
+	for entry (scripts main) {
+		// a script entry is a three-element list: x, y, script
+		for b (allBlocks (at entry 3)) {
+			op = (primName b)
+			if (isOneOf op 'v' '=' '+=') {
+				varName = (first (argList b))
+				varUserList = (at varUsers varName)
+				if (notNil varUserList) {
+					add varUserList 'script'
+				}
+			}
+		}
+	}
+
+	// scan functions
+	for f (allFunctions this) {
+		for v (globalVarsUsed f) {
+			varUserList = (at varUsers v)
+			if (notNil varUserList) {
+				add varUserList (functionName f)
+			}
+		}
+	}
+
+	result = (list)
+	for v (sorted (keys varUsers)) {
+		varUserList = (at varUsers v)
+		if ((count varUserList) < 2) {
+			add result (join '''' v ''' -> ' (joinStrings varUserList ' '))
+		}
+	}
+	return (joinStrings result (newline))
 }
 
 // Loading
@@ -305,7 +510,7 @@ method loadFromString MicroBlocksProject s updateLibraries {
 }
 
 method addLibraryFromString MicroBlocksProject s libName fileName {
-	// Load a library from a string.
+	// Load a library from a string and return its module name.
 	cmdList = (parse s)
 	loadSpecs this cmdList
 	cmdsByModule = (splitCmdListIntoModules this cmdList)
@@ -337,7 +542,7 @@ method addLibraryFromString MicroBlocksProject s libName fileName {
 		}
 		addLibrary this lib
 	}
-	return this
+	return moduleName
 }
 
 method parsedSpecs MicroBlocksProject cmdList {
@@ -461,7 +666,7 @@ method equal MicroBlocksProject proj {
 
 // MicroBlocksModule Class
 
-defineClass MicroBlocksModule moduleName moduleCategory dependencies version author description tags path variableNames blockList functions scripts blockSpecs choices translationSources
+defineClass MicroBlocksModule moduleName moduleCategory dependencies version author description tags path variableNames blockList functions scripts blockSpecs choices translationSources isImplementation
 
 to newMicroBlocksModule modName {
 	return (initialize (new 'MicroBlocksModule') modName)
@@ -482,6 +687,7 @@ method initialize MicroBlocksModule name {
 	functions = (array)
 	scripts = (array)
 	translationSources = (dictionary)
+	isImplementation = false
 	return this
 }
 
@@ -498,6 +704,8 @@ method tags MicroBlocksModule { return (copy tags) }
 method choices MicroBlocksModule { return choices }
 method path MicroBlocksModule { return path }
 method dependencies MicroBlocksModule { return (copy dependencies) }
+method isImplementationLib MicroBlocksModule { return isImplementation }
+method beImplementation MicroBlocksModule { isImplementation = true }
 method setDependencies MicroBlocksModule deps { dependencies = (toArray (copy deps)) }
 method setDescription MicroBlocksModule desc { description = desc }
 method setAuthor MicroBlocksModule auth { author = auth }
@@ -554,7 +762,6 @@ method defineFunctionInModule MicroBlocksModule funcName funcParams funcBody {
 		}
 	}
 	functions = (copyWith functions f)
-	recompileNeeded (smallRuntime)
 	return f
 }
 
@@ -676,6 +883,8 @@ method codeString MicroBlocksModule owningProject newLibName {
 	for op blockList {
 		if ('-' == op) {
 			add result (join '  space' (newline))
+		} ('advanced' == op) {
+			add result (join '  advanced' (newline))
 		} else {
 			spec = (at projectSpecs op)
 			if (notNil spec) {
@@ -871,7 +1080,7 @@ method loadModuleNameAndCategory MicroBlocksModule cmdList {
 			if ((count (argList cmd)) > 1) {
 				cat = (at (argList cmd) 2)
 				if (isClass cat 'Reporter') { cat = (first (argList cat)) } // unquoted var (see above)
- 				if (beginsWith cat 'cat;') {
+				if (beginsWith cat 'cat;') {
 					cat = (substring cat 5) // remove leading 'cat;' prefix used for translation
 				}
 				moduleCategory = cat
@@ -956,8 +1165,12 @@ method loadDependencies MicroBlocksModule cmdList {
 }
 
 method importDependencies MicroBlocksModule scripter {
+	project = (project scripter)
 	for dependency dependencies {
-		importDependency this dependency scripter
+		if (isNil (libraryNamed project dependency)) {
+			// don't import a dependent library if it is already loaded
+			importDependency this dependency scripter
+		}
 	}
 }
 
@@ -1167,6 +1380,51 @@ method functionsEqual MicroBlocksModule f1 f2 {
 	if ((cmdList f1) != (cmdList f1)) { return false }
 	if ((module f1) != (module f1)) { return false }
 	return true
+}
+
+// translation template export
+
+to templateStringForLibrary libName {
+	// setClipboard (templateStringForLibrary 'CoCube Sengo1')
+	project = (project (first (allInstances 'MicroBlocksEditor')))
+	lib = (libraryNamed project libName)
+	if (isNil lib) { return '' }
+	return (join (choiceTemplates lib) (newline) (blockTemplates lib))
+}
+
+method choiceTemplates MicroBlocksModule {
+	seen = (dictionary) // used to avoid duplicate entries
+	result = (list)
+	for pair (sortedPairs choices true) {
+		choiceList = (at pair 2)
+		for c choiceList {
+			if (not (or (representsAnInteger c) (contains seen c))) {
+				add seen c
+				add result (join '#. ' moduleName ' library choice')
+				add result (join 'msgid "' c '"')
+				add result 'msgstr ""'
+				add result ''
+			}
+		}
+	}
+	return (joinStrings result (newline))
+}
+
+method blockTemplates MicroBlocksModule {
+	seen = (dictionary) // used to avoid duplicate entries
+	result = (list)
+	for pair (sortedPairs blockSpecs true) {
+		spec = (at pair 2)
+		blockLabel = (first (specs spec))
+		if (not (or (beginsWith blockLabel '_') (contains seen blockLabel))) {
+			add seen blockLabel
+			add result (join '#. ' moduleName ' library block')
+			add result (join 'msgid "' blockLabel '"')
+			add result 'msgstr ""'
+			add result ''
+		}
+	}
+	return (joinStrings result (newline))
 }
 
 // localization

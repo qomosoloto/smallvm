@@ -42,7 +42,7 @@ OBJ vars[MAX_VARS];
 // The VM stops the task and records the error code and IP where the error occurred.
 
 static uint8 errorCode = noError;
-static int taskSleepMSecs = 0;
+static int taskSleepUSecs = 0;
 
 OBJ fail(uint8 errCode) {
 	errorCode = errCode;
@@ -56,8 +56,14 @@ int failure() {
 #ifndef EMSCRIPTEN
 	void taskSleep(int msecs) {
 		// Make the current task sleep for the given number of milliseconds to free up cycles.
-		taskSleepMSecs = msecs;
-		errorCode = sleepSignal;
+		taskSleepUSecs = msecs * 1000;
+		if (noError == errorCode) errorCode = sleepSignal;
+	}
+
+	void taskSleepMicros(int usecs) {
+		// Make the current task sleep for the given number of microseconds to free up cycles.
+		taskSleepUSecs = usecs;
+		if (noError == errorCode) errorCode = sleepSignal;
 	}
 #endif
 
@@ -191,42 +197,6 @@ static OBJ primUSecsSince(int argCount, OBJ *args) {
 	return int2obj(deltaTime);
 }
 
-// String Access
-
-static inline char * nextUTF8(char *s) {
-	// Return a pointer to the start of the UTF8 character following the given one.
-	// If s points to a null byte (i.e. end of the string) return it unchanged.
-
-	if (!*s) return s; // end of string
-	if ((uint8) *s < 128) return s + 1; // single-byte character
-	if (0xC0 == (*s & 0xC0)) s++; // start of multi-byte character
-	while (0x80 == (*s & 0xC0)) s++; // skip continuation bytes
-	return s;
-}
-
-static int countUTF8(char *s) {
-	int count = 0;
-	while (*s) {
-		s = nextUTF8(s);
-		count++;
-	}
-	return count;
-}
-
-static OBJ charAt(OBJ stringObj, int i) {
-	char *start = obj2str(stringObj);
-	while (i-- > 1) { // find start of the ith Unicode character
-		if (!*start) return fail(indexOutOfRangeError); // end of string
-		start = nextUTF8(start);
-	}
-	int byteCount = nextUTF8(start) - start;
-	OBJ result = newString(byteCount);
-	if (result) {
-		memcpy(obj2str(result), start, byteCount);
-	}
-	return result;
-}
-
 // Board Type
 
 #define BOARD_TYPE_SIZE 32
@@ -295,6 +265,26 @@ static OBJ primMaximum(int argCount, OBJ *args) {
 		if (!isInt(arg)) return fail(needsIntegerError);
 		int n = obj2int(arg);
 		if (n > result) result = n;
+	}
+	return int2obj(result);
+}
+
+static inline OBJ primSum(int argCount, OBJ *args) {
+	int result = 0;
+	if ((1 == argCount) && IS_TYPE(args[0], ListType)) {
+		OBJ *src = &FIELD(args[0], 0);
+		int count = obj2int(*src++); // list item count
+		for (int i = 0; i < count; i++) {
+			OBJ arg = *src++;
+			if (!isInt(arg)) return fail(needsListOfIntegers);
+			result += obj2int(arg);
+		}
+	} else {
+		for (int i = 0; i < argCount; i++) {
+			OBJ arg = args[i];
+			if (!isInt(arg)) return fail(needsIntegerError);
+			result += obj2int(arg);
+		}
 	}
 	return int2obj(result);
 }
@@ -388,13 +378,12 @@ static int functionNameMatches(int chunkIndex, char *functionName, int nameLengt
 	return true;
 }
 
-static int chunkIndexForFunction(char *functionName) {
+int chunkIndexForFunction(char *functionName) {
 	// Return the chunk index for the function with the given name or -1 if not found.
 
 	int nameLength = strlen(functionName);
 	for (int i = 0; i < MAX_CHUNKS; i++) {
-		int chunkType = chunks[i].chunkType;
-		if ((functionHat == chunkType) &&
+		if ((functionHat == chunks[i].chunkType) &&
 			 functionNameMatches(i, functionName, nameLength)) {
 				return i;
 		}
@@ -459,6 +448,9 @@ static void interpDebug(int ip, int cmd, int arg, int sp) {
 	reportNum("sp", sp - task->stack); \
 	reportNum("fp", fp - task->stack); \
 }
+
+#define OP_POP 19
+#define OP_DECREMENT_AND_JUMP 26
 
 static void runTask(Task *task) {
 	register int op;
@@ -539,7 +531,7 @@ static void runTask(Task *task) {
 		&&greaterThan_op,
 		&&not_op,
 	&&RESERVED_op,
-	&&RESERVED_op,
+		&&sum_op,
 		&&longMultiply_op,			// 70
 		&&absoluteValue_op,
 		&&minimum_op,
@@ -611,13 +603,13 @@ static void runTask(Task *task) {
 		// sleepSignal is not a actual error; it just suspends the current task
 		if (sleepSignal == errorCode) {
 			errorCode = noError; // clear the error
-			if (taskSleepMSecs > 0) {
+			if (taskSleepUSecs > 0) {
 				task->status = waiting_micros;
-				task->wakeTime = microsecs() + (taskSleepMSecs * 1000);
+				task->wakeTime = microsecs() + (taskSleepUSecs);
 			}
 			goto suspend;
 		}
-		// tmp encodes the error location: <22 bit ip><8 bit chunkIndex>
+		// tmp encodes the error location: <16 bit ip><8 bit chunkIndex>
 		tmp = ((ip - (int16 *) task->code) << 8) | (task->currentChunkIndex & 0xFF);
 		sendTaskError(task->taskChunkIndex, errorCode, tmp);
 		task->status = unusedTask;
@@ -717,12 +709,21 @@ static void runTask(Task *task) {
 		DISPATCH();
 	jmp_op:
 	longJmp_op:
-	exitLoop_op:
 		if (!arg) arg = *ip++; // zero arg means offset is in the next word
 		ip += arg;
 #if USE_TASKS
 		if (arg < 0) goto suspend;
 #endif
+		DISPATCH();
+	exitLoop_op:
+		if (!arg) arg = *ip++; // zero arg means offset is in the next word
+		ip += arg;
+		tmp = CMD(*(ip - 1));
+		if (tmp == OP_POP) { // pop 'for' loop state
+			sp -= 3;
+		} else if (tmp == OP_DECREMENT_AND_JUMP) { // pop 'repeat' loop counter
+			sp -= 1;
+		}
 		DISPATCH();
 	jmpTrue_op:
 		if (!arg) arg = *ip++; // zero arg means offset is in the next word
@@ -1065,6 +1066,11 @@ static void runTask(Task *task) {
 		*(sp - arg) = int2obj(evalInt(*(sp - 2)) >> evalInt(*(sp - 1)));
 		POP_ARGS_REPORTER();
 		DISPATCH();
+
+	sum_op:
+		*(sp - arg) = primSum(arg, sp - arg);
+		POP_ARGS_REPORTER();
+		DISPATCH();
 	longMultiply_op:
 		{
 			long long product = (long long) (evalInt(*(sp - 3))) * (long long) (evalInt(*(sp - 2)));
@@ -1073,6 +1079,7 @@ static void runTask(Task *task) {
 		}
 		POP_ARGS_REPORTER();
 		DISPATCH();
+
 	// list operations:
 	newList_op:
 		*(sp - arg) = primNewList(arg, sp - arg);
@@ -1377,10 +1384,10 @@ void vmLoop() {
 				}
 			}
 		}
-		if (taskSleepMSecs) {
+		if (taskSleepUSecs) {
 			// if any task called taskSleep(), do VM background tasks sooner
-			taskSleepMSecs = 0;
-			count = (count < 5) ? count : 5;
+			taskSleepUSecs = 0;
+			count = (count < 5000) ? count : 5000;
 		}
 
 #ifdef GNUBLOCKS

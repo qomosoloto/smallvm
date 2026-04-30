@@ -3,8 +3,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: interest@microblocks.fun\n"
 "POT-Creation-Date: 2024-10-28 16:23+0200\n"
-"PO-Revision-Date: 2025-01-20 08:22+0000\n"
-"Last-Translator: Bernat Romagosa <bernat@romagosa.work>\n"
+"PO-Revision-Date: 2026-02-06 12:01+0000\n"
+"Last-Translator: Josep Ferràndiz <josep.ferrandiz@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/microblocks/ide/"
 "es/>\n"
 "Language: es\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.10-dev\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 #. Block part type, while making a new block
 msgid "input"
@@ -28,7 +28,7 @@ msgstr "Entrada"
 
 #. Tip Bar label or text (at the bottom of the IDE, gives info on the currently hovered element)
 msgid "Library"
-msgstr "Librería"
+msgstr "Biblioteca"
 
 #. Tip Bar label or text (at the bottom of the IDE, gives info on the currently hovered element)
 msgid "Palette"
@@ -98,7 +98,7 @@ msgstr "¿Nombre de la variable?"
 
 #. Block in Variables category
 msgid "set _ to _"
-msgstr "asigna _ a _"
+msgstr "asigna a _ el valor _"
 
 #. Block in Variables category
 msgid "change _ by _"
@@ -380,7 +380,7 @@ msgstr "revierte"
 
 #. Library label right click context menu option
 msgid "delete library"
-msgstr "elimina esta librería"
+msgstr "elimina biblioteca"
 
 #. File upload process information
 msgid "uploaded"
@@ -469,7 +469,7 @@ msgstr "Casilla booleana"
 
 #. String in file picker and library dialogs
 msgid "New library name?"
-msgstr "¿Nombre de la nueva librería?"
+msgstr "¿Nombre de la nueva biblioteca?"
 
 #. Text right-click context menu option
 msgid "paste"
@@ -485,7 +485,7 @@ msgstr "Tipo de placa:"
 
 #. Sphero-RVR robot library block
 msgid "set RGB LED _ to red _ green _ blue _"
-msgstr "pon el LED RGB a rojo _ verde _ azul _"
+msgstr "pon el LED RGB _ a rojo _ verde _ azul _"
 
 #. MicroBlocks IDE message
 msgid "Plug in the board."
@@ -1418,7 +1418,7 @@ msgstr "fija velocidad del plotter a _ %"
 
 #. Keyestudio Smart Farm library block
 msgid "Farm light level"
-msgstr "Farm nivell de luz ambiental"
+msgstr "Farm nivel de luz ambiental"
 
 #. OLED Graphics library block
 msgid "clear"
@@ -2007,7 +2007,7 @@ msgstr "ESC"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch Tail _ Red _ Green _ Blue _"
-msgstr "enciende la cola de color R _ % V _ % A _ %"
+msgstr "enciende la cola _ de color R _ % V _ % A _ %"
 
 #. Turtle Geometry library block
 msgid "turn _ degrees"
@@ -2293,11 +2293,11 @@ msgstr "versión del firmware"
 
 #. Settings menu option
 msgid "export functions as library"
-msgstr "exporta funciones como librería"
+msgstr "exporta funciones como biblioteca"
 
 #. Wukong robot library block
 msgid "Wukong set motor _ to _ (-100 to 100)"
-msgstr "pon el motor _ a _ (-100 a 100)"
+msgstr "Wukong pon el motor _ a _ (-100 a 100)"
 
 #. Elecfreaks Octopus sensor library block
 msgid "Octopus LED pin _ brightness _ %"
@@ -2352,7 +2352,7 @@ msgstr "actualiza firmware de la placa"
 
 #. String in file picker and library dialogs
 msgid "library information"
-msgstr "información de la librería"
+msgstr "información de la biblioteca"
 
 #. Scripting area right-click context menu
 msgid "make blocks bigger or smaller"
@@ -2678,12 +2678,12 @@ msgstr "Robots"
 #. String in file picker and library dialogs
 msgid "If you are adding a library that's built into MicroBlocks, you can just enter its name."
 msgstr ""
-"Si quieres añadir una librería interna de MicroBlocks, simplemente introduce "
-"su nombre."
+"Si quieres añadir una biblioteca interna de MicroBlocks, simplemente "
+"introduce su nombre."
 
 #. String in file picker and library dialogs
 msgid "If the library is hosted online, please input its full URL."
-msgstr "Si la librería está hospedada en Internet, introduce su URL completa."
+msgstr "Si la biblioteca está hospedada en Internet, introduce su URL completa."
 
 #. Tip Bar text for a block (at the bottom of the IDE, gives info on the currently hovered block or input)
 msgid "Pulse width modulate (PWM) a pin with the given duty cycle (0 - 1023)."
@@ -3097,7 +3097,7 @@ msgstr "TdR botón 2"
 
 #. Keyestudio Smart Farm library block
 msgid "Farm water level"
-msgstr "Farm nivell de agua"
+msgstr "Farm nivel de agua"
 
 #. Keyestudio Smart Home library block
 msgid "Home play _ octave _ for _ ms"
@@ -3143,19 +3143,19 @@ msgstr "Wukong"
 
 #. Wukong robot library block
 msgid "Wukong stop motor _"
-msgstr "detén el motor _"
+msgstr "Wukong detén el motor _"
 
 #. Wukong robot library block
 msgid "Wukong stop all"
-msgstr "detén todos los motores"
+msgstr "Wukong detén todos los motores"
 
 #. Wukong robot library block
 msgid "Wukong set NeoPixels _ _ _ _"
-msgstr "pon los NeoPíxeles del Wukong a _ _ _ _"
+msgstr "Wukong pon los NeoPíxeles del Wukong a _ _ _ _"
 
 #. Wukong robot library block
 msgid "Wukong set LED brightness to _"
-msgstr "fija el brillo del LED a _"
+msgstr "Wukong fija el brillo del LED a _"
 
 #. Joystick:bit library block
 msgid "button _ is pressed"
@@ -3290,7 +3290,7 @@ msgstr "Etiquetas:"
 
 #. String in file picker and library dialogs
 msgid "Path, name or URL for library?"
-msgstr "¿Ruta, nombre o URL de la librería?"
+msgstr "¿Ruta, nombre o URL de la biblioteca?"
 
 #. String in file picker and library dialogs
 msgid "Tag name?"
@@ -3522,7 +3522,7 @@ msgstr "Home apaga Neopixels"
 
 #. Wukong robot library block
 msgid "Wukong set servo _ to speed _ (-100 to 100)"
-msgstr "pon el servo _ a velocidad _ (-100 a 100)"
+msgstr "Wukong pon el servo _ a velocidad _ (-100 a 100)"
 
 #. In MicroBlocks IDE connection menu. Select "other..." serial port
 msgid "other..."
@@ -3546,7 +3546,7 @@ msgstr "muestra el gráfico de datos"
 
 #. Settings menu option
 msgid "disable autoloading board libraries"
-msgstr "desactivar autocarga de librerías de placa"
+msgstr "desactivar carga automática de bibliotecas de placa"
 
 #. Settings menu option
 msgid "show implementation blocks"
@@ -3580,7 +3580,7 @@ msgstr "modo oscuro"
 
 #. String in file picker and library dialogs
 msgid "Could not fetch library."
-msgstr "No se pudo obtener la librería."
+msgstr "No se pudo obtener la biblioteca."
 
 #. String in file picker and library dialogs
 msgid "Host does not exist or is currently down."
@@ -3786,7 +3786,7 @@ msgstr "ms muestra el carácter _ con _"
 
 #. micro:STEAMakers library block
 msgid "ms touching ?"
-msgstr "ms táctil ?"
+msgstr "ms ¿táctil?"
 
 #. InnovaDidàctic Imagina shield library block
 msgid "Imagina analog reading A1"
@@ -4587,7 +4587,7 @@ msgstr "¡Hola, cliente!"
 
 #. HTTP Server library example response
 msgid "Welcome to the MicroBlocks HTTP server"
-msgstr "El servicor HTTP de MicroBlocks os da la bienvenida"
+msgstr "El servidor HTTP de MicroBlocks os da la bienvenida"
 
 #. HTTP Server library block
 msgid "body of request _"
@@ -4972,7 +4972,7 @@ msgstr "derecho"
 
 #. Wukong robot library block
 msgid "Wukong set servo _ to _ degrees (-90 to 90)"
-msgstr "pon el servo _ a _ grados (-90 a 90)"
+msgstr "Wukong pon el servo _ a _ grados (-90 a 90)"
 
 #. Sphero-RVR robot library block
 msgid "drive with speed _ and heading _"
@@ -5229,15 +5229,15 @@ msgstr "oculta la definición de este bloque"
 
 #. Library folder
 msgid "LIBRARIES"
-msgstr "LIBRERÍAS"
+msgstr "BIBLIOTECAS"
 
 #. Library label right click context menu option
 msgid "export this library"
-msgstr "exporta esta librería"
+msgstr "exporta esta biblioteca"
 
 #. Library folder
 msgid "folder;Libraries"
-msgstr "Librerías"
+msgstr "Bibliotecas"
 
 #. Library folder
 msgid "folder;Network"
@@ -5269,7 +5269,7 @@ msgstr "El servidor requiere HTTPS, y MicroBlocks no lo soporta."
 
 #. String in file picker and library dialogs
 msgid "built-in library"
-msgstr "librería integrada"
+msgstr "biblioteca integrada"
 
 #. String in file picker and library dialogs
 msgid "Dependency path, name or URL?"
@@ -5278,16 +5278,16 @@ msgstr "¿Ruta, nombre o URL de la dependencia?"
 #. String in file picker and library dialogs
 msgid "If your library is in the Libraries folder in your local MicroBlocks project folder, you need to prefix it with a slash (/)."
 msgstr ""
-"Si tu librería está en la carpeta \"Libraries\" de tu carpeta local de "
+"Si la biblioteca está en la carpeta \"Libraries\" de tu carpeta local de "
 "MicroBlocks, deberás prefijarla con una barra (/)."
 
 #. String in file picker and library dialogs
 msgid "user library"
-msgstr "librería de usuario"
+msgstr "biblioteca de usuario"
 
 #. String in file picker and library dialogs
 msgid "Add Library"
-msgstr "Añadir librería"
+msgstr "Añadir biblioteca"
 
 #. Block size button tooltip
 msgid "Decrease block size"
@@ -5340,7 +5340,7 @@ msgstr "Arrástralo para modificar la anchura del área."
 #. The [l] tag turns into an icon of a mouse with the left button pressed
 #. The [r] tag turns into an icon of a mouse with the right button pressed
 msgid "[l] to show the blocks in this library. [r] menu."
-msgstr "[l] para mostrar los bloques de esta librería. [r] menú."
+msgstr "[l] para mostrar los bloques de esta biblioteca. [r] menú."
 
 #. Tip Bar label or text (at the bottom of the IDE, gives info on the currently hovered element)
 #. The [l] tag turns into an icon of a mouse with the left button pressed
@@ -5671,7 +5671,7 @@ msgstr "360 grados"
 
 #. Cutebot Pro library block
 msgid "CBPro set NeoPixel _ to _"
-msgstr "fija NeoPíxel _ del CBPro a _"
+msgstr "CBPro fija NeoPíxel _ del CBPro a _"
 
 #. Cutebot Pro library block dropdown option
 #. as in turn "left" on your axis
@@ -5724,15 +5724,15 @@ msgstr "180 grados"
 
 #. Cutebot Pro library block
 msgid "CBPro speed of _ wheel (cm/s)"
-msgstr "velocidad de la rueda _ (cm/s)"
+msgstr "CBPro velocidad de la rueda _ (cm/s)"
 
 #. Cutebot Pro library block
 msgid "CBPro stop all"
-msgstr "deténlo todo"
+msgstr "CBPro detenlo todo"
 
 #. Cutebot Pro library block
 msgid "CBPro distance (cm)"
-msgstr "distancia frontal (cm)"
+msgstr "CBPro distancia frontal (cm)"
 
 #. Cutebot Pro library block dropdown option
 msgid "90 degrees"
@@ -5740,7 +5740,7 @@ msgstr "90 grados"
 
 #. Cutebot Pro library block
 msgid "CBPro move _ (-255 to 255 cm)"
-msgstr "mueve _ (-255 a 255 cm)"
+msgstr "CBPro mueve _ (-255 a 255 cm)"
 
 #. MQTT library block
 msgid "Last will!"
@@ -5774,15 +5774,16 @@ msgstr "derecha (sobre su eje)"
 #. Cutebot Pro library block
 msgid "CBPro set wheel speed left _ right _ (-60 to 60 cm/s)"
 msgstr ""
-"fija la velocidad de la rueda izquierda a _ y derecha a _ (-60 a 60 cm/s)"
+"CBPro fija la velocidad de la rueda izquierda a _ y derecha a _ (-60 a 60 cm/"
+"s)"
 
 #. Cutebot Pro library block
 msgid "CBPro turn _ degrees"
-msgstr "gira _ grados"
+msgstr "CBPro gira _ grados"
 
 #. Cutebot Pro library block
 msgid "CBPro set headlight _ to _"
-msgstr "pon el faro _ a _"
+msgstr "CBPro pon el faro _ a _"
 
 #. Octostudio communication library block
 msgid "Octo last beam"
@@ -5798,7 +5799,7 @@ msgstr "fija grupo de Octo a _ (0-99)"
 
 #. Cutebot Pro library block
 msgid "CBPro stop wheel _"
-msgstr "detén rueda _"
+msgstr "CBPro detén rueda _"
 
 #. Chiptune library block
 msgid "tom for _ ms pitch shifted by _ on pin _"
@@ -5907,15 +5908,15 @@ msgstr ""
 
 #. Cutebot Pro library block
 msgid "CBPro set _ servo _ angle to _ deg"
-msgstr "fija servo de _ número _ a _ grados"
+msgstr "CBPro fija servo de _ número _ a _ grados"
 
 #. WuKong2040 robot library block
 msgid "WuKong2040 clear all rainbowLED"
-msgstr "apaga LEDs multicolor"
+msgstr "WuKong2040 apaga LEDs multicolor"
 
 #. Cutebot Pro library block
 msgid "CBPro IR code received?"
-msgstr "¿código IR recibido?"
+msgstr "CBPro ¿código IR recibido?"
 
 #. MicroBlocks IDE information
 msgid "The firmware on the board is not compatible with this version of MicroBlocks."
@@ -5928,15 +5929,15 @@ msgstr "Octopus"
 
 #. Settings menu option
 msgid "autoload board libraries"
-msgstr "auto-carga librarías de placa"
+msgstr "carga bibliotecas de placa automáticamente"
 
 #. WuKong2040 robot library block
 msgid "WuKong2040 stop all motors"
-msgstr "detén todos los motores"
+msgstr "WuKong2040 detén todos los motores"
 
 #. Cutebot Pro library block
 msgid "CBPro stop external motor"
-msgstr "detén motor externo"
+msgstr "CBPro detén motor externo"
 
 #. Cutebot Pro library block
 msgid "CBPro version"
@@ -5944,7 +5945,7 @@ msgstr "versión del CBPro"
 
 #. WuKong2040 robot library block
 msgid "WuKong2040 rainbowLED _ R _ G _ B _ (0~255)"
-msgstr "pon LED multicolor _ a rojo _ verde _ azul _ (0~255)"
+msgstr "WuKong2040 pon LED multicolor _ a rojo _ verde _ azul _ (0~255)"
 
 #. WuKong2040 robot library label
 msgid "WuKong2040"
@@ -5956,43 +5957,43 @@ msgstr "auto-PlugShare en proyectos vacíos"
 
 #. Cutebot Pro library block
 msgid "CBPro tracking state"
-msgstr "estado del seguimiento de línea"
+msgstr "CBPro estado del seguimiento de línea"
 
 #. Cutebot Pro library block
 msgid "CBPro set external motor power to _ (-100 to 100)"
-msgstr "fija la potencia del motor externo a _ (-100 a 100)"
+msgstr "CBPro fija la potencia del motor externo a _ (-100 a 100)"
 
 #. Cutebot Pro library block
 msgid "CBPro servo _ speed to _ (-100 to 100)"
-msgstr "pon servo _ a velocidad _ (-100 a 100)"
+msgstr "CBPro pon servo _ a velocidad _ (-100 a 100)"
 
 #. Cutebot Pro library block
 msgid "CBPro tracking state is (L - - R) _ _ _ _"
-msgstr "el estado del seguimiento de línea es (I--D) _ _ _ _"
+msgstr "CBPro el estado del seguimiento de línea es (I--D) _ _ _ _"
 
 #. Cutebot Pro library block
 msgid "CBPro tracking offset"
-msgstr "desfase del seguimiento de línea"
+msgstr "CBPro desfase del seguimiento de línea"
 
 #. Cutebot Pro library block
 msgid "CBPro IR code"
-msgstr "código IR"
+msgstr "CBPro código IR"
 
 #. WuKong2040 robot library block
 msgid "WuKong2040 motor _ speed to _ (-100~100)"
-msgstr "pon el motor _ a velocidad _ (-100~100)"
+msgstr "WuKong2040 pon el motor _ a velocidad _ (-100~100)"
 
 #. WuKong2040 robot library block
 msgid "WuKong2040 stop motor _"
-msgstr "detén el motor _"
+msgstr "WuKong2040 detén el motor _"
 
 #. WuKong2040 robot library block
 msgid "WuKong2040 buzzer beep _ ms"
-msgstr "pita durante _ ms"
+msgstr "WuKong2040 pita durante _ ms"
 
 #. WuKong2040 robot library block
 msgid "WuKong2040 rainbowLED _ color to _"
-msgstr "pon LED multicolor _ a _"
+msgstr "WuKong2040 pon LED multicolor _ a _"
 
 #. Settings menu tooltip
 msgid "make the IDE darker"
@@ -6260,7 +6261,7 @@ msgstr "ambos"
 
 #. Wukong robot library block
 msgid "Wukong set _ servo _ to _ degrees"
-msgstr "fija el servo de _ grados _ a _ grados"
+msgstr "Wukong fija el servo de _ grados _ a _ grados"
 
 #. CoCube library block
 msgid "move _ at _ speed (0-50) for _ msecs"
@@ -6405,3 +6406,1489 @@ msgstr "gira _ a velocidad _ (0-50)"
 #. CoCube Module library block
 msgid "gripper stop"
 msgstr "detén la pinza"
+
+#. Barometer (LPS331AP) library block
+msgid "LPS331AP temperature _"
+msgstr "lps331ap temperatura _"
+
+#. Barometer (LPS331AP) library block
+msgid "LPS331AP pressure _"
+msgstr "lps331ap presión _"
+
+#. Barometer (LPS331AP) library block
+msgid "numeric (x100) _"
+msgstr "numérico (x100) _"
+
+#. Barometer (LPS331AP) library
+msgid "Barometer (LPS331AP)"
+msgstr "Barómetro (LPS331AP)"
+
+#. Barometer (LPS331AP) library dropdown menu option
+msgid "lps331;ºC"
+msgstr "ºC"
+
+#. Barometer (LPS331AP) library dropdown menu option
+msgid "lps331;ºF"
+msgstr "ºF"
+
+#. Barometer (LPS331AP) library dropdown menu option
+msgid "lps331;hPa"
+msgstr "hPa"
+
+#. Barometer (LPS331AP) library dropdown menu option
+msgid "lps331;inHg"
+msgstr "inHg"
+
+#. Lists library block. It takes a list and replaces a few, some, most or (list of indices) items with some other element
+msgid "_ with _ items replaced by _"
+msgstr "_ con _ elementos sustituidos por _"
+
+#. Settings menu option
+msgid "inform of new versions"
+msgstr "informar de nuevas versiones"
+
+#. Settings menu option
+msgid "when opening the IDE, show a notification if a new version of MicroBlocks has been released"
+msgstr ""
+"al abrir el editor, mostrar una notificación si hay una nueva versión de "
+"MicroBlocks disponible"
+
+#. LCD 16x2 (Seeed) library block
+msgid "LCD write field _ to line _ from _ to _"
+msgstr "LCD escribe _ en la línea _ desde _ hasta _"
+
+#. Calliope Servoboard library block
+msgid "Calliope stop motor _"
+msgstr "Calliope detén el motor _"
+
+#. Gas (SCD40) library block
+msgid "°C"
+msgstr "°C"
+
+#. Calliope Servoboard library block
+msgid "Calliope set continous servo _ to speed _ (-100~100)"
+msgstr "Calliope servo de rotación continua _ a velocidad _ (-100~100)"
+
+#. LCD 16x2 (Seeed) library block
+msgid "LCD write text _ to line _"
+msgstr "LCD escribe _ en la línea _"
+
+#. Analog Synthesis library label
+#. Generate synthesized sound waves to play on a DAC, over PWM, or any other analog means
+msgid "Analog Synthesis"
+msgstr "Síntesis analógica"
+
+#. LCD 16x2 (Seeed) library block
+msgid "LCD generate custom char _ _"
+msgstr "LCD genera carácter personalizado _ _"
+
+#. LCD 16x2 (Seeed) library block
+msgid "LCD custom char _"
+msgstr "LCD carácter personalizado _"
+
+#. LCD 16x2 (Seeed) library block
+msgid "LCD clear display"
+msgstr "LCD limpia pantalla"
+
+#. Gas (SCD40) library block
+msgid "SCD40 is connected?"
+msgstr "SCD40 conectado?"
+
+#. Calliope NeoPixel library block
+msgid "Calliope set all NeoPixels to _"
+msgstr "Calliope pon todos los NeoPíxeles de color _"
+
+#. Calliope NeoPixel library block
+msgid "Calliope set NeoPixels _ _ _"
+msgstr "Calliope pon los NeoPíxeles _ _ _"
+
+#. Calliope NeoPixel library block
+msgid "Calliope clear all NeoPixels"
+msgstr "Calliope apaga NeoPíxeles"
+
+#. Calliope NeoPixel library block
+msgid "Calliope rotate NeoPixels by _"
+msgstr "Calliope rota NeoPíxeles en _"
+
+#. Calliope NeoPixel library block
+msgid "Calliope set NeoPixel _ to _"
+msgstr "Calliope pon NeoPíxel _ de color _"
+
+#. Calliope NeoPixel library block
+msgid "Calliope set brightness to _ %"
+msgstr "Calliope brillo a _ %"
+
+#. Calliope Servoboard library block
+msgid "Calliope set motor _ to speed _ (-100~100)"
+msgstr "Calliope motor _ a velocitat _ (-100~100)"
+
+#. Calliope Servoboard library block
+msgid "Calliope set _ servo _ to angle _ °"
+msgstr "Calliope servo de _ _ al angulo _ º"
+
+#. Calliope Servoboard library block
+msgid "Calliope stop all motors and servos"
+msgstr "Calliope detén todos los motores y servos"
+
+#. Calliope Servoboard library block
+msgid "Calliope stop servo _"
+msgstr "Calliope detén servo _"
+
+#. LCD 16x2 (Seeed) library block
+msgid "LCD init display"
+msgstr "LCD inicia pantalla"
+
+#. LCD 16x2 (Seeed) library block
+msgid "LCD set RGB background _"
+msgstr "LCD color del fondo _"
+
+#. LCD 16x2 (Seeed) library block
+msgid "LCD is connected?"
+msgstr "LCD conectado?"
+
+#. LCD 16x2 (Seeed) library block
+msgid "LCD set display on _"
+msgstr "LCD pantalla encendida _"
+
+#. Gas (SCD40) library block
+msgid "°F"
+msgstr "°F"
+
+#. Gas (SCD40) library block
+msgid "SCD40 init sensor"
+msgstr "SCD40 inicializa"
+
+#. Gas (SCD40) library block
+msgid "SCD40 carbon dioxide (ppm)"
+msgstr "SCD40 dióxido de carbono (ppm)"
+
+#. Gas (SCD40) library block
+msgid "SCD40 CO2 (ppm)"
+msgstr "SCD40 CO₂ (ppm)"
+
+#. Gas (SCD40) library block
+msgid "SCD40 temperature _"
+msgstr "SCD40 temperatura _"
+
+#. Gas (SCD40) library block
+msgid "SCD40 relative humidity (%)"
+msgstr "SCD40 humedad relativa (%)"
+
+#. Robo ESP32 library block
+msgid "RoboESP32 clear RGB"
+msgstr "RoboESP32 apaga RGB"
+
+#. Robo ESP32 library block
+msgid "RoboESP32 set motor _ power _ (-100 to 100)"
+msgstr "RoboESP32 motor _ potencia _ (-100 a 100)"
+
+#. Robo ESP32 library block
+msgid "RoboESP32 stop motor _"
+msgstr "RoboESP32 detén motor _"
+
+#. Robo ESP32 library block
+msgid "RoboESP32 play Happy Birthday!"
+msgstr "RoboESP32 toca Happy Birthday!"
+
+#. Robo ESP32 library block
+msgid "RoboESP32 button _ is pressed"
+msgstr "RoboESP32 botón _ pulsado"
+
+#. Robo ESP32 library block
+msgid "RoboESP32 increase RGB brightness by _ %"
+msgstr "RoboESP32 aumenta brillo RGB en _ %"
+
+#. Robo ESP32 library block
+msgid "RoboESP32 set servo _ to _ degrees (-90 to 90)"
+msgstr "RoboESP32 servo _ a _ grados (-90 to 90)"
+
+#. Robo ESP32 library block
+msgid "RoboESP32 set RGB _ color _"
+msgstr "RoboESP32 RGB _ color _"
+
+#. Robo ESP32 library block
+msgid "RoboESP32 set GPIO _ _"
+msgstr "RoboESP32 pon GPIO _ a _"
+
+#. Radio library block
+msgid "radio last sender ID"
+msgstr "ID del último remitente"
+
+#. Radio library block
+msgid "radio my ID"
+msgstr "mi ID de radio"
+
+#. 5x5 LED Display library block
+msgid "led image _"
+msgstr "imagen LED _"
+
+#. Analog Synthesis library block
+msgid "set frequency ramp from _ % to _ % for gate _"
+msgstr "aplica rampa de frecuencia de _ % a _ % en la puerta _"
+
+#. Analog Synthesis library block
+msgid "amplitude for gate _"
+msgstr "amplitud para puerta _"
+
+#. Analog Synthesis library block
+msgid "frequency for gate _"
+msgstr "frecuencia para puerta _"
+
+#. Firmware install instruction
+msgid "Do not switch browser tabs!"
+msgstr "¡No cambies de pestaña del navegador!"
+
+#. Analog Synthesis library block
+#. only translate "gate _" as in a synthesizer sound gate that can be triggered
+msgid "#SVG#wave-sine gate _"
+msgstr "#SVG#wave-sine puerta _"
+
+#. Analog Synthesis library block
+#. only translate "gate _" as in a synthesizer sound gate that can be triggered
+msgid "#SVG#wave-square gate _"
+msgstr "#SVG#wave-square puerta _"
+
+#. Analog Synthesis library block
+#. only translate "gate _" as in a synthesizer sound gate that can be triggered
+msgid "#SVG#wave-triangle gate _"
+msgstr "#SVG#wave-triangle puerta _"
+
+#. Analog Synthesis library block
+#. only translate "gate _" as in a synthesizer sound gate that can be triggered
+msgid "#SVG#wave-sawtooth gate _"
+msgstr "#SVG#wave-sawtooth puerta _"
+
+#. Analog Synthesis library block
+#. only translate "gate _" as in a synthesizer sound gate that can be triggered
+msgid "#SVG#wave-noise gate _"
+msgstr "#SVG#wave-noise puerta _"
+
+#. Analog Synthesis library block
+msgid "set amplitude _ attack _ hold _ release _ for gate _"
+msgstr "fija amplitud _ ataque _ retención _ liberación _ para puerta _"
+
+#. Analog Synthesis library block
+msgid "trigger gate _ MIDI key _"
+msgstr "dispara puerta _ con tecla MIDI _"
+
+#. Analog Synthesis library block
+#. example: output [16320] to [analog pin]
+#. example: output [16320] to [MCP4725 DAC]
+msgid "output _ to _"
+msgstr "escribe _ en _"
+
+#. Analog Synthesis library block
+#. as in pin number or i2c address
+msgid "number/address _"
+msgstr "número/dirección _"
+
+#. Analog Synthesis library block
+#. as in digital resolution (8 bit, 16 bit...)
+msgid "asynth;resolution _"
+msgstr "resolución _"
+
+#. Analog Synthesis library block menu option
+msgid "asy;pin"
+msgstr "pin analógico"
+
+#. Analog Synthesis library block menu option
+msgid "asy;MCP4725"
+msgstr "DAC I2C MCP4725"
+
+#. Examples folder
+msgid "folder;CoCube"
+msgstr "CoCube"
+
+#. Library button, abbreviated
+msgid "LIBS"
+msgstr "BIBS"
+
+#. MicroBlocks IDE information
+msgid "Reconnect to the board by clicking the \"Connect\" button."
+msgstr "Reconecta la placa haciendo clic en el botón \"Conecta\"."
+
+#. Foxbit library block
+msgid "fb loudness"
+msgstr "fb nivel de ruido"
+
+#. Foxbit library block
+msgid "fb light level"
+msgstr "fb nivel de luz"
+
+#. Foxbit library block
+msgid "fb temperature"
+msgstr "fb temperatura"
+
+#. Foxbit library block
+msgid "fb set all NeoPixels _"
+msgstr "fb todos los NeoPíxeles de color _"
+
+#. Foxbit library block
+msgid "fb beep for _ millisecs"
+msgstr "fb pita durante _ milisegundos"
+
+#. Foxbit library block
+msgid "fb humidity"
+msgstr "fb humedad"
+
+#. Foxbit library block
+msgid "fb current"
+msgstr "fb corriente"
+
+#. Foxbit library block
+msgid "fb clear NeoPixels"
+msgstr "fb apaga NeoPíxeles"
+
+#. Coding Box library block
+msgid "cb stop fan"
+msgstr "fb para el ventilador"
+
+#. Coding Box library block
+msgid "cb clear oled"
+msgstr "cb borra pantalla"
+
+#. Coding Box library block
+msgid "cb set _ LED to _"
+msgstr "cb pon el led _ a _"
+
+#. Coding Box library block
+msgid "cb _ ADKey button pressed?"
+msgstr "cb ADKey ¿botón _ presionado?"
+
+#. Coding Box library block
+msgid "cb compass direction"
+msgstr "cb dirección brújula"
+
+#. Coding Box library block
+msgid "cb barometric pressure (mBar)"
+msgstr "cb presión barométrica (mBar)"
+
+#. Coding Box library block
+msgid "cb altitude (cm)"
+msgstr "cb altitud (cm)"
+
+#. Coding Box library block
+msgid "cb speaker beep for _ millisecs"
+msgstr "cb beep durante _ milisegundos"
+
+#. Coding Box library block
+msgid "cb clear rainbow colors"
+msgstr "cb apaga el círculo de leds"
+
+#. Coding Box library block
+msgid "cb temperature"
+msgstr "cb temperatura"
+
+#. Coding Box library block
+msgid "cb sound"
+msgstr "cb nivel de sonido"
+
+#. Coding Box library block
+msgid "cb joystick _"
+msgstr "cb joystick _"
+
+#. Coding Box library block
+msgid "cb set all rainbow colors to _"
+msgstr "cb todos los leds del círculo de colores _"
+
+#. Coding Box library block
+msgid "cb set rainbow #BR# _ _ _ _ _ _ #BR# _ _ _ _ _ _"
+msgstr "cb círculo de colores #BR# _ _ _ _ _ _ #BR# _ _ _ _ _ _"
+
+#. Coding Box library block
+msgid "cb set fan power _ (-100 to 100)"
+msgstr "cb potencia del ventilador _ (-100 a 100)"
+
+#. Coding Box library block
+msgid "cb oled write _ at x _ y _ big _"
+msgstr "cb pantalla escribe _ en x _ y _ grande _"
+
+#. Coding Box library block
+msgid "cb light"
+msgstr "cb nivel de luz"
+
+#. Coding Box library block
+msgid "cb RFID"
+msgstr "cb RFID"
+
+#. Coding Box library block
+msgid "cb PIR motion detected?"
+msgstr "cb PIR ¿movimiento detectado?"
+
+#. Foxbit library block
+msgid "logo"
+msgstr "logo"
+
+#. Foxbit library block
+msgid "fb set NeoPixels #BR# _ _ _ _ _ _ _ #BR# _ _ _ _ _ _ _ #BR# _ _ _ _ _ _ _ #BR# _ _ _ _ _ _ _ #BR# _ _ _ _ _ _ _"
+msgstr ""
+"fb pon NeoPíxeles #BR# _ _ _ _ _ _ _ #BR# _ _ _ _ _ _ _ #BR# _ _ _ _ _ _ _ "
+"#BR# _ _ _ _ _ _ _ #BR# _ _ _ _ _ _ _"
+
+#. Coding Box library block
+msgid "cb ultrasonic distance"
+msgstr "cb distancia"
+
+#. Foxbit library block
+msgid "fb pin _ touched?"
+msgstr "fb ¿pin _ tocado?"
+
+#. Coding Box library block
+msgid "cb humidity"
+msgstr "cb humedad"
+
+#. Coding Box library block
+msgid "cb set servo to _ degrees (0 to 180)"
+msgstr "cb pon el servo a _ grados (0 a 180)"
+
+#. WiFi library block
+msgid "wifi set local domain name _ .local"
+msgstr "wifi nombre de dominio local _.local"
+
+#. Firmware install instruction
+msgid "Connecting..."
+msgstr "Conectando..."
+
+#. Generic robot side input. Used in robot libraries
+#. as in "left" side
+msgid "left"
+msgstr "izquierda"
+
+#. Generic robot side input. Used in robot libraries
+#. as in "right" side
+msgid "right"
+msgstr "derecha"
+
+#. Generic robot side input. Used in robot libraries
+#. as in "both" sides
+msgid "both"
+msgstr "ambos"
+
+#. Microphone library block
+msgid "turn off microphone"
+msgstr "apaga el micrófono"
+
+#. NeoPanel library block
+msgid "NeoPanel draw line from x _ y _ to x _ y _ color _"
+msgstr "dibuja línea de x _ y _ a x _ y _ color _ en el NeoPanel"
+
+#. NeoPanel library block
+msgid "NeoPanel draw circle at x _ y _ radius _ color _"
+msgstr "dibuja círculo en x _ y _ radio _ color _ en el NeoPanel"
+
+#. NeoPanel library block
+msgid "NeoPanel draw rectangle at x _ y _ width _ height _ color _"
+msgstr "dibuja rectángulo en x _ y _ ancho _ alto _ color _ en el NeoPanel"
+
+#. Octostudio shape names
+msgid "octo;circle"
+msgstr "círculo"
+
+#. Octostudio shape names
+msgid "octo;square"
+msgstr "cuadrado"
+
+#. Octostudio shape names
+msgid "octo;star"
+msgstr "estrella"
+
+#. Octostudio shape names
+msgid "octo;heart"
+msgstr "corazón"
+
+#. Octostudio shape names
+msgid "octo;triangle"
+msgstr "triángulo"
+
+#. Octostudio shape names
+msgid "octo;clover"
+msgstr "trébol"
+
+#. Octostudio shape names
+msgid "octo;diamond"
+msgstr "diamante"
+
+#. Octostudio shape names
+msgid "octo;moon"
+msgstr "luna"
+
+#. micro:STEAMakers library block
+msgid "ms pin _ touched?"
+msgstr "ms ¿tocando el pin _?"
+
+#. micro:STEAMakers library block
+msgid "ms accel _ m/s2"
+msgstr "ms aceleración _ m/s²"
+
+#. micro:STEAMakers library block
+msgid "ms gyro _ deg/s"
+msgstr "ms giroscopio _ º/s"
+
+#. LogicLinks library block
+msgid "LogicLinks receive IR code"
+msgstr "LogicLinks recibir código IR"
+
+#. LogicLinks library block
+msgid "LogicLinks IR Code"
+msgstr "LogicLinks código IR"
+
+#. LogicLinks library block
+msgid "LogicLinks button"
+msgstr "LogicLinks botón"
+
+#. LogicLinks library block
+msgid "LogicLinks potentiometer"
+msgstr "LogicLinks potenciómetro"
+
+#. LogicLinks library block
+msgid "LogicLinks random color"
+msgstr "LogicLinks color aleatorio"
+
+#. LogicLinks library block
+msgid "LogicLinks beep _ ms"
+msgstr "LogicLinks bip _ ms"
+
+#. LogicLinks library block
+msgid "LogicLinks set relay _"
+msgstr "LogicLinks relé _"
+
+#. LogicLinks library block
+msgid "LogicLinks IR code received?"
+msgstr "LogicLinks ¿recibido código IR?"
+
+#. LogicLinks library block
+msgid "LogicLinks color r _ g _ b _ (0-255)"
+msgstr "LogicLinks color r _ g _ b _ (0-255)"
+
+#. LogicLinks library block
+msgid "LogicLinks humidity"
+msgstr "LogicLinks humedad"
+
+#. LogicLinks library block
+msgid "LogicLinks set RGB LED _"
+msgstr "LogicLinks LED RGB _"
+
+#. LogicLinks library block
+msgid "LogicLinks turn off RGB LED"
+msgstr "LogicLinks apaga LED RGB"
+
+#. LogicLinks library block
+msgid "LogicLinks temperature (°C)"
+msgstr "LogicLinks temperatura (°C)"
+
+#. LogicLinks library block
+msgid "LogicLinks set red LED _"
+msgstr "LogicLinks LED rojo _"
+
+#. LogicLinks library block
+msgid "LogicLinks light (0-100)"
+msgstr "LogicLinks luz (0-100)"
+
+#. NeoPixel library block
+msgid "set NeoPixels #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _"
+msgstr ""
+"pon NeoPíxeles #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ "
+"#BR# _ _ _ _ _"
+
+#. MicroBlocks IDE block deletion error message.
+msgid "This block is still being used in"
+msgstr "Este bloque todavía se utiliza en"
+
+#. MicroBlocks IDE block deletion error message.
+msgid "scripts or functions."
+msgstr "scripts o funciones."
+
+#. OLED Graphics library block
+msgid "initialize i2c(auto) reset pin# _ flip _"
+msgstr "Inicializa i2c (auto) reiniciar pin# _ flip _"
+
+#. Files library block
+msgid "contents of file _"
+msgstr "contenido del archivo _"
+
+#. Calliope MotionKit2 library block
+msgid "mk2;bright"
+msgstr "brillante"
+
+#. Calliope MotionKit2 library block
+msgid "mk2;dark"
+msgstr "oscuro"
+
+#. Calliope MotionKit2 library block
+msgid "mk2;ok"
+msgstr "OK"
+
+#. Calliope MotionKit2 library block
+msgid "mk2;up"
+msgstr "arriba"
+
+#. Calliope MotionKit2 library block
+msgid "mk2;down"
+msgstr "abajo"
+
+#. Calliope MotionKit2 library block
+msgid "mk2;S1"
+msgstr "S1"
+
+#. Calliope MotionKit2 library block
+msgid "mk2;S2"
+msgstr "S2"
+
+#. Calliope MotionKit2 library block
+msgid "MotionKit distance (cm)"
+msgstr "MotionKit distancia (cm)"
+
+#. Calliope MotionKit2 library block
+msgid "IR key _ pressed?"
+msgstr "¿Se presionó la tecla IR _?"
+
+#. Calliope MotionKit2 library block
+msgid "MotionKit set NeoPixels _"
+msgstr "MotionKit pon NeoPíxeles _"
+
+#. Calliope MotionKit2 library block
+msgid "MotionKit clear NeoPixels"
+msgstr "MotionKit apaga NeoPíxeles"
+
+#. Calliope MotionKit2 library block
+msgid "MotionKit stop motor _"
+msgstr "MotionKit detén motor _"
+
+#. Calliope MotionKit2 library block
+msgid "MotionKit motor _ dir _ speed _ (0~255)"
+msgstr "MotionKit motor _ dirección _ velocidad _ (0~255)"
+
+#. Calliope MotionKit2 library block
+msgid "MotionKit LED _ _"
+msgstr "MotionKit LED _ _"
+
+#. Calliope MotionKit2 library block
+msgid "color r _ g _ b _ (0~255)"
+msgstr "color r _ g _ b _ (0~255)"
+
+#. Calliope MotionKit2 library block
+msgid "MotionKit line sensor _ _"
+msgstr "MotionKit sensor de línea _ _"
+
+#. Calliope MotionKit2 library block
+msgid "IR code received?"
+msgstr "¿código IR recibido?"
+
+#. Calliope MotionKit2 library block
+msgid "MotionKit set servo _ to _ ° (0~180)"
+msgstr "MotionKit pon el servo _ a _ ° (0~180)"
+
+#. Real Time Clock library block
+msgid "time (H:M:S)"
+msgstr "hora (H:M:S)"
+
+#. Real Time Clock library block
+msgid "date (Y-M-D)"
+msgstr "fecha (A-M-D)"
+
+#. Real Time Clock library block
+msgid "second"
+msgstr "segundo"
+
+#. Real Time Clock library block
+msgid "minute"
+msgstr "minuto"
+
+#. Real Time Clock library block
+msgid "hour"
+msgstr "hora"
+
+#. Real Time Clock library block
+msgid "day"
+msgstr "dia"
+
+#. Real Time Clock library block
+msgid "month"
+msgstr "mes"
+
+#. Real Time Clock library block
+msgid "year"
+msgstr "año"
+
+#. Real Time Clock library block
+msgid "day of week"
+msgstr "día de la semana"
+
+#. Real Time Clock library block
+msgid "set day of week _ (1-7)"
+msgstr "pon día de la semana a _ (1-7)"
+
+#. Real Time Clock library block
+msgid "init clock _"
+msgstr "inicializa reloj _"
+
+#. Real Time Clock library block
+msgid "clock _"
+msgstr "reloj _"
+
+#. Real Time Clock library block
+msgid "set year _ month _ day _"
+msgstr "establece el año _ mes _ y dia _"
+
+#. Real Time Clock library block
+msgid "set hours _ minutes _ seconds _"
+msgstr "establece horas _ minutos _ segundos _"
+
+#. Fractions library block
+msgid "fract _ − _"
+msgstr "fracc _ − _"
+
+#. CoCube Module library block
+msgid "ASR get command"
+msgstr "ASR obtén la orden"
+
+#. CoCube Module library block
+msgid "ASR play command _"
+msgstr "ASR ejecuta la orden _"
+
+#. CoCube Module library block
+msgid "DLight level"
+msgstr "nivel DLight"
+
+#. CoCube Sengo1 library choice
+msgid "Color Recog"
+msgstr "reconocimineto de color"
+
+#. CoCube Sengo1 library choice
+msgid "Blob Detect"
+msgstr "detección de zona"
+
+#. CoCube Sengo1 library choice
+msgid "Ball Detect"
+msgstr "detección de pelota"
+
+#. CoCube Sengo1 library choice
+msgid "Line Detect"
+msgstr "detección de línea"
+
+#. CoCube Sengo1 library choice
+msgid "Card Recog"
+msgstr "reconocimineto del mapa de coord"
+
+#. CoCube Sengo1 library choice
+msgid "Face Recog"
+msgstr "reconocimiento de cara"
+
+#. CoCube Sengo1 library choice
+msgid "QRcode"
+msgstr "código QR"
+
+#. CoCube Sengo1 library choice
+msgid "black"
+msgstr "negro"
+
+#. CoCube Sengo1 library choice
+msgid "white"
+msgstr "blanco"
+
+#. CoCube Sengo1 library choice
+msgid "blue"
+msgstr "azul"
+
+#. CoCube Sengo1 library choice
+msgid "x1"
+msgstr "x1"
+
+#. CoCube Sengo1 library choice
+msgid "y1"
+msgstr "y1"
+
+#. CoCube Sengo1 library choice
+msgid "x2"
+msgstr "x2"
+
+#. CoCube Sengo1 library choice
+msgid "y2"
+msgstr "y2"
+
+#. CoCube Sengo1 library choice
+msgid "degree"
+msgstr "ángulo"
+
+#. CoCube Sengo1 library choice
+msgid "w"
+msgstr "ancho"
+
+#. CoCube Sengo1 library choice
+msgid "h"
+msgstr "alto"
+
+#. CoCube Sengo1 library choice
+msgid "R"
+msgstr "R"
+
+#. CoCube Sengo1 library choice
+msgid "G"
+msgstr "G"
+
+#. CoCube Sengo1 library choice
+msgid "B"
+msgstr "B"
+
+#. CoCube Sengo1 library block
+msgid "Sengo1 read QRcode"
+msgstr "Sengo1 lee el código QR"
+
+#. CoCube Sengo1 library block
+msgid "Sengo1 change algorithm _"
+msgstr "Sengo1 cambia el algoritmo _"
+
+#. CoCube Sengo1 library block
+msgid "Sengo1 delete face ID _ (1-10)"
+msgstr "Sengo1 borra la cara ID _ (1-10)"
+
+#. CoCube Sengo1 library block
+msgid "Sengo1 detect ball (ping pong or tennis)"
+msgstr "Sengo1 detecta la pelota (de ping-pong o tenis)"
+
+#. CoCube Sengo1 library block
+msgid "Sengo1 get QRcode _"
+msgstr "Sengo1 obtén código QR _"
+
+#. CoCube Sengo1 library block
+msgid "Sengo1 get ball _"
+msgstr "Sengo1 obtén la pelota _"
+
+#. CoCube Sengo1 library block
+msgid "Sengo1 get blob _"
+msgstr "Sengo1 obtén el blob _"
+
+#. CoCube Sengo1 library block
+msgid "Sengo1 get card _"
+msgstr "Sengo1 obtén la tarjeta _"
+
+#. CoCube Sengo1 library block
+msgid "Sengo1 get color _"
+msgstr "Sengo1 obtén el color _"
+
+#. CoCube Sengo1 library block
+msgid "Sengo1 get face _"
+msgstr "Sengo1 obtén la cara _"
+
+#. CoCube Sengo1 library block
+msgid "Sengo1 get face ID"
+msgstr "Sengo1 obtén ID de la cara"
+
+#. CoCube Sengo1 library block
+msgid "Sengo1 get line _"
+msgstr "Sengo1 obtén la línea _"
+
+#. CoCube Sengo1 library block
+msgid "Sengo1 init"
+msgstr "Sengo1 inicializa"
+
+#. CoCube Sengo1 library block
+msgid "Sengo1 read blob"
+msgstr "Sengo1 lee el blob"
+
+#. CoCube Sengo1 library block
+msgid "Sengo1 read card"
+msgstr "Sengo1 lee la tarjeta"
+
+#. CoCube Sengo1 library block
+msgid "Sengo1 read color"
+msgstr "Sengo1 lee el color"
+
+#. CoCube Sengo1 library block
+msgid "Sengo1 record face ID _ (1-10)"
+msgstr "Sengo1 graba la cara ID _ (1-10)"
+
+#. CoCube Sengo1 library block
+msgid "Sengo1 reset"
+msgstr "Sengo1 reinicializa"
+
+#. CoCube Sengo1 library block
+msgid "Sengo1 set blob detect property color _ width _ height _"
+msgstr ""
+"Sengo1 establece la propietat de detección de blob color _ ancho _ alto _"
+
+#. CoCube Sengo1 library block
+msgid "Sengo1 set color recog area x _ y _ width _ height _ (0-100)"
+msgstr ""
+"Sengo1 establece el área de reconocimiento de color x _ y _ ancho _ alto _ "
+"(0-100)"
+
+#. CoCube Sengo2 library choice
+msgid "16H5"
+msgstr "16H5"
+
+#. CoCube Sengo2 library choice
+msgid "25H9"
+msgstr "25H9"
+
+#. CoCube Sengo2 library choice
+msgid "36H11"
+msgstr "36H11"
+
+#. CoCube Sengo2 library choice
+msgid "AprilTag"
+msgstr "AprilTag"
+
+#. CoCube Sengo2 library choice
+msgid "Deep Learning"
+msgstr "Deep Learning"
+
+#. CoCube Sengo2 library choice
+msgid "Obj20Class"
+msgstr "Obj20Class"
+
+#. CoCube Sengo2 library choice
+msgid "Motion Detect"
+msgstr "detecta movimiento"
+
+#. CoCube Sengo2 library block
+msgid "Sengo2 read QRcode"
+msgstr "Sengo2 lee el código QR"
+
+#. CoCube Sengo2 library block
+msgid "Sengo2 change algorithm _"
+msgstr "Sengo2 cambia el algoritmo _"
+
+#. CoCube Sengo2 library block
+msgid "Sengo2 delete face ID _ (1-10)"
+msgstr "Sengo2 borra la cara ID _ (1-10)"
+
+#. CoCube Sengo2 library block
+msgid "Sengo2 delete learning ID _ (1-15)"
+msgstr "Sengo2 borra el ID de aprendizaje _ (1-15)"
+
+#. CoCube Sengo2 library block
+msgid "Sengo2 get AprilTag _"
+msgstr "Sengo2 obtén el AprilTag _"
+
+#. CoCube Sengo2 library block
+msgid "Sengo2 get Obj20Class _"
+msgstr "Sengo2 obtén el Obj20Class _"
+
+#. CoCube Sengo2 library block
+msgid "Sengo2 get QRcode _"
+msgstr "Sengo2 obtén código QR _"
+
+#. CoCube Sengo2 library block
+msgid "Sengo2 get blob _"
+msgstr "Sengo2 obtén el blob _"
+
+#. CoCube Sengo2 library block
+msgid "Sengo2 get card _"
+msgstr "Sengo2 obtén la tarjeta _"
+
+#. CoCube Sengo2 library block
+msgid "Sengo2 get color _"
+msgstr "Sengo2 obtén el color _"
+
+#. CoCube Sengo2 library block
+msgid "Sengo2 get face ID"
+msgstr "Sengo 2 obtén el ID de la cara"
+
+#. CoCube Sengo2 library block
+msgid "Sengo2 get learning ID"
+msgstr "Sengo2 obtén el ID de aprendizaje"
+
+#. CoCube Sengo2 library block
+msgid "Sengo2 get line _"
+msgstr "Sengo2 obtén la línea _"
+
+#. CoCube Sengo2 library block
+msgid "Sengo2 get motion _"
+msgstr "Sengo2 obtén el movimiento _"
+
+#. CoCube Sengo2 library block
+msgid "Sengo2 init"
+msgstr "Sengo2 inicializa"
+
+#. CoCube Sengo2 library block
+msgid "Sengo2 read AprilTag"
+msgstr "Sengo2 lee el AprilTag"
+
+#. CoCube Sengo2 library block
+msgid "Sengo2 read Obj20Class"
+msgstr "Sengo2 lee el Obj20Class"
+
+#. CoCube Sengo2 library block
+msgid "Sengo2 read blob"
+msgstr "Sengo2 lee el blob"
+
+#. CoCube Sengo2 library block
+msgid "Sengo2 read card"
+msgstr "Sengo2 lee la tarjeta"
+
+#. CoCube Sengo2 library block
+msgid "Sengo2 read color"
+msgstr "Sengo2 lee el color"
+
+#. CoCube Sengo2 library block
+msgid "Sengo2 record face ID _ (1-10)"
+msgstr "Sengo2 graba ID de la cara _ (1-10)"
+
+#. CoCube Sengo2 library block
+msgid "Sengo2 record learning ID _ (1-15)"
+msgstr "Sengo2 graba ID de aprendizaje _ (1-15)"
+
+#. CoCube Sengo2 library block
+msgid "Sengo2 reset"
+msgstr "Sengo2 reinicializa"
+
+#. CoCube Sengo2 library block
+msgid "Sengo2 set AprilTag type _"
+msgstr "Sengo2 establece el tipo de AprilTag _"
+
+#. CoCube Sengo2 library block
+msgid "Sengo2 set blob detect property color _ width _ height _"
+msgstr ""
+"Sengo2 establece la propiedad de detección de blob color _ ancho _ alto _"
+
+#. CoCube Sengo2 library block
+msgid "Sengo2 set color recog area x _ y _ width _ height _ (0-100)"
+msgstr ""
+"Sengo2 establece el área de reconocimiento de color x _ y _ ancho _ alto _ "
+"(0-100)"
+
+#. Foxbit library block
+msgid "fb scroll text _ _"
+msgstr "fb desplaza el texto _ _"
+
+#. KidsIOT library choice
+msgid "kiot;AD key"
+msgstr "tecla AD"
+
+#. KidsIOT library choice
+msgid "kiot;gas (MQ-135)"
+msgstr "gas (MQ-135)"
+
+#. KidsIOT library choice
+msgid "kiot;film pressure"
+msgstr "presión de la lámina"
+
+#. KidsIOT library choice
+msgid "kiot;flame"
+msgstr "llama"
+
+#. KidsIOT library choice
+msgid "kiot;light"
+msgstr "luz"
+
+#. KidsIOT library choice
+msgid "kiot;microphone"
+msgstr "micrófono"
+
+#. KidsIOT library choice
+msgid "kiot;potentiometer"
+msgstr "potenciómetro"
+
+#. KidsIOT library choice
+msgid "kiot;steam"
+msgstr "vapor"
+
+#. KidsIOT library choice
+msgid "kiot;UV light"
+msgstr "luz ultravioleta"
+
+#. KidsIOT library choice
+msgid "kiot;active buzzer"
+msgstr "zumbador activo"
+
+#. KidsIOT library choice
+msgid "kiot;LED"
+msgstr "LED"
+
+#. KidsIOT library choice
+msgid "kiot;laser"
+msgstr "láser"
+
+#. KidsIOT library choice
+msgid "kiot;relay"
+msgstr "relé"
+
+#. KidsIOT library choice
+msgid "kiot;button pressed?"
+msgstr "¿botón presionado?"
+
+#. KidsIOT library choice
+msgid "kiot;humidity"
+msgstr "humedad"
+
+#. KidsIOT library choice
+msgid "kiot;magnet detected?"
+msgstr "¿imán detectado?"
+
+#. KidsIOT library choice
+msgid "kiot;movement detected?"
+msgstr "¿movimiento detectado?"
+
+#. KidsIOT library choice
+msgid "kiot;obstacle?"
+msgstr "¿obstáculo?"
+
+#. KidsIOT library choice
+msgid "kiot;photo sensor interrupted?"
+msgstr "¿sensor fotoeléctrico interrumpido?"
+
+#. KidsIOT library choice
+msgid "kiot;receive IR code"
+msgstr "recibe el código IR"
+
+#. KidsIOT library choice
+msgid "kiot;temperature (Celsius)"
+msgstr "temperatura (ºC)"
+
+#. KidsIOT library choice
+msgid "kiot;tilt?"
+msgstr "¿inclinación?"
+
+#. KidsIOT library choice
+msgid "kiot;touching?"
+msgstr "¿tocando?"
+
+#. KidsIOT library choice
+msgid "X"
+msgstr "X"
+
+#. KidsIOT library choice
+msgid "Y"
+msgstr "Y"
+
+#. KidsIOT library choice
+msgid "kiot;rotation"
+msgstr "rotación"
+
+#. KidsIOT library choice
+msgid "kiot;clockwise"
+msgstr "sentido horario"
+
+#. KidsIOT library choice
+msgid "kiot;counter-clockwise"
+msgstr "sentido antihorario"
+
+#. KidsIOT library choice
+msgid "kiot;stop"
+msgstr "detén"
+
+#. KidsIOT library choice
+msgid "kiot;left"
+msgstr "izquierda"
+
+#. KidsIOT library choice
+msgid "kiot;right"
+msgstr "derecha"
+
+#. KidsIOT library block
+msgid "#SVG#square11#ffffff RGB color _ port _"
+msgstr "#SVG#square11#ffffff RGB color _ port _"
+
+#. KidsIOT library block
+msgid "#SVG#square11#ff0000 analog _ port _"
+msgstr "#SVG#square11#ff0000 analógico _ puerto _"
+
+#. KidsIOT library block
+msgid "#SVG#square11#0070ff digital _ port _"
+msgstr "#SVG#square11#0070ff digital _ puerto _"
+
+#. KidsIOT library block
+msgid "#SVG#square11#fff000 distance (cm) port _"
+msgstr "#SVG#square11#fff000 distancia (cm) puerto _"
+
+#. KidsIOT library block
+msgid "#SVG#square11#fff000 line sensor _ port _"
+msgstr "#SVG#square11#fff000 sensor de línea _ puerto _"
+
+#. KidsIOT library block
+msgid "#SVG#square11#00c612 get _"
+msgstr "#SVG#square11#00c612 obtén _"
+
+#. KidsIOT library block
+msgid "#SVG#square11#00c612 joystick _"
+msgstr "#SVG#square11#00c612 joystick _"
+
+#. KidsIOT library block
+msgid "#SVG#square11#0070ff play note _ octave _ for _ port _"
+msgstr "#SVG#square11#0070ff toca la nota _ octava _ durante _ puerto _"
+
+#. KidsIOT library block
+msgid "#SVG#square11#ffffff rotary encoder _ port _"
+msgstr "#SVG#square11#ffffff codificador rotativo _ puerto _"
+
+#. KidsIOT library block
+msgid "#SVG#square11#0070ff set NeoPixels _ _ _ _ port _"
+msgstr "#SVG#square11#0070ff pon NeoPíxeles _ _ _ _ puerto _"
+
+#. KidsIOT library block
+msgid "#SVG#square11#0070ff set _ _ port _"
+msgstr "#SVG#square11#0070ff pon _ _ puerto _"
+
+#. KidsIOT library block
+msgid "#SVG#square11#fff000 set motor _ port _"
+msgstr "#SVG#square11#fff000 giro del motor _ puerto _"
+
+#. KidsIOT library block
+msgid "#SVG#square11#00c612 set year _ month _ day _"
+msgstr "#SVG#square11#00c612 pon año _ mes _ dia _"
+
+#. KidsIOT library block
+msgid "#SVG#square11#00c612 set hours _ minutes _ seconds _"
+msgstr "#SVG#square11#00c612 pon horas _ minutos _ segundos _"
+
+#. KidsIOT library block
+msgid "#SVG#square11#0070ff temperature (DS18B20) _ port _"
+msgstr "#SVG#square11#0070ff temperatura(DS18B20) _ puerto _"
+
+#. KidsIOT library block
+msgid "#SVG#square11#ffffff traffic light red _ yellow _ green _ port _"
+msgstr "#SVG#square11#ffffff semáforo rojo _ amarillo _ verde _ puerto _"
+
+#. Examples folder
+msgid "folder;MakerPort"
+msgstr "MakerPort"
+
+#. Option in dropdown menu of editable input slots on mobile devices:
+msgid "edit"
+msgstr "edita"
+
+#. Generic servo type
+msgid "180°"
+msgstr "180°"
+
+#. Generic servo type
+msgid "270°"
+msgstr "270°"
+
+#. Generic servo type
+msgid "360°"
+msgstr "360°"
+
+#. Calliope MotionKit library block
+msgid "MotionKit set motor _ _ speed _ (0~100)"
+msgstr "MotionKit motor _ _ velocidad _ (0~100)"
+
+#. Calliope MotionKit library block
+msgid "MotionKit stop all"
+msgstr "MotionKit detén todos los motores"
+
+#. Calliope MotionKit library block
+msgid "MotionKit set led _ _"
+msgstr "MotionKit led _ _"
+
+#. Calliope MotionKit library block
+msgid "MotionKit set servo _ to _ degrees (0-180)"
+msgstr "MotionKit pon el servo _ a _ grados (0-180)"
+
+#. Calliope MotionKit library block
+msgid "MotionKit set _ servo _ to _ degrees"
+msgstr "MotionKit pon el servo de _ _ a _ grados"
+
+#. Calliope MotionKit library block
+msgid "MotionKit rotate servo _ _ speed _ (0~100)"
+msgstr "MotionKit gira el servo _ _ velocidad _ (0~100)"
+
+#. Calliope Callibot library choice
+msgid "callibot;left front"
+msgstr "izquierda frontal"
+
+#. Calliope Callibot library choice
+msgid "callibot;right front"
+msgstr "derecha frontal"
+
+#. Calliope Callibot library choice
+msgid "callibot;left back"
+msgstr "izquierda posterior"
+
+#. Calliope Callibot library choice
+msgid "callibot;right back"
+msgstr "derecha posterior"
+
+#. Calliope Callibot library choice
+msgid "violett"
+msgstr "violeta"
+
+#. Calliope Callibot library choice
+msgid "aqua"
+msgstr "azul claro"
+
+#. Calliope Callibot library choice
+msgid "callibot;bright"
+msgstr "claro"
+
+#. Calliope Callibot library choice
+msgid "callibot;dark"
+msgstr "oscuro"
+
+#. Calliope Callibot library choice
+msgid "callibot;S1"
+msgstr "S1"
+
+#. Calliope Callibot library choice
+msgid "callibot;S2"
+msgstr "S2"
+
+#. Calliope Callibot library block
+msgid "Callibot2E encoder _"
+msgstr "Callibot2E codificador rotativo _"
+
+#. Calliope Callibot library block
+msgid "Callibot2E reset encoder _"
+msgstr "Callibot2E reinicia codificador rotativo _"
+
+#. Calliope Callibot library block
+msgid "Callibot2 battery (mV)"
+msgstr "Callibot2 batería (mV)"
+
+#. Calliope Callibot library block
+msgid "Callibot2 bumper _ _"
+msgstr "Callibot2 sensor de contacto _ _"
+
+#. Calliope Callibot library block
+msgid "Callibot clear NeoPixels"
+msgstr "Callibot apaga NeoPíxeles"
+
+#. Calliope Callibot library block
+msgid "Callibot distance (cm)"
+msgstr "Callibot distancia (cm)"
+
+#. Calliope Callibot library block
+msgid "Callibot line sensor _ _"
+msgstr "Callibot sensor de línea _ _"
+
+#. Calliope Callibot library block
+msgid "Callibot set led _ _"
+msgstr "Callibot led _ _"
+
+#. Calliope Callibot library block
+msgid "Callibot set motor _ _ speed _ (0~100)"
+msgstr "Callibot motor _ _ velocidad _ (0~100)"
+
+#. Calliope Callibot library block
+msgid "Callibot set neopixel _ to _ intensity _"
+msgstr "Callibot pon Neopíxel _ a _ intensidad _"
+
+#. Calliope Callibot library block
+msgid "Callibot set servo _ to _ ° (0~180)"
+msgstr "Callibot pon el servo _ a _ ° (0~180)"
+
+#. Calliope Callibot library block
+msgid "Callibot set _ servo _ to _ °"
+msgstr "Callibot pon el servo _ _ a _ °"
+
+#. Calliope Callibot library block
+msgid "Callibot rotate servo _ _ speed _ (0~100)"
+msgstr "Callibot gira el servo _ _ velocidad _ (0~100)"
+
+#. Calliope Callibot library block
+msgid "Callibot stop all"
+msgstr "Callibot detén todos los motores"
+
+#. Calliope Callibot library block
+msgid "Callibot stop motor _"
+msgstr "Callibot detén motor _"
+
+#. Nezha Pro library block
+msgid "np stop all motors"
+msgstr "np detén todos los motores"
+
+#. Nezha Pro library label
+msgid "Nezha Pro"
+msgstr "Nezha Pro"
+
+#. Nehza Pro library choice
+msgid "M1"
+msgstr "M1"
+
+#. Nehza Pro library choice
+msgid "M2"
+msgstr "M2"
+
+#. Nehza Pro library choice
+msgid "M3"
+msgstr "M3"
+
+#. Nehza Pro library choice
+msgid "M4"
+msgstr "M4"
+
+#. Nehza Pro library choice
+msgid "nezhaPro;by shortest path"
+msgstr "por el camino más corto"
+
+#. Nezha Pro library block
+msgid "np angle _"
+msgstr "np ángulo _"
+
+#. Nezha Pro library block
+msgid "np move _ for _ mm speed _ %"
+msgstr "np mueve _ _ mm velocidad _ %"
+
+#. Nezha Pro library block
+msgid "np speed _"
+msgstr "np velocidad _"
+
+#. Nezha Pro library block
+msgid "np total angle _"
+msgstr "np ángulo total _"
+
+#. Nezha Pro library block
+msgid "np reset total angle _"
+msgstr "np reinicia el ángulo total _"
+
+#. Nezha Pro library block
+msgid "np rotate _ _ by _ degrees speed _ %"
+msgstr "np gira _ _ grados _ velocidad _ %"
+
+#. Nezha Pro library block
+msgid "np rotate _ _ to _ degrees speed _ %"
+msgstr "np gira _ _ a _ grados velocidad _ %"
+
+#. Nezha Pro library block
+msgid "np run motor _ _ speed _ %"
+msgstr "np motor _ _ velocidad _ %"
+
+#. Nezha Pro library block
+msgid "np set _ angle _ to _ degrees"
+msgstr "np pon _ ángulo _ a _ grados"
+
+#. Nezha Pro library block
+msgid "np set wheels left _ right _ #BR# circumference _ mm axle _ mm"
+msgstr ""
+"np pon las ruedas izquierda _ derecha _ #BR# circunferencia _ mm eje _ mm"
+
+#. Nezha Pro library block
+msgid "np stop motor _"
+msgstr "np detén motor _"
+
+#. Nezha Pro library block
+msgid "np turn _ by _ degrees speed _ %"
+msgstr "np gira _ grados _ velocidad _ %"
+
+#. Nezha Pro library block
+msgid "np version"
+msgstr "np versión"
+
+#. 5x5 LED Display library block
+msgid "LED image #BR# _"
+msgstr "imagen LED #BR# _"
+
+#. Settings menu option
+msgid "open vm folder on microblocks.fun"
+msgstr "abre la carpeta de las máquinas virtuales en microblocks.fun"
+
+#. Settings menu option
+msgid "show program size on board"
+msgstr "muestra el tamaño del programa de la placa"
+
+#. Program size information
+msgid "Using %1 out of %2 bytes"
+msgstr "Ocupando %1 de los %2 bytes disponibles"
+
+#. Graph context menu option
+msgid "increase range"
+msgstr "aumenta el rango"
+
+#. Graph context menu option
+msgid "decrease range"
+msgstr "reduce el rango"
+
+#. Script right-click context menu
+msgid "copy callable name"
+msgstr "copia el nombre de la función"

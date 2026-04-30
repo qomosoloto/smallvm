@@ -130,9 +130,10 @@ waitUntil (seconds != 0)
 
 module 'HTTP client' Comm
 author MicroBlocks
-version 1 4 
+version 1 5 
 depends WiFi 
 tags http network get post put delete 
+choices requestTypes GET POST PUT DELETE 
 description 'Send HTTP requests and get responses back. You can use this library to fetch or store data in online servers, or to control other Wifi-enabled boards.
 '
 
@@ -145,8 +146,8 @@ description 'Send HTTP requests and get responses back. You can use this library
   spec 'r' '_lowercase' '_lowercase _' 'auto' 'ABC Def gH'
   spec 'r' '_request_url' '_request_url _ method _ body _ : port _' 'str menu.requestTypes str num' '' 'GET' '' 80
   spec 'r' '_readHTTPResponse' '_readHTTPResponse'
-  spec 'r' 'http܃//' 'http܃// _  : port _' 'auto num' 'microblocks.fun/example.txt' 80
-  spec ' ' 'request' '_ data _ to http܃// _  : port _' 'menu.requestTypes str str num' 'POST' 'MicroBlocks is fun' 'microblocks.fun' 80
+  spec 'r' 'http܃//' 'http #SVG#colon-double-slash _ : port _' 'auto num' 'microblocks.fun/example.txt' 80
+  spec ' ' 'request' '_ data _ to http #SVG#colon-double-slash _ : port _' 'menu.requestTypes str str num' 'POST' 'MicroBlocks is fun' 'microblocks.fun' 80
 
 to '_http_body_start' response {
   return (('[data:find]' ('[data:unicodeString]' ('[data:makeList]' 13 10 13 10)) response) + 4)
@@ -233,7 +234,7 @@ to '_request_url' url method body optionalPort {
   if (not ('[net:httpIsConnected]')) {
     return ('[data:join]' '0 Could not connect to server' ('_line_end'))
   }
-  '[net:httpRequest]' method host path
+  '[net:httpRequest]' method host path body
   return ('_readHTTPResponse')
 }
 
@@ -276,7 +277,7 @@ to request method data url optionalPort {
 
 module TFT Output
 author MicroBlocks
-version 1 11 
+version 1 12 
 description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 
   spec ' ' '[tft:clear]' 'clear TFT display'
@@ -347,6 +348,7 @@ to tft_colorSwatch color {
 }
 
 to tft_drawText s x y color optionalScale optionalBGColor {
+  s = ('[data:convertType]' s 'string')
   local 'scale' (argOrDefault 5 2)
   local 'bgColor' (argOrDefault 6 '')
   local 'lines' ('[data:split]' s ('[data:unicodeString]' 10))
@@ -369,13 +371,16 @@ to tft_drawVector x y angle length color {
 
 module WiFi Comm
 author MicroBlocks
-version 1 8 
+version 1 10 
 tags communication network 
 description 'Connect to a WiFi network. Used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
 '
 
   spec ' ' 'wifiConnect' 'wifi connect to _ password _ : IP _ gateway _ subnet _' 'str str auto auto auto' 'Network_Name' '' '192.168.1.42' '192.168.1.1' '255.255.255.0'
   spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
+  spec ' ' '[net:stopWiFi]' 'stop wifi'
+  space
+  spec ' ' '[net:setDomainName]' 'wifi set local domain name _ .local' 'str' 'microblocks'
   space
   spec 'r' 'getIPAddress' 'IP address'
   spec 'r' '[net:myMAC]' 'MAC address'
@@ -414,6 +419,7 @@ to wifiConnect ssid password fixedIP gatewayIP subnetIP {
     setUserLED false
     waitMillis 50
   }
+  '[net:setDomainName]' 'microblocks'
   sayIt 'My IP address is:' ('[net:myIPAddress]')
 }
 
@@ -435,6 +441,7 @@ to wifiCreateHotspot ssid password {
     setUserLED false
     waitMillis 50
   }
+  '[net:setDomainName]' 'microblocks'
   sayIt 'My IP address is:' ('[net:myIPAddress]')
 }
 

@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: interest@microblocks.fun\n"
 "POT-Creation-Date: 2024-10-29 09:24+0200\n"
-"PO-Revision-Date: 2025-01-18 12:02+0000\n"
+"PO-Revision-Date: 2025-07-01 13:40+0000\n"
 "Last-Translator: Peter Mathijssen <pmathijssen@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/microblocks/ide/nl/"
 ">\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.10-dev\n"
+"X-Generator: Weblate 5.13-dev\n"
 
 #. "Output" blocks category label
 msgid "cat;Output"
@@ -220,7 +220,7 @@ msgstr "laatste bericht"
 
 #. Block in Control category
 msgid "arg _ default _"
-msgstr "arg_standaard _"
+msgstr "arg _ standaard _"
 
 #. Example default value for the ( arg _ default _ ) block
 msgid "default"
@@ -1607,7 +1607,7 @@ msgstr "teken lijn van x _ y _ tot x _ y _ wissen _"
 
 #. OLED Graphics library block
 msgid "draw rectangle x _ y _ w _ h _ erase _ rounding(3-15) _"
-msgstr "teken rechthoek x _ y _ b_ h _ wissen _ ronding(3-15) _"
+msgstr "teken rechthoek x _ y _ b _ h _ wissen _ ronding(3-15) _"
 
 #. OLED Graphics library block
 msgid "fill rectangle x _ y _ w _ h _ erase _"
@@ -3347,7 +3347,7 @@ msgstr "m:s knop _ ?"
 
 #. micro:STEAMakers library block
 msgid "ms touching ?"
-msgstr "m:s aanraken ?"
+msgstr "ms logo aangeraakt?"
 
 #. micro:STEAMakers library block
 msgid "ms light"
@@ -6091,9 +6091,8 @@ msgid "ultrasonic distance (mm)"
 msgstr "ultrasone afstand (mm)"
 
 #. CoCube library block
-#, fuzzy
 msgid "move _ at _ speed (0-50) for _ msecs"
-msgstr "beweeg _ met _ snelheid (0-50) voor _ msec"
+msgstr "beweeg _ met _ snelheid (0-50) gedurende _ msec"
 
 #. CoCube Module library block
 #, fuzzy
@@ -6115,9 +6114,8 @@ msgid "gripper degrees _ (0 to 70)"
 msgstr "grijper _ graden (0 to 70)"
 
 #. CoCube library block
-#, fuzzy
 msgid "rotate _ at _ speed (0-50) for _ msecs"
-msgstr "draai _ met _ snelheid (0-50) voor _ msec"
+msgstr "draai _ met _ snelheid (0-50) gedurende _ msec"
 
 #. CoCube library block
 #, fuzzy
@@ -6242,3 +6240,60 @@ msgstr "vooruit"
 #. CoCube library block
 msgid "cocube;backward"
 msgstr "achteruit"
+
+#. Generic robot side input. Used in robot libraries
+#. as in "both" sides
+msgid "both"
+msgstr "beide"
+
+#. Library button, abbreviated
+msgid "LIBS"
+msgstr "BUBLIO"
+
+#. Examples folder
+msgid "folder;CoCube"
+msgstr "CoCube"
+
+#. Firmware install instruction
+msgid "Do not switch browser tabs!"
+msgstr "Niet van browser tabbladen veranderen!"
+
+#. Firmware install instruction
+msgid "Connecting..."
+msgstr "Verbinden..."
+
+#. Settings menu option
+msgid "inform of new versions"
+msgstr "Informeer over nieuwe versies"
+
+#. Settings menu option
+msgid "when opening the IDE, show a notification if a new version of MicroBlocks has been released"
+msgstr ""
+"Laat tijdens het openen van de IDE, een bericht zien, als er een nieuwe "
+"versie van MicroBlocks beschikbaar is"
+
+#. Coding Box library block
+msgid "cb light"
+msgstr "cb licht"
+
+#. Coding Box library block
+msgid "cb oled write _ at x _ y _ big _"
+msgstr "cd oled schrijf _ op x _ y _ groot _"
+
+#. Coding Box library block
+msgid "cb humidity"
+msgstr "cb vochtigheid"
+
+#. Generic robot side input. Used in robot libraries
+#. as in "left" side
+msgid "left"
+msgstr "links"
+
+#. Keyestudio Smart Home button (left/right) label
+msgid "shbutton;left"
+msgstr "links"
+
+#. Generic robot side input. Used in robot libraries
+#. as in "right" side
+msgid "right"
+msgstr "rechts"

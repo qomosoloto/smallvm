@@ -30,6 +30,10 @@
 int BLE_connected_to_IDE = false;
 int USB_connected_to_IDE = false;
 
+// Other Variables
+
+static uint32 lastSendTime = 0;
+
 char BLE_ThreeLetterID[4];
 static char bleDeviceName[32];
 
@@ -81,7 +85,9 @@ static void show_BLE_ID() {
 		args[2] = int2obj(1);
 		primMBDrawShape(3, args);
 		showShapeForMSecs(300);
-		primMBDisplayOff(0, args);
+
+		args[0] = 0; // clear screen
+		primMBDrawShape(3, args);
 		showShapeForMSecs(100);
 	}
 	primMBDisplayOff(0, args);
@@ -98,6 +104,16 @@ static void flashUserLED() {
 	updateMicrobitDisplay();
 }
 
+extern "C" void consolePrint(const char *s) {
+	Serial.println(s);
+}
+
+extern "C" void consoleReportNum(const char *label, int n) {
+	Serial.print(label);
+	Serial.print(": ");
+	Serial.println(n);
+}
+
 #if defined(BLE_IDE)
 
 // BLE Communications
@@ -106,8 +122,8 @@ static void flashUserLED() {
 
 // BLE_SEND_MAX - maximum bytes to send in a single attribute write (max is 512)
 // INTER_SEND_TIME - don't send data more often than this to avoid NimBLE error & disconnect
-#define BLE_SEND_MAX 250
-#define INTER_SEND_TIME 20
+#define BLE_SEND_MAX 240
+#define INTER_SEND_TIME 40
 
 static NimBLEServer *pServer = NULL;
 static NimBLEService *pService = NULL;
@@ -119,7 +135,6 @@ static NimBLECharacteristic *pUARTRxCharacteristic;
 
 static bool bleRunning = false;
 static uint16_t connID = -1;
-static uint32 lastSendTime = 0;
 static int lastRC = 0;
 
 // incoming BLE buffer
@@ -128,7 +143,7 @@ static uint8_t bleRecvBuf[RECV_BUF_SIZE];
 static int bleBytesAvailable = 0;
 static int overRuns = 0;
 
-static void updateConnectionState() {
+static void updateConnectionState() { // NimBLE
 	if (USB_connected_to_IDE && !ideConnected()) {
 		// lost USB connection; resume advertisting
 		USB_connected_to_IDE = false;
@@ -337,9 +352,9 @@ static uint16_t txCharacteristic = 0;
 static uint16_t rxCharacteristic = 0;
 static uint16_t uartTxCharacteristic = 0;
 static uint16_t uartRxCharacteristic = 0;
-static uint32 lastSendTime = 0;
 
-#define BLE_BUF_MAX 250 // 360 works, 380 fails; making both charactistics dynamic allows larger buffers
+// BLE_BUF_MAX max size of send and receive payloads
+#define BLE_BUF_MAX 240 // 360 works, 380 fails; making both charactistics dynamic allows larger buffers
 
 // incoming BLE buffer
 #define RECV_BUF_SIZE 1024
@@ -361,7 +376,7 @@ void BLE_setPicoAdvertisingData(char *name, const char *uuidString) {
 	int pos = 0;
 
 	// flags
-	const uint8_t flags[] = { 2, 1, 6 };
+	const uint8_t flags[] = { 2, 1, 6 }; // flags = 6 LE General Discoverable Mode, BR/EDR not supported
 	memcpy(&adv_data[pos], flags, sizeof(flags));
 	pos += sizeof(flags);
 
@@ -377,12 +392,14 @@ void BLE_setPicoAdvertisingData(char *name, const char *uuidString) {
 
 	// name
 	// Note: BTstack only supports 31-byte adverstising packets
-	int nameBytes = strlen(name);
-	if (nameBytes > (29 - pos)) nameBytes = 29 - pos; // truncate name to fit
-	adv_data[pos++] = nameBytes + 1; // field size
-	adv_data[pos++] = 9; // "Complete Local Name"
-	memcpy(&adv_data[pos], name, nameBytes);
-	pos += nameBytes;
+	if (name) {
+		int nameBytes = strlen(name);
+		if (nameBytes > (29 - pos)) nameBytes = 29 - pos; // truncate name to fit
+		adv_data[pos++] = nameBytes + 1; // field size
+		adv_data[pos++] = 9; // "Complete Local Name"
+		memcpy(&adv_data[pos], name, nameBytes);
+		pos += nameBytes;
+	}
 
 	adv_data_len = pos;
 	BTstack.setAdvData(adv_data_len, adv_data);
@@ -393,7 +410,7 @@ void setAdvertisingInterval(int minInterval, int maxInterval) {
 
 	// minimum interval is 20 msecs (32 units)
 	if (minInterval < 32) minInterval = 32;
-	if (maxInterval < 32) minInterval = 32;
+	if (maxInterval < 32) maxInterval = 32;
 
 	uint8_t adv_type = 0;
 	bd_addr_t null_addr;
@@ -416,9 +433,20 @@ void BLE_resumeAdvertising() {
 		return; // don't advertise if connected to IDE
 	}
 
+	// The following experimental alternative code uses scan result to provide the name:
 	BTstack.stopAdvertising();
-	BLE_setPicoAdvertisingData(bleDeviceName, MB_SERVICE_UUID); // resume BLE advertisting
-	setAdvertisingInterval(50, 100);
+
+	// Experimental: use 31-byte scan response to provide the device name since 16-byte UUID
+	// and the full name can not both fit into the Pico's 31-byte advertisting packet.
+	uint8_t scan_resp_data[17] = {
+    	16, 9, 'M', 'i', 'c', 'r', 'o', 'B', 'l', 'o', 'c', 'k', 's', ' ', '0', '0', '0'};
+    scan_resp_data[14] = BLE_ThreeLetterID[0];
+    scan_resp_data[15] = BLE_ThreeLetterID[1];
+    scan_resp_data[16] = BLE_ThreeLetterID[2];
+	gap_scan_response_set_data(sizeof(scan_resp_data), scan_resp_data);
+
+	BLE_setPicoAdvertisingData(NULL, MB_SERVICE_UUID); // resume BLE advertisting
+	setAdvertisingInterval(100, 150);
 	BTstack.startAdvertising();
 }
 
@@ -465,10 +493,10 @@ static int gattWriteCallback(uint16_t attribute_handle, uint8_t *data, uint16_t 
 	return 0;
 }
 
-static void updateConnectionState() {
+static void updateConnectionState() { // PicoBLE
 	if (!__isPicoW) return;
 
-	if ((USB_connected_to_IDE || BLE_connected_to_IDE) && !ideConnected()) {
+	if (USB_connected_to_IDE && !ideConnected()) {
 		// lost connection to IDE; resume advertisting
 		USB_connected_to_IDE = false;
 		BLE_connected_to_IDE = false;
@@ -487,11 +515,22 @@ static void updateConnectionState() {
 	}
 }
 
+#define INTER_SEND_TIME 35
+
 static int bleSendData(uint8_t *data, int byteCount) {
+	// do not send more often than INTER_SEND_TIME msecs
+	uint32 now = millisecs();
+	if (lastSendTime > now) lastSendTime = 0; // clock wrap
+	if ((now - lastSendTime) < INTER_SEND_TIME) return 0;
+	lastSendTime = now;
+
 	if (byteCount <= 0) return 0;
+	if (byteCount > BLE_BUF_MAX) byteCount = BLE_BUF_MAX;
+
+	int mtu = att_server_get_mtu(connectionHandle);
+	if (byteCount > mtu) byteCount = mtu; // send at most MTU bytes
 
 	// send byteCount bytes
-	if (byteCount > BLE_BUF_MAX) byteCount = BLE_BUF_MAX;
 	int err = att_server_notify(connectionHandle, txCharacteristic, data, byteCount);
 	return err ? 0 : byteCount;
 }
@@ -581,6 +620,12 @@ int sendBytes(uint8 *buf, int start, int end) {
 	// Send bytes buf[start] through buf[end - 1] and return the number of bytes sent.
 
 	if (!BLE_connected_to_IDE) { // no BLE connection; use Serial
+		// don't send serial data too often (needed on boards with USB serial)
+		uint32 now = millisecs();
+		if (lastSendTime > now) lastSendTime = 0; // clock wrap
+		if ((now - lastSendTime) < 15) return 0;
+		lastSendTime = now;
+
 		return Serial.write(&buf[start], end - start);
 	}
 

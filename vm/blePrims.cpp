@@ -35,6 +35,10 @@
 	#define BLE_UART 1
 #endif
 
+// Empty byte array and string constants
+static uint32 emptyByteArray = HEADER(ByteArrayType, 0);
+static uint32 emptyMBString[2] = { HEADER(StringType, 1), 0 };
+
 static OBJ primBLE_connected(int argCount, OBJ *args) {
 	// BLE_connected_to_IDE is true if *any* BLE client is connected to the board,
 	// regardless of which service they are using.
@@ -558,10 +562,6 @@ static OBJ primRadioReceive(int argCount, OBJ *args) {
 // available for connection as a BLE UART (except in Chrome/Edge, which
 // seems to share a single BLE connection between tabs).
 
-// Empty byte array and string constants
-static uint32 emptyByteArray = HEADER(ByteArrayType, 0);
-static uint32 emptyMBString[2] = { HEADER(StringType, 1), 0 };
-
 // Receive buffer
 static uint8 uartRecvBuf[256];
 static int uartBytesReceived = 0;
@@ -721,70 +721,6 @@ static OBJ primStartBLEKeyboard(int argCount, OBJ *args) {
 
 #endif // BLE_KEYBOARD
 
-#if defined(ESP_NOW_PRIMS)
-
-// Experimental! Optional ESP Now support (compile with -D ESP_NOW_PRIMS)
-// Code provided by Wenji Wu
-
-//https://registry.platformio.org/libraries/yoursunny/WifiEspNow/examples/EspNowBroadcast/EspNowBroadcast.ino
-
-#include <WifiEspNowBroadcast.h>
-
-static char receiveBuffer[1000];
-static bool EspNoWInitialized = false;
-static bool hasEspNowMessage = false;
-
-static void processRx(const uint8_t mac[WIFIESPNOW_ALEN], const uint8_t* buf, size_t count, void* arg) {
-	char* data = (char*) buf;
-	int len = strlen(data);
-	if (len > 999) len = 999;
-	memcpy(receiveBuffer, data, len);
-	receiveBuffer[len] = '\0';
-	hasEspNowMessage = true;
-}
-
-static void initializeEspNoW() {
-	if (EspNoWInitialized) return;
-
-	WiFi.persistent(false);
-	bool ok = WifiEspNowBroadcast.begin("ESPNOW", 3);
-	if (!ok) {
-		// outputString("WifiEspNowBroadcast.begin() failed");
-		ESP.restart(); //
-	 }
-	// outputString("WifiEspNowBroadcast.begin() success");
-	WifiEspNowBroadcast.onReceive(processRx, nullptr);
-	EspNoWInitialized = true;
-}
-
-static OBJ primEspNowLastEvent(int argCount, OBJ *args) {
-	if (!EspNoWInitialized) initializeEspNoW();
-
-	WifiEspNowBroadcast.loop();
-	delay(10);
-
-	if (hasEspNowMessage) {
-		OBJ event = newObj(ListType, 2, zeroObj);
-		FIELD(event, 0) = int2obj(1); //list size
-		FIELD(event, 1) = newStringFromBytes(receiveBuffer, strlen(receiveBuffer));
-		hasEspNowMessage = false;
-		return event;
-	} else {
-		return falseObj;
-	}
-}
-
-static OBJ primEspNowBroadcast(int argCount, OBJ *args) {
-	if (!EspNoWInitialized) initializeEspNoW();
-
-	char* message = obj2str(args[0]);
-	WifiEspNowBroadcast.send(reinterpret_cast<const uint8_t*>(message), strlen(message));
-	WifiEspNowBroadcast.loop();
-	return falseObj;
-}
-
-#endif // ESP_NOW_PRIMS
-
 static PrimEntry entries[] = {
 
 	{"bleConnected", primBLE_connected},
@@ -813,11 +749,6 @@ static PrimEntry entries[] = {
 		{"holdKey", primBLEHoldKey},
 		{"releaseKey", primBLEReleaseKey},
 		{"releaseKeys", primBLEReleaseAllKeys},
-	#endif
-
-	#if defined(ESP_NOW_PRIMS)
-		{"EspNowLastEvent", primEspNowLastEvent},
-		{"EspNowBroadcast", primEspNowBroadcast},
 	#endif
 
 };

@@ -51,7 +51,7 @@ to 'happy-birthday' {
   waitMillis half
 }
 
-script 55 50 {
+script 50 50 {
 whenButtonPressed 'A'
 comment 'On a micro:bit, attach a piezo speaker between pin 0 and ground'
 comment 'This will use the built-in speaker on boards that have one
@@ -61,19 +61,19 @@ sendBroadcast 'show message'
 'and-many-more'
 }
 
-script 267 181 {
+script 284 199 {
 comment 'To see what each of these block does, right click
 on it and select "show block definition..."'
 'happy-birthday'
 'and-many-more'
 }
 
-script 438 250 {
+script 450 252 {
 whenBroadcastReceived 'show message'
 scroll_text 'HAPPY BIRTHDAY!'
 }
 
-script 55 301 {
+script 50 301 {
 whenStarted
 comment 'Works out of the box on the Adafruit Circuit Playground Express.
 
@@ -93,9 +93,10 @@ forever {
 
 module 'LED Display' Output
 author MicroBlocks
-version 1 9 
+version 1 14 
 choices led_imageMenu heart 'small heart' yes no happy sad confused angry asleep surprised silly fabulous meh 't-shirt' 'roller skate' duck house tortoise butterfly 'stick figure' ghost sword giraffe skull umbrella snake rabbit cow 'quarter note' 'eight note' pitchfork target triangle 'left triangle' 'chess board' diamond 'small diamond' square 'small square' scissors 
-description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) support these primitives with a simulated "fat pixel" display.'
+description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) support these primitives with a simulated "fat pixel" display.
+'
 variables _stop_scrolling_text 
 
   spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
@@ -108,16 +109,12 @@ variables _stop_scrolling_text
   spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
   spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
   spec ' ' 'stopScrollingText' 'stop scrolling'
+  advanced
+  spec ' ' 'set display color' 'set display color _' 'color'
+  spec 'r' 'led_image' 'LED image #BR# _' 'microbitDisplay' 15237440
   space
-  spec 'r' '_led_image' 'led image _' 'microbitDisplay' 15237440
   spec 'r' '_led_namedImage' '_led_namedImage _' 'menu.led_imageMenu' 'happy'
   spec 'r' '_led_imageData' '_led_imageData'
-  spec ' ' 'set display color' 'set display color _' 'color'
-
-to '_led_image' twentyFiveBitInt {
-  comment 'An LED image is a 25-bit integer'
-  return twentyFiveBitInt
-}
 
 to '_led_imageData' {
   return 'heart:4685802,small heart:145728,yes:2269696,no:18157905,happy:15237440,sad:18284864,confused:22348096,angry:23036241,asleep:459616,surprised:4526090,silly:25984017,fabulous:15008639,meh:2236443,t-shirt:15154043,roller skate:11534104,duck:489702,house:10976708,tortoise:359872,butterfly:29332475,stick figure:18158564,ghost:23068334,sword:4657284,giraffe:10946627,skull:15171246,umbrella:6460398,snake:469859,rabbit:16104613,cow:4685361,quarter note:7573636,eight note:7590276,pitchfork:4357813,target:4681156,triangle:1026176,left triangle:32805985,chess board:11184810,diamond:4539716,small diamond:141440,square:33080895,small square:469440,scissors:20287859,'
@@ -141,7 +138,7 @@ to displayCharacter s {
     '[display:mbDisplayOff]'
     return 0
   }
-  '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at 1 s))
+  '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at 1 s)) 1 1
 }
 
 to led_displayImage imageName optionalX optionalY {
@@ -150,6 +147,11 @@ to led_displayImage imageName optionalX optionalY {
     image = ('_led_namedImage' imageName)
   }
   '[display:mbDrawShape]' image (argOrDefault 2 1) (argOrDefault 3 1)
+}
+
+to led_image twentyFiveBitInt {
+  comment 'An LED image is a 25-bit integer'
+  return twentyFiveBitInt
 }
 
 to scroll_text text optionalDelay {
@@ -166,6 +168,15 @@ to scroll_text text optionalDelay {
       '[tft:text]' text (17 - position) 0 (colorSwatch 125 125 125 255) 1 true
       waitMillis (delay / 2)
     }
+  } ('kidsIOT' == (boardType)) {
+    for position (((size text) * 6) + 21) {
+      if _stop_scrolling_text {return 0}
+      '[tft:deferUpdates]'
+      '[tft:clear]'
+      '[tft:text]' text (128 - (6 * position)) 6 (colorSwatch 255 255 255 255) 6 false
+      '[tft:resumeUpdates]'
+      waitMillis (delay / 8)
+    }
   } else {
     for position (((size text) * 6) + 6) {
       if _stop_scrolling_text {return 0}
@@ -178,7 +189,7 @@ to scroll_text text optionalDelay {
 }
 
 to 'set display color' color {
-  callCustomCommand '[display:mbSetColor]' ('[data:makeList]' color)
+  '[display:mbSetColor]' color
 }
 
 to stopScrollingText {
@@ -190,13 +201,14 @@ to stopScrollingText {
 
 module NeoPixel Output
 author MicroBlocks
-version 1 11 
+version 1 15 
 description 'Control NeoPixel (WS2812) RGB LED strips and rings.
 '
-variables _np_pixels 
+variables _np_pixels _np_pin _np_haswhite 
 
   spec ' ' 'neoPixelAttach' 'attach _ LED NeoPixel strip to pin _ : has white _' 'num auto bool' 10 '' false
   spec ' ' 'setNeoPixelColors10' 'set NeoPixels _ _ _ _ _ _ _ _ _ _' 'color color color color color color color color color color'
+  spec ' ' 'setNeoPixelColors25' 'set NeoPixels #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _' 'color color color color color color color color color color color color color color color color color color color color color color color color color'
   spec ' ' 'clearNeoPixels' 'clear NeoPixels'
   spec ' ' 'neoPixelSetAllToColor' 'set all NeoPixels color _' 'color'
   spec ' ' 'setNeoPixelColor' 'set NeoPixel _ color _' 'num color' 1
@@ -248,6 +260,10 @@ to '_NeoPixel_ensureInitialized' {
   } ((boardType) == 'D1-Mini') {
     comment 'D1 mini kit'
     neoPixelAttach 7 15 false
+  } ((boardType) == 'Foxbit') {
+    neoPixelAttach 35 '' false
+  } ((boardType) == 'CodingBox') {
+    neoPixelAttach 35 '' false
   } else {
     neoPixelAttach 10 '' false
   }}
@@ -295,6 +311,8 @@ to '_NeoPixel_shift_hue' i delta {
 }
 
 to '_NeoPixel_update' {
+  comment 'NeoPixel pin and hasWhite may have been changed by another library.'
+  '[display:neoPixelSetPin]' _np_pin _np_hasWhite
   '[display:neoPixelSend]' _np_pixels
   waitMicros 300
 }
@@ -313,15 +331,16 @@ to colorFromRGB r g b {
 }
 
 to neoPixelAttach number pinNumber optionalHasWhite {
-  hasWhite = false
+  _np_pin = pinNumber
+  _np_hasWhite = false
   if ((pushArgCount) > 2) {
-    hasWhite = optionalHasWhite
+    _np_hasWhite = optionalHasWhite
   }
   if (or (_np_pixels == 0) (number != (size _np_pixels))) {
     _np_pixels = (newList number)
   }
   atPut 'all' _np_pixels 0
-  '[display:neoPixelSetPin]' pinNumber hasWhite
+  '[display:neoPixelSetPin]' _np_pin _np_hasWhite
 }
 
 to neoPixelSetAllToColor color {
@@ -348,8 +367,12 @@ to randomColor {
 
 to rotateNeoPixelsBy n {
   '_NeoPixel_ensureInitialized'
+  local 'rotateLeft' (n < 0)
+  if (or ((boardType) == 'CircuitPlayground') ((boardType) == 'CircuitPlayground Bluefruit')) {
+    rotateLeft = (n > 0)
+  }
   repeat (absoluteValue n) {
-    '_NeoPixel_rotate' (n > 0)
+    '_NeoPixel_rotate' rotateLeft
   }
   '_NeoPixel_update'
 }
@@ -364,35 +387,16 @@ to setNeoPixelColor i color {
 
 to setNeoPixelColors10 c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 {
   '_NeoPixel_ensureInitialized'
-  if ((size _np_pixels) >= 1) {
-    atPut 1 _np_pixels c1
+  for i (minimum (size _np_pixels) (pushArgCount)) {
+    atPut i _np_pixels (getArg i)
   }
-  if ((size _np_pixels) >= 2) {
-    atPut 2 _np_pixels c2
-  }
-  if ((size _np_pixels) >= 3) {
-    atPut 3 _np_pixels c3
-  }
-  if ((size _np_pixels) >= 4) {
-    atPut 4 _np_pixels c4
-  }
-  if ((size _np_pixels) >= 5) {
-    atPut 5 _np_pixels c5
-  }
-  if ((size _np_pixels) >= 6) {
-    atPut 6 _np_pixels c6
-  }
-  if ((size _np_pixels) >= 7) {
-    atPut 7 _np_pixels c7
-  }
-  if ((size _np_pixels) >= 8) {
-    atPut 8 _np_pixels c8
-  }
-  if ((size _np_pixels) >= 9) {
-    atPut 9 _np_pixels c9
-  }
-  if ((size _np_pixels) >= 10) {
-    atPut 10 _np_pixels c10
+  '_NeoPixel_update'
+}
+
+to setNeoPixelColors25 c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 c11 c12 c13 c14 c15 c16 c17 c18 c19 c20 c21 c22 c23 c24 c25 {
+  '_NeoPixel_ensureInitialized'
+  for i (minimum (size _np_pixels) (pushArgCount)) {
+    atPut i _np_pixels (getArg i)
   }
   '_NeoPixel_update'
 }
@@ -400,7 +404,7 @@ to setNeoPixelColors10 c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 {
 
 module Tone Output
 author MicroBlocks
-version 1 9 
+version 1 10 
 tags tone sound music audio note speaker 
 choices tone_NoteName 'nt;c' 'nt;c#' 'nt;d' 'nt;d#' 'nt;e' 'nt;f' 'nt;f#' 'nt;g' 'nt;g#' 'nt;a' 'nt;a#' 'nt;b' 
 description 'Audio tone generation. Make music with MicroBlocks!
@@ -517,6 +521,8 @@ to 'attach buzzer to pin' pinNumber {
       _tonePin = 25
     } ((boardType) == 'D1-Mini') {
       _tonePin = 12
+    } ((boardType) == 'CodingBox') {
+      _tonePin = 32
     } else {
       _tonePin = -1
     }

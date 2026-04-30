@@ -1,6 +1,6 @@
 // editable input slot for blocks
 
-defineClass InputSlot morph text contents color menuSelector menuRange isStatic isAuto isID isMonospace isComment pathCache cacheW cacheH
+defineClass InputSlot morph text contents color menuSelector menuRange isStatic isAuto wasAuto isID isMonospace isComment pathCache cacheW cacheH
 
 to newInputSlot default editRule blockColor menuSelector {
 	if (isNil default) {default = ''}
@@ -14,6 +14,7 @@ method initialize InputSlot default editRule blockColor slotMenu {
 	scale = (blockScale)
 	morph = (newMorph this)
 	text = (newText '')
+	isStatic = false
 	if ('auto' == editRule) {
 		// 'auto' slots switch between number or string depending on their contents
 		editRule = 'line'
@@ -37,7 +38,9 @@ method initialize InputSlot default editRule blockColor slotMenu {
 		}
 	}
 	menuSelector = slotMenu
-	isStatic = (isOneOf menuSelector 'sharedVarMenu' 'myVarMenu' 'localVarMenu' 'allVarsMenu' 'propertyMenu')
+	if (isOneOf menuSelector 'sharedVarMenu' 'myVarMenu' 'localVarMenu' 'allVarsMenu' 'propertyMenu') {
+		isStatic = true
+	}
 	if (and isAuto (isClass default 'String') ('' != default) (representsANumber default)) {
 		default = (toNumber default)
 	}
@@ -51,6 +54,7 @@ method color InputSlot {return color}
 method isMonospace InputSlot {return isMonospace}
 method setMonospace InputSlot bool {isMonospace = bool}
 method setComment InputSlot {isComment = true}
+method isAuto InputSlot {return isAuto}
 
 method contents InputSlot {
 	if ((editRule text) == 'static') {
@@ -75,7 +79,7 @@ method setContents InputSlot data fixStringOnlyNum {
 			setTextFont this
 		}
 	}
-	if (and (notNil menuSelector) (not (isVarSlot this)) (isClass data 'String')) {
+	if (and (notNil menuSelector) (not (isVarOrBroadcastSlot this)) (isClass data 'String')) {
 		setText text (localized data)
 	} else {
 		setText text (toString data)
@@ -102,11 +106,11 @@ method setTextFont InputSlot {
 	setFont text fontName (fontSize * (blockScale))
 }
 
-method isVarSlot InputSlot {
+method isVarOrBroadcastSlot InputSlot {
 	if (isNil (owner morph)) { return false }
 	owner = (handler (owner morph))
 	if (or (not (isClass owner 'Block')) (isNil (expression owner))) { return false }
-	return (isOneOf (primName (expression owner)) '=' '+=')
+	return (isOneOf (primName (expression owner)) '=' '+=' 'whenBroadcastReceived' 'sendBroadcast')
 }
 
 method fixLayout InputSlot {
@@ -197,13 +201,27 @@ method textChanged InputSlot {
 		setContents this (toNumber (text text))
 	} else {
 		setContents this (text text)
+		if (and (wasAuto == true) (representsANumber (text text))) {
+			wasAuto = false
+			switchType this 'auto'
+		}
+	}
+}
+
+method textEdited InputSlot {
+	if (and (wasAuto == true) (isEmpty (text text))) {
+		// revert slot type if this was originally an 'auto' slot and got converted
+		// into an 'editable' one by pressing shift+enter
+		wasAuto = false
+		switchType this 'auto'
+		setText text ''
 	}
 }
 
 method clicked InputSlot aHand {
 	if (notNil menuSelector) {
-		arrowLeft = ((right morph) - (12 * (blockScale)))
-		if (or isStatic ((x aHand) >= arrowLeft)) {
+		arrowLeft = ((right morph) - (20 * (blockScale)))
+		if (or ((editRule text) == 'static') ((x aHand) >= arrowLeft)) {
 			if (contains (methodNames (class 'InputSlot')) menuSelector) {
 				menu = (call menuSelector this)
 				if (notNil menu) {
@@ -637,13 +655,21 @@ method broadcastMenu InputSlot {
 		msgList = (allBroadcasts (project (handler scripter)))
 
 		// special case for default broadcast string
-		defaultBroadcast = 'go!'
+		defaultBroadcast = (localized 'go!')
 		remove msgList defaultBroadcast
-		addItemNonlocalized menu (localized defaultBroadcast) (action 'setContents' this defaultBroadcast)
+		remove msgList '' // wildcard (empty string)
+		addItemNonlocalized menu defaultBroadcast (action 'setContents' this defaultBroadcast)
 		addLine menu
 
 		for s msgList {
 			addItemNonlocalized menu s (action 'setContents' this s)
+		}
+		op = (primName (expression (handler (ownerThatIsA morph 'Block'))))
+		if ('whenBroadcastReceived' == op) {
+			// the empty string matches all broadcasts
+			// use "last message" block to get the message
+			addLine menu
+			addItem menu 'all' (action 'setContents' this '')
 		}
 	}
 	return menu
@@ -679,6 +705,11 @@ method addSlotSwitchItems InputSlot aMenu {
 
 method switchType InputSlot editRule {
 	dta = (contents this)
+	if (and isAuto (editRule == 'editable')) {
+		// store auto state for when slot gets cleared
+		// useful to revert shift+enter transforming auto slots into string slots
+		wasAuto = true
+	}
 	if (editRule == 'auto') {
 		isAuto = true
 		setEditRule text 'line'

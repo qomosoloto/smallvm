@@ -152,13 +152,13 @@ void initKeyboardHandler() {
 
 void initSound() {
 	EM_ASM_({
-		var context = new AudioContext();
-		window.gainNode = context.createGain();
+		window.audioContext = new AudioContext();
+		window.gainNode = window.audioContext.createGain();
 		window.gainNode.gain.value = 0.1;
-		window.oscillator = context.createOscillator();
+		window.oscillator = window.audioContext.createOscillator();
 		window.oscillator.type = 'square';
 		window.oscillator.start();
-		window.gainNode.connect(context.destination);
+		window.gainNode.connect(window.audioContext.destination);
 	});
 };
 
@@ -170,7 +170,7 @@ const char * boardType() {
 
 // Grab ublockscode as a base64 URL
 void EMSCRIPTEN_KEEPALIVE getScripts() {
-	compactCodeStore();
+	compactCodeStore(NULL, NULL);
 	EM_ASM_({
 		console.log(
 			Module['base64Encode'](HEAP8.subarray($0, $0 + $1), true)
@@ -235,6 +235,7 @@ void addEncoderPrims() {}
 void addHIDPrims() {}
 void addOneWirePrims() {}
 void addRadioPrims() {}
+void addSDCardPrims() {}
 
 void delay(int msecs) {}
 void processFileMessage(int msgType, int dataSize, char *data) {}

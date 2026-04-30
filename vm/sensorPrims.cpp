@@ -16,8 +16,9 @@
 #include "mem.h"
 #include "interp.h"
 
-#if defined(PICO_ED) || defined(XRP) || defined(GIZMO_MECHATRONICS)
-	#define Wire Wire1
+#if defined(PICO_ED) || defined(XRP) || defined(GIZMO_MECHATRONICS) || \
+	defined(ARDUINO_SEEED_XIAO_RP2350)
+		#define Wire Wire1
 #endif
 
 #if defined(MAKERPORT_V2) || defined(MAKERPORT_V3)
@@ -26,7 +27,10 @@
 
 // Override the default i2c pins on some boards
 
-#if defined(PICO_ED) || defined(XRP)
+#if defined(XRP_2350)
+	#define PIN_WIRE_SCL 39
+	#define PIN_WIRE_SDA 38
+#elif defined(PICO_ED) || defined(XRP)
 	#define PIN_WIRE_SCL 19
 	#define PIN_WIRE_SDA 18
 #elif defined(GIZMO_MECHATRONICS)
@@ -117,11 +121,17 @@ int hasI2CPullups() {
 }
 
 static void startWire() {
-	#if defined(ARDUINO_ARCH_RP2040)
+	#if !defined(ESP8266) && !defined(DUELink)
+		// Ensure Wire is stopped before setting pins.
+		Wire.end();
+	#endif
+	#if defined(ARDUINO_ARCH_RP2040) || defined(DUELink)
 		Wire.setSDA(PIN_WIRE_SDA);
 		Wire.setSCL(PIN_WIRE_SCL);
 	#elif defined(ARDUINO_ARCH_ESP32)
 		Wire.setPins(PIN_WIRE_SDA, PIN_WIRE_SCL);
+	#elif defined(ESP8266)
+		Wire.pins(PIN_WIRE_SDA, PIN_WIRE_SCL);
 	#endif
 
 	#if defined(ARDUINO_ARCH_SAMD)
@@ -129,6 +139,7 @@ static void startWire() {
 		// To avoid hang on I2C operations, do not start Wire if the I2C lines are not high.
 		if (!hasI2CPullups()) return;
 	#endif
+
 	Wire.begin();
 	Wire.setClock(400000); // i2c fast mode (seems pretty ubiquitous among i2c devices)
 	#if defined(ARDUINO_ARCH_RP2040)
@@ -136,6 +147,10 @@ static void startWire() {
 		Wire.setTimeout(100, true);
 	#endif
 	wireStarted = true;
+
+	// Ping the DUELink address so any connected DUELink modules will use I2C mode.
+	// This must be the first I2C transaction after power up.
+	readI2CReg(82, 0);
 }
 
 int readI2CReg(int deviceID, int reg) {
@@ -150,7 +165,10 @@ int readI2CReg(int deviceID, int reg) {
 	#else
 		int error = Wire.endTransmission((bool) false);
 	#endif
-	if (error) return -error; // error; bad device ID?
+	if (error) {
+		taskSleep(5);
+		return -error; // error; bad device ID?
+	}
 
 	#if defined(NRF51)
 		noInterrupts();
@@ -170,8 +188,50 @@ void writeI2CReg(int deviceID, int reg, int value) {
 	Wire.beginTransmission(deviceID);
 	Wire.write(reg);
 	Wire.write(value);
-	Wire.endTransmission();
+	int error = Wire.endTransmission();
+	if (error) {
+		reportNum("i2c write error", error);
+		taskSleep(5);
+	}
 }
+
+#if defined(ARDUINO_BBC_MICROBIT_V2) || defined(CALLIOPE_V3) || defined(ARDUINO_SEEED_XIAO_NRF52840_SENSE) // || defined(ARDUINO_M5STACK_Core2) || defined(DUELink)
+
+#define HAS_INTERNAL_I2C 1
+
+#if defined(DUELink)
+	// DUELink pins 52 and 47 are the downlink connector
+	TwoWire Wire1 = TwoWire(PA2, PA3);
+#endif
+
+static int internalWireStarted = false;
+
+static void startInternalWire() {
+	Wire1.begin();
+	Wire1.setClock(400000); // i2c fast mode (seems pretty ubiquitous among i2c devices)
+	internalWireStarted = true;
+}
+
+static int readInternalI2CReg(int deviceID, int reg) {
+	if (!internalWireStarted) startInternalWire();
+	Wire1.beginTransmission(deviceID);
+	Wire1.write(reg);
+	int error = Wire1.endTransmission();
+	if (error) return -error; // error; bad device ID?
+
+	Wire1.requestFrom(deviceID, 1);
+	return Wire1.available() ? Wire1.read() : 0;
+}
+
+static void writeInternalI2CReg(int deviceID, int reg, int value) {
+	if (!internalWireStarted) startInternalWire();
+	Wire1.beginTransmission(deviceID);
+	Wire1.write(reg);
+	Wire1.write(value);
+	Wire1.endTransmission();
+}
+
+#endif
 
 // other helper functions
 
@@ -205,7 +265,41 @@ OBJ primI2cSet(OBJ *args) {
 	return falseObj;
 }
 
-static OBJ primI2cExists(int argCount, OBJ *args) {
+// internal i2c primitives
+
+#if defined(HAS_INTERNAL_I2C)
+
+static OBJ primInternalI2cGet(int argCount, OBJ *args) {
+	if (!isInt(args[0]) || !isInt(args[1])) return fail(needsIntegerError);
+	int deviceID = obj2int(args[0]);
+	int registerID = obj2int(args[1]);
+	if ((deviceID < 0) || (deviceID > 128)) return fail(i2cDeviceIDOutOfRange);
+	if ((registerID < 0) || (registerID > 255)) return fail(i2cRegisterIDOutOfRange);
+
+	return int2obj(readInternalI2CReg(deviceID, registerID));
+}
+
+static OBJ primInternalI2cSet(int argCount, OBJ *args) {
+	if (!isInt(args[0]) || !isInt(args[1]) || !isInt(args[2])) return fail(needsIntegerError);
+	int deviceID = obj2int(args[0]);
+	int registerID = obj2int(args[1]);
+	int value = obj2int(args[2]);
+	if ((deviceID < 0) || (deviceID > 128)) return fail(i2cDeviceIDOutOfRange);
+	if ((registerID < 0) || (registerID > 255)) return fail(i2cRegisterIDOutOfRange);
+	if ((value < 0) || (value > 255)) return fail(i2cValueOutOfRange);
+
+	writeInternalI2CReg(deviceID, registerID, value);
+	return falseObj;
+}
+
+#else
+
+static OBJ primInternalI2cGet(int argCount, OBJ *args) { return fail(primitiveNotImplemented); }
+static OBJ primInternalI2cSet(int argCount, OBJ *args) { return fail(primitiveNotImplemented); }
+
+#endif
+
+OBJ primI2cExists(int argCount, OBJ *args) {
 	// Return true if there is an i2c device at the given address. Used for i2c scanning.
 
 	if ((argCount < 1) || !isInt(args[0])) return falseObj;
@@ -303,13 +397,13 @@ static OBJ primI2cWrite(int argCount, OBJ *args) {
 		}
 	} else if (IS_TYPE(data, StringType)) {
 		uint8 *src = (uint8 *) obj2str(data);
-		int count = strlen((char *) data);
+		int count = strlen((char *) src);
 		for (int i = 0; i < count; i++) {
 			Wire.write(*src++);
 		}
 	}
 	int error = Wire.endTransmission(stop);
-	if (error) reportNum("i2c write error", error);
+	if (error) taskSleep(5); // sleep a bit if error occurred; do not print error message
 
 	return falseObj;
 }
@@ -349,6 +443,10 @@ static OBJ primI2cSetPins(int argCount, OBJ *args) {
 		Wire.end();
 		Wire.setPins(pinSDA, pinSCL);
 		Wire.begin();
+		Wire.setClock(400000);
+	#elif defined(ESP8266)
+		Wire.begin(pinSDA, pinSCL);
+		Wire.setClock(400000);
 	#elif defined(ARDUINO_ARCH_RP2040)
 		if (!legal_rp2040_SDA_pin(pinSDA)) return falseObj;
 		if (!legal_rp2040_SCL_pin(pinSCL)) return falseObj;
@@ -360,7 +458,7 @@ static OBJ primI2cSetPins(int argCount, OBJ *args) {
 
 		// restart Wire
 		Wire.begin();
-		Wire.setClock(400000); // i2c fast mode (seems pretty ubiquitous among i2c devices)
+		Wire.setClock(400000);
 		#if defined(ARDUINO_ARCH_RP2040)
 			// Needed on RP2040 to reset the I2C bus after a timeout
 			Wire.setTimeout(100, true);
@@ -415,18 +513,40 @@ static void initSPI() {
 		SPI.setCS(PIN_SPI_SS);
 		SPI.setSCK(PIN_SPI_SCK);
 		SPI.setTX(PIN_SPI_MOSI);
+	#elif defined(DUELink)
+		if (DUE_HAS_EDGE_CONNECTOR) {
+			SPI.setSCLK(mapDigitalPinNum(13));
+			SPI.setMISO(mapDigitalPinNum(14));
+			SPI.setMOSI(mapDigitalPinNum(15));
+		} else {
+			SPI.setSCLK(mapDigitalPinNum(12));
+			SPI.setMISO(mapDigitalPinNum(13));
+			SPI.setMOSI(mapDigitalPinNum(14));
+		}
 	#endif
 	SPI.begin();
 	SPI.beginTransaction(SPISettings(spiSpeed, spiBitOrder, spiMode));
 }
 
 OBJ primSPISend(OBJ *args) {
-	if (!isInt(args[0])) return fail(needsIntegerError);
-	unsigned data = obj2int(args[0]);
-	if (data > 255) return fail(i2cValueOutOfRange);
-	initSPI();
-	SPI.transfer(data); // send data byte to the slave
-	SPI.endTransaction();
+	OBJ arg = args[0];
+	if (isInt(arg)) {
+		unsigned data = obj2int(arg);
+		if (data > 255) return fail(i2cValueOutOfRange);
+		initSPI();
+		SPI.transfer(data); // send data byte to the slave
+		SPI.endTransaction();
+	} else if (objType(arg) == ByteArrayType) {
+		unsigned char *data = (unsigned char *) &FIELD(arg, 0);
+		int byteCount = BYTES(arg);
+		initSPI();
+		for (int i = 0; i < byteCount; i++) {
+			SPI.transfer(data[i]);
+		}
+		SPI.endTransaction();
+	} else {
+		return fail(needsIntegerError);
+	}
 	return falseObj;
 }
 
@@ -470,6 +590,50 @@ OBJ primSPIExchange(int argCount, OBJ *args) {
 		data[i] = SPI.transfer(data[i]);
 	}
 	SPI.endTransaction();
+	return falseObj;
+}
+
+OBJ primSPISetPins(int argCount, OBJ *args) {
+	// Set the SPI clock, MOSI, and MISO pins.
+	// Note: This changes the pins for the default SPI device on boards that support that.
+	// On the Raspberry Pi Pico and Pico2 boards you just use possible SPI0 pins.
+
+	if (argCount < 3) return fail(notEnoughArguments);
+	if (!(isInt(args[0]) && isInt(args[1]) && isInt(args[2]))) return fail(needsIntegerError);
+
+	#if defined(ESP8266) || defined(NRF51) || defined(ARDUINO_WEACT) || defined(__ZEPHYR__) || \
+		defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_SAM_DUE)
+			// Changing SPI pins is not supported.
+			return fail(primitiveNotImplemented);
+	#else
+		int clkPin = mapDigitalPinNum(obj2int(args[0]));
+		int mosiPin = mapDigitalPinNum(obj2int(args[1]));
+		int misoPin = mapDigitalPinNum(obj2int(args[2]));
+
+		setPinMode(clkPin, OUTPUT);
+		setPinMode(mosiPin, OUTPUT);
+		setPinMode(misoPin, INPUT);
+
+		SPI.end(); // stop SPI on current pins
+
+		#if defined(ESP32)
+			SPI.begin(clkPin, misoPin, mosiPin);
+		#elif defined(NRF52)
+			SPI.setPins(misoPin, clkPin, mosiPin);
+			SPI.begin();
+		#elif defined(TARGET_RP2040) || defined(PICO_RP2350)
+			SPI.setSCK(clkPin);
+			SPI.setMOSI(mosiPin);
+			SPI.setMISO(misoPin);
+			SPI.begin();
+		#elif defined(ARDUINO_TEENSY40) || defined(ARDUINO_TEENSY41)
+			SPI.setSCK(clkPin);
+			SPI.setMOSI(mosiPin);
+			SPI.setMISO(misoPin);
+			SPI.begin();
+		#endif
+	#endif
+
 	return falseObj;
 }
 
@@ -572,33 +736,6 @@ static int readTemperature() {
 }
 
 #elif defined(ARDUINO_BBC_MICROBIT_V2) || defined(CALLIOPE_V3)
-
-static int internalWireStarted = false;
-
-static void startInternalWire() {
-	Wire1.begin();
-	Wire1.setClock(400000); // i2c fast mode (seems pretty ubiquitous among i2c devices)
-	internalWireStarted = true;
-}
-
-static int readInternalI2CReg(int deviceID, int reg) {
-	if (!internalWireStarted) startInternalWire();
-	Wire1.beginTransmission(deviceID);
-	Wire1.write(reg);
-	int error = Wire1.endTransmission((bool) false);
-	if (error) return -error; // error; bad device ID?
-
-	Wire1.requestFrom(deviceID, 1);
-	return Wire1.available() ? Wire1.read() : 0;
-}
-
-static void writeInternalI2CReg(int deviceID, int reg, int value) {
-	if (!internalWireStarted) startInternalWire();
-	Wire1.beginTransmission(deviceID);
-	Wire1.write(reg);
-	Wire1.write(value);
-	Wire1.endTransmission();
-}
 
 typedef enum {
 	accel_unknown = -1,
@@ -841,7 +978,7 @@ static int readTemperature() {
 	return (int) round(result);
 }
 
-#elif defined(ARDUINO_NRF52840_CLUE) || defined(XRP)
+#elif defined(ARDUINO_NRF52840_CLUE) || defined(XRP) || defined(ARDUINO_SEEED_XIAO_NRF52840_SENSE)
 
 #if defined(XRP)
 	#define LSM6DS 107
@@ -849,8 +986,25 @@ static int readTemperature() {
 	#define LSM6DS 106
 #endif
 
+#if defined(ARDUINO_SEEED_XIAO_NRF52840_SENSE)
+	static void setHighDrive(int pin) {
+		if ((pin < 0) || (pin >= PINS_COUNT)) return;
+		pin = g_ADigitalPinMap[pin];
+		NRF_GPIO_Type* port = (NRF_GPIO_Type*) ((pin < 32) ? 0x50000000 : 0x50000300);
+		port->PIN_CNF[pin & 0x1F] |= (3 << 8); // high drive 1 and 0
+	}
+#endif
+
 static void startAccelerometer() {
-	writeI2CReg(LSM6DS, 0x10, 0x80); // enable accelerometer, 1660 Hz sample rate
+	#if defined(ARDUINO_SEEED_XIAO_NRF52840_SENSE)
+		pinMode(PIN_LSM6DS3TR_C_POWER, OUTPUT);
+		setHighDrive(PIN_LSM6DS3TR_C_POWER);
+		digitalWrite(PIN_LSM6DS3TR_C_POWER, HIGH);
+		delay(10); // leave time for accelerometer power up
+		writeInternalI2CReg(LSM6DS, 0x10, 0x80); // enable accelerometer, 1660 Hz sample rate
+	#else
+		writeI2CReg(LSM6DS, 0x10, 0x80); // enable accelerometer, 1660 Hz sample rate
+	#endif
 	delay(2);
 	accelStarted = true;
 }
@@ -858,9 +1012,15 @@ static void startAccelerometer() {
 static int readAcceleration(int registerID) {
 	if (!accelStarted) startAccelerometer();
 	int val = 0;
-	if (1 == registerID) val = readI2CReg(LSM6DS, 0x29); // x-axis
-	if (3 == registerID) val = readI2CReg(LSM6DS, 0x2B); // y-axis
-	if (5 == registerID) val = readI2CReg(LSM6DS, 0x2D); // z-axis
+	#if defined(ARDUINO_SEEED_XIAO_NRF52840_SENSE)
+		if (1 == registerID) val = readInternalI2CReg(LSM6DS, 0x2B); // x-axis
+		if (3 == registerID) val = readInternalI2CReg(LSM6DS, 0x29); // y-axis
+		if (5 == registerID) val = readInternalI2CReg(LSM6DS, 0x2D); // z-axis
+	#else
+		if (1 == registerID) val = readI2CReg(LSM6DS, 0x29); // x-axis
+		if (3 == registerID) val = readI2CReg(LSM6DS, 0x2B); // y-axis
+		if (5 == registerID) val = readI2CReg(LSM6DS, 0x2D); // z-axis
+	#endif
 
 	val = (val >= 128) ? (val - 256) : val; // value is a signed byte
 	if (val < -127) val = -127; // keep in range -127 to 127
@@ -886,27 +1046,37 @@ static void setAccelRange(int range) {
 	default: break;
 	}
 	int sampleRate = 8; // 1660 Hz
-	writeI2CReg(LSM6DS, 0x10, (sampleRate << 4) | (rangeBits << 2));
+	#if defined(ARDUINO_SEEED_XIAO_NRF52840_SENSE)
+		writeInternalI2CReg(LSM6DS, 0x10, (sampleRate << 4) | (rangeBits << 2));
+	#else
+		writeI2CReg(LSM6DS, 0x10, (sampleRate << 4) | (rangeBits << 2));
+	#endif
 }
 
 static int readTemperature() {
 	if (!accelStarted) startAccelerometer();
-	int temp = (readI2CReg(LSM6DS, 0x21) << 8) | readI2CReg(LSM6DS, 0x20);
+	#if defined(ARDUINO_SEEED_XIAO_NRF52840_SENSE)
+		int temp = (readInternalI2CReg(LSM6DS, 0x21) << 8) | readInternalI2CReg(LSM6DS, 0x20);
+		int shift = 8; // LSM6dS3-C has 8 bits of fraction
+	#else
+		int temp = (readI2CReg(LSM6DS, 0x21) << 8) | readI2CReg(LSM6DS, 0x20);
+		int shift = 4;
+	#endif
 	if (temp >= 32768) temp = temp - 65536; // negative
-	return 25 + (temp / 16);
+	return 25 + (temp >> shift);
 }
 
 #elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_FIRE) || defined(ARDUINO_M5Stick_C) || \
 	defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_M5STACK_Core2) || defined(M5_ATOMS3) || defined(ARDUINO_M5Atom_Lite_ESP32)
 
-#ifdef ARDUINO_M5Stack_Core_ESP32
-	#define Wire1 Wire
+#ifdef ARDUINO_M5Stack_Core_ESP32 || defined(M5Atom_Matrix) || ARDUINO_M5STACK_FIRE
+ #define Wire1 Wire
 #endif
 #ifdef ARDUINO_M5STACK_FIRE
  #define Wire1 Wire
 #endif
 
-#define MPU6886_ID			0x68
+#define MPU6886_ID		0x68
 #define MPU6886_SMPLRT_DIV	0x19
 #define MPU6886_CONFIG		0x1A
 #define MPU6886_ACCEL_CONFIG	0x1C
@@ -971,7 +1141,7 @@ static int readAcceleration(int registerID) {
 	#if defined(ARDUINO_M5Stick_C)
 		if (1 == registerID) val = readAccelReg(61);
 		if (3 == registerID) val = readAccelReg(59);
-	#elif defined(ARDUINO_M5Atom_Matrix_ESP32)
+	#elif defined(M5Atom_Matrix)
 		if (1 == registerID) val = readAccelReg(59);
 		if (3 == registerID) val = readAccelReg(61);
 		if (5 == registerID) sign = -1;
@@ -1991,6 +2161,118 @@ static int databotMageneticField() {
 	return 0;
 }
 
+#elif defined(FOXBIT)
+
+#define QMI8658_ADDR 107
+#define QMI8658_CTRL2 3
+#define QMI8658_CTRL3 4
+#define QMI8658_CTRL7 8
+#define QMI8658_TEMP 51
+#define QMI8658_ACCEL_XOUT 53
+
+static void startQMI8658() {
+	if (!wireStarted) startWire();
+	if (!wireStarted) return;
+
+	writeI2CReg(QMI8658_ADDR, QMI8658_CTRL2, (0 << 4) | 3);	// accel range +/- 2G, ODR = 1000
+	writeI2CReg(QMI8658_ADDR, QMI8658_CTRL3, (5 << 4) | 3);	// gyro range = 512 deg/sec, ODR = 1000
+	writeI2CReg(QMI8658_ADDR, QMI8658_CTRL7, 3);	// enable accel + gyro
+	taskSleep(150); // wait for accelerometer to start up
+	accelStarted = true;
+}
+
+static int qmi8658Read16Bit(int reg) {
+	if (!accelStarted) startQMI8658();
+	if (!accelStarted) return 0;
+	int lowByte = readI2CReg(QMI8658_ADDR, reg);
+	int highByte = readI2CReg(QMI8658_ADDR, reg + 1);
+	return fix16bitSign((highByte << 8) | lowByte);
+}
+
+static int readAcceleration(int registerID) {
+	int val = 0;
+	if (1 == registerID) val = -qmi8658Read16Bit(QMI8658_ACCEL_XOUT); // x-axis
+	if (3 == registerID) val = -qmi8658Read16Bit(QMI8658_ACCEL_XOUT + 2); // y-axis
+	if (5 == registerID) val = -qmi8658Read16Bit(QMI8658_ACCEL_XOUT + 4); // z-axis
+	return (100 * val) >> 14;
+}
+
+static void setAccelRange(int range) {
+	// Range is 0, 1, 2, or 3 for +/- 2, 4, 8, or 16 g.
+
+	if (!accelStarted) startQMI8658();
+	if (!accelStarted) return;
+	if ((range < 0) || (range > 3)) return; // out of range
+	writeI2CReg(QMI8658_ADDR, QMI8658_CTRL2, (range << 4) | 3);	// ODR = 1000
+}
+
+static int readTemperature() {
+	if (!accelStarted) startQMI8658();
+	if (!accelStarted) return 0;
+
+	int fudgeFactor = -5;
+	return (qmi8658Read16Bit(QMI8658_TEMP) >> 8) + fudgeFactor;
+}
+
+#elif defined(DUELink_DISABLED)
+
+// DISABLED! Unfortunately, enabling this code adds ~10k to the compiled code size.
+// That is more than the available code space without shrinking the code store by 4k.
+
+#define MC3216_ADDR 0x4C
+
+static void startMC3216() {
+	if (!wireStarted) startWire();
+	if (!wireStarted) return;
+
+	writeI2CReg(MC3216_ADDR, 0x07, 0);		// stop accelerometer
+	writeI2CReg(MC3216_ADDR, 0x08, 9);		// sampling rate: 128 Hz
+	writeI2CReg(MC3216_ADDR, 0x20, 3);		// +/-2G range, 10-bit resolution
+	writeI2CReg(MC3216_ADDR, 0x07, 1);		// start accelerometer
+	taskSleep(150); // wait for accelerometer to start up
+	accelStarted = true;
+}
+
+static int mc3216Read16Bit(int reg) {
+	if (!accelStarted) startMC3216();
+	if (!accelStarted) return 0;
+	int lowByte = readI2CReg(MC3216_ADDR, reg);
+	int highByte = readI2CReg(MC3216_ADDR, reg + 1);
+	return fix16bitSign((highByte << 8) | lowByte);
+}
+
+static int readAcceleration(int registerID) {
+	if (!IS_DUE_STEM) return 0;
+
+	int val = 0;
+	if (1 == registerID) val = mc3216Read16Bit(13); // x-axis
+	if (3 == registerID) val = -mc3216Read16Bit(15); // y-axis
+	if (5 == registerID) val = mc3216Read16Bit(17); // z-axis
+	return (100 * val) >> 8;
+}
+
+static void setAccelRange(int range) {
+	// Range is 0, 1, 2, or 3 for +/- 2, 4, 8, or 16 g.
+
+	if (!IS_DUE_STEM) return;
+
+	if (!accelStarted) startMC3216();
+	if (!accelStarted) return;
+	if ((range < 0) || (range > 3)) return; // out of range
+	writeI2CReg(MC3216_ADDR, 0x07, 0);					// stop accelerometer
+	writeI2CReg(MC3216_ADDR, 0x20, (range << 4) | 3);	// range + 10-bit resolution
+	writeI2CReg(MC3216_ADDR, 0x07, 1);					// start accelerometer
+}
+
+static int readTemperature() {
+	if (!IS_DUE_STEM) return 0;
+
+	OBJ pinArg = int2obj(9);
+	int analogValue = obj2int(primAnalogRead(1, &pinArg));
+	int mVx10 = (33000 * analogValue) / 1023;
+	return (mVx10 - 4000) / 195;
+}
+
 #elif defined(RP2040_PHILHOWER)
 
 static int readTemperature() { return analogReadTemp(); }
@@ -2018,7 +2300,7 @@ static void i2cReadBytes(int deviceID, int reg, int *buf, int bufSize) {
 		defined(ARDUINO_M5STACK_FIRE) || \
 		defined(ARDUINO_M5STACK_Core2) || \
 		defined(ARDUINO_M5Stick_C) || \
-		defined(ARDUINO_M5Atom_Matrix_ESP32)
+		defined(M5Atom_Matrix)
 
 		// Use Wire1, the internal i2c bus
 		Wire1.beginTransmission(deviceID);
@@ -2026,6 +2308,7 @@ static void i2cReadBytes(int deviceID, int reg, int *buf, int bufSize) {
 		int error = Wire1.endTransmission((bool) false);
 		if (error) {
 			reportNum("i2c read error", error);
+			taskSleep(5);
 			return;
 		}
 		Wire1.requestFrom(deviceID, bufSize);
@@ -2039,6 +2322,7 @@ static void i2cReadBytes(int deviceID, int reg, int *buf, int bufSize) {
 		int error = Wire.endTransmission((bool) false);
 		if (error) {
 			reportNum("i2c read error", error);
+			taskSleep(5);
 			return;
 		}
 
@@ -2315,7 +2599,15 @@ static OBJ primTouchRead(int argCount, OBJ *args) {
 #else
 
 static OBJ primTouchRead(int argCount, OBJ *args) {
-	return int2obj(touchRead(obj2int(args[0])));
+	uint8 esp32TouchPins[10] = {0, 2, 4, 12, 13, 14, 15, 27, 32, 33};
+	int gpioPin = mapDigitalPinNum(obj2int(args[0]));
+	if (gpioPin < 0) return int2obj(999); // illegal pin; no touch
+	for (int i = 0; i < sizeof(esp32TouchPins); i++) {
+		if (gpioPin == esp32TouchPins[i]) {
+			return int2obj(touchRead(gpioPin));
+		}
+	}
+	return zeroObj; // gpioPin is not an ESP32 touch pin
 }
 
 #endif
@@ -2340,22 +2632,23 @@ static int __not_in_flash_func(readDHTData)(int pin) {
 
 	// read the start pulse
 	setPinMode(pin, INPUT_PULLUP);
-	int pulseWidth = pulseIn(pin, HIGH, 2000);
-	if (!pulseWidth) {
-		setPinMode(pin, INPUT);
-		return false; // timeout
+	int startT = micros();
+	while (!digitalRead(pin)) { // wait for pin to go high
+		if ((micros() - startT) > 500) return false; // failed; no start pulse
+	}
+	while (digitalRead(pin)) { // wait for pin to go low
+		if ((micros() - startT) > 500) return false; // failed; no start pulse
 	}
 
 	for (int i = 0; i < 5; i++) {
 		int byte = 0;
 		for (int shift = 7; shift >= 0; shift--) {
-			pulseWidth = pulseIn(pin, HIGH, 1000);
+			int pulseWidth = pulseIn(pin, HIGH, 1000);
 			if (!pulseWidth) return false; // timeout
 			if (pulseWidth > 40) byte |= (1 << shift);
 		}
 		dhtData[i] = byte;
 	}
-
 	setPinMode(pin, INPUT);
 	return true;
 }
@@ -2381,7 +2674,7 @@ static OBJ primReadDHT(int argCount, OBJ *args) {
 
 // Microphone Support
 
-#if defined(ARDUINO_NRF52840_CIRCUITPLAY) || defined(ARDUINO_NRF52840_CLUE)
+#if defined(ARDUINO_NRF52840_CIRCUITPLAY) || defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_SEEED_XIAO_NRF52840_SENSE)
 
 #define USE_DIGITAL_MICROPHONE 1
 
@@ -2393,6 +2686,11 @@ static int16_t mic_sample;
 static void initPDM() {
 	if (mic_initialized) return;
 	mic_initialized = true;
+
+	#if defined(PIN_PDM_PWR)
+		pinMode(PIN_PDM_PWR, OUTPUT);
+		digitalWrite(PIN_PDM_PWR, HIGH);
+	#endif
 
 	pinMode(PIN_PDM_CLK, OUTPUT);
 	digitalWrite(PIN_PDM_CLK, LOW);
@@ -2424,8 +2722,7 @@ static int readDigitalMicrophone() {
 	return ((int) mic_sample) >> 3; // scale result
 }
 
-#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS_DISABLED)
-// Note: Disable for now; PlatformIO is no longer able to install the AdaFruit ZeroPDM library.
+#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
 
 #define USE_DIGITAL_MICROPHONE 1
 
@@ -2563,9 +2860,22 @@ static int readDigitalMicrophone() {
 
 // I2S port and pins
 #define I2S_PORT I2S_NUM_0
-#define I2S_WS 19
-#define I2S_SD 18
-#define I2S_SCK 5
+#if defined(DATABOT)
+	#define I2S_WS 19
+	#define I2S_SD 18
+	#define I2S_SCK 5
+	#define I2S_MODE (I2S_MODE_MASTER | I2S_MODE_RX)
+#elif defined(ARDUINO_M5STACK_Core2)
+	#define I2S_WS 0
+	#define I2S_SD 34
+	#define I2S_SCK 12
+	#define I2S_MODE (I2S_MODE_MASTER | I2S_MODE_RX | I2S_MODE_PDM)
+#elif defined(ARDUINO_XIAO_ESP32S3)
+	#define I2S_WS 42
+	#define I2S_SD 41
+	#define I2S_SCK -1
+	#define I2S_MODE (I2S_MODE_MASTER | I2S_MODE_RX | I2S_MODE_PDM)
+#endif
 
 // Microphone input buffer (minimum sample count is 8)
 // Use smallest possible buffer to minimize latency
@@ -2580,7 +2890,7 @@ void initI2SMicrophone() {
 
 	// configure I2S driver
 	const i2s_config_t i2s_config = {
-		.mode = i2s_mode_t(I2S_MODE_MASTER | I2S_MODE_RX),
+		.mode = i2s_mode_t(I2S_MODE), // xxx I2S_MODE_MASTER | I2S_MODE_RX),
 		.sample_rate = 22050,
 		.bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
 		.channel_format = I2S_CHANNEL_FMT_ONLY_RIGHT,
@@ -2787,11 +3097,17 @@ int pulsePin = -1;
 int pulseIndex = 0;
 uint32 lastEdgeTime = 0;
 
-void pinChangeInterrupt() {
+#ifdef ESP8266
+	#define IS_INTERRUPT IRAM_ATTR
+#else
+	#define IS_INTERRUPT
+#endif
+
+IS_INTERRUPT void pinChangeInterrupt() {
 	if (pulseIndex < MAX_PULSE_TIMES) {
 		uint32 now = microsecs();
 		int usecs = now - lastEdgeTime;
-		if (digitalRead(pulsePin) == LOW) usecs = -usecs;
+		if (digitalRead(pulsePin) == HIGH) usecs = -usecs; // this is the end of a low pulse
 		pulseTimes[pulseIndex++] = usecs;
 		lastEdgeTime = now;
 	}
@@ -2848,10 +3164,14 @@ static PrimEntry entries[] = {
 	{"i2cWrite", primI2cWrite},
 	{"i2cSetClockSpeed", primI2cSetClockSpeed},
 	{"i2cSetPins", primI2cSetPins},
+	{"internalI2cGet", primInternalI2cGet},
+	{"internalI2cSet", primInternalI2cSet},
 	{"spiExchange", primSPIExchange},
 	{"spiSetup", primSPISetup},
+	{"spiSetPins", primSPISetPins},
 	{"readDHT", primReadDHT},
 	{"microphone", primMicrophone},
+
 	{"captureStart", captureStartPrim},
 	{"captureCount", primCaptureCount},
 	{"captureEnd", primCaptureEnd},

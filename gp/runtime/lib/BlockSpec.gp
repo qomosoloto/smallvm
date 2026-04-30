@@ -214,14 +214,14 @@ method slotInfoForIndex BlockSpec slotIndex {
 
 method translatedSlotInfo BlockSpec {
 	// Return a copy of my slotInfo with the default string values translated.
-	// However, do not translate default values for slots with menus.
+	// However, do not translate default values for slots with menus except the broadcast menu.
 
 	result = (clone slotInfo)
 	for i (count result) {
 		entry = (at result i)
 		slotDefault = (at entry 2)
 		slotMenu = (at entry 4)
-		if (and (isClass slotDefault 'String') (isNil slotMenu)) {
+		if (and (isClass slotDefault 'String') (or (isNil slotMenu) (slotMenu == 'broadcastMenu'))) {
 			newEntry = (clone entry)
 			atPut newEntry 2 (localized slotDefault)
 			atPut result i newEntry

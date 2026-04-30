@@ -20,7 +20,7 @@ repeat 36 {
 
 module TFT Output
 author MicroBlocks
-version 1 11 
+version 1 12 
 description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 
   spec ' ' '[tft:clear]' 'clear TFT display'
@@ -91,6 +91,7 @@ to tft_colorSwatch color {
 }
 
 to tft_drawText s x y color optionalScale optionalBGColor {
+  s = ('[data:convertType]' s 'string')
   local 'scale' (argOrDefault 5 2)
   local 'bgColor' (argOrDefault 6 '')
   local 'lines' ('[data:split]' s ('[data:unicodeString]' 10))
@@ -113,8 +114,8 @@ to tft_drawVector x y angle length color {
 
 module Turtle Output
 author MicroBlocks
-version 1 4 
-depends TFT 
+version 1 5 
+depends _TFT 
 description 'Draw with turtle geometry on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1, (discontinued) IoT-Bus, or Boardie.
 
 Home is the center of the screen.
@@ -125,7 +126,7 @@ Default direction is to the right. Positive turn and direction angles are clockw
 '
 variables _turtleX _turtleY _turtleHeading _turtlePenIsDown _turtleColor 
 
-  spec ' ' 'home' 'home'
+  spec ' ' 'home' 'trtl;home'
   spec ' ' 'move' 'move _' 'auto' '10'
   spec ' ' 'turnBy' 'turn _ degrees' 'auto' 90
   spec ' ' 'turnFraction' 'turn _ / _ of circle' 'auto auto' 1 4

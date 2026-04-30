@@ -426,6 +426,7 @@ method installFirmware ESPTool boardName eraseFlag downloadFlag vmData {
 
 	if (or (isOneOf boardName 'ESP8266' 'D1-Mini')
 		(notNil (findSubstring 'nodemcu' boardName))
+		(notNil (findSubstring 'd1mini' boardName))
 		(notNil (findSubstring '8266' boardName))
 	) {
 		ok = (uploadESP8266VM this vmData eraseFlag)
@@ -479,6 +480,10 @@ method vmNameForBoard ESPTool boardName {
 	} ('未来科技盒v2.0' == boardName) { return 'vm_tx_ft_box.bin'
 	} ('Citilab ED1' == boardName) { return 'vm_citilab-ed1.bin'
 	} ('micro:STEAMakers' == boardName) { return 'vm_micro_steamakers.bin'
+	} ('KidsBits' == boardName) { return 'vm_kids_bits.bin'
+	} ('KidsIOT' == boardName) { return 'vm_kids_bits.bin'
+	} ('CodingBox' == boardName) { return 'vm_kids_bits.bin'
+	} ('Foxbit' == boardName) { return 'vm_foxbit.bin'
 	} ('CoCube' == boardName) { return 'vm_cocube.bin'
 	} ('M5Stack-Core' == boardName) { return 'vm_m5stack.bin'
 	} ('M5StickC' == boardName) { return 'vm_m5stick.bin'

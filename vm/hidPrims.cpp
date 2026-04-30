@@ -90,7 +90,7 @@ OBJ primPressKey(int argCount, OBJ *args) {
 	initKeyboard();
 	OBJ key = args[0];
 	int modifier = (argCount > 1) ? obj2int(args[1]) : 0;
-	if (modifier) {
+	if (modifier > 0) {
 		switch (modifier) {
 			case 1: // shift
 				Keyboard.press(KEY_LEFT_SHIFT);

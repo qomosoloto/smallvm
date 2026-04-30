@@ -1339,7 +1339,7 @@ method fixedCmd Scripter oldCmd minArgs argTypes argDefaults isReporter isVariad
 	}
 
 	// fix type inconsistencies for non-expression arguments
- for i (min minArgs (count args) (count argTypes) (count argDefaults)) {
+	for i (min minArgs (count args) (count argTypes) (count argDefaults)) {
 		arg = (at args i)
 		if (not (isClass arg 'Reporter')) {
 			desiredType = (at argTypes i)

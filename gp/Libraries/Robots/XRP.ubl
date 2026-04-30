@@ -1,8 +1,8 @@
 module XRP Output
 author 'Russell Owen'
-version 0 12 
-depends 'Encoded DC Motors' Servo 'Distance (HC-SR04)' 
-description 'Drive the WPI XRP robot'
+version 1 0 
+depends 'Encoded DC Motors' _Servo '_Distance (HC-SR04)' 
+description 'Drive the WPI XRP robot (with the RP2350 CPU).'
 variables _xrp__imuAddress 
 
   spec ' ' 'xrp_driveAtSpeed' 'drive at speed left _ right _ (mm/sec)' 'num num' 300 300
@@ -30,7 +30,7 @@ variables _xrp__imuAddress
 to '_edcmotors_checkSystem' {
   comment 'Check drive power to the XRP board.'
   local 'clearText' (booleanConstant false)
-  repeatUntil ((analogReadOp 28) >= 300) {
+  repeatUntil ((analogReadOp 46) >= 300) {
     sayIt 'Insufficient drive voltage; check the power switch and batteries.'
     clearText = (booleanConstant true)
   }
@@ -60,30 +60,17 @@ especially if the extra motors are not the same as the wheel motors.'
   atPut 'all' _edcmotors__maxSpeed 1800
   comment 'Acceleration for point to point moves (encoder counts/second^2)'
   atPut 'all' _edcmotors__accel 1250
-  atPut 1 _edcmotors__pinEncoderA 4
-  atPut 1 _edcmotors__pinEncoderB 5
-  atPut 1 _edcmotors__pinDirection 6
-  atPut 1 _edcmotors__pinDutyCycle 7
-  atPut 2 _edcmotors__pinEncoderA 12
-  atPut 2 _edcmotors__pinEncoderB 13
-  atPut 2 _edcmotors__pinDirection 14
-  atPut 2 _edcmotors__pinDutyCycle 15
-  if (_edcmotors__numMotors > 2) {
-    atPut 3 _edcmotors__pinEncoderA 0
-    atPut 3 _edcmotors__pinEncoderB 1
-    atPut 3 _edcmotors__pinDirection 2
-    atPut 3 _edcmotors__pinDutyCycle 3
-  }
-  if (_edcmotors__numMotors > 3) {
-    atPut 4 _edcmotors__pinEncoderA 8
-    atPut 4 _edcmotors__pinEncoderB 9
-    atPut 4 _edcmotors__pinDirection 10
-    atPut 4 _edcmotors__pinDutyCycle 11
-  }
+  _edcmotors__pinEncoderA = ('[data:makeList]' 30 24 22 2)
+  _edcmotors__pinEncoderB = ('[data:makeList]' 31 25 23 3)
+  _edcmotors__pinDutyCycle = ('[data:makeList]' 34 32 20 10)
+  _edcmotors__pinReverseDutyCycle = ('[data:makeList]' 35 33 21 11)
 }
 
 to '_xrp_initGyroscope' {
-  comment 'Initialize the gyroscope'
+  comment 'Initialize the gyroscope, if needed.'
+  if (_xrp__imuAddress != 0) {
+    return
+  }
   _xrp__imuAddress = (hexToInt '6B')
   comment 'Configure the LSM6DSOX IMU gyroscope:
 * Read at 1660 Hz (a fairly high rate)
@@ -114,10 +101,9 @@ with the following unusual subranges:
 }
 
 to edcmotors_getNumMotors {
-  comment 'Get the number of motors. The standard XRP kit comes with 2 motors that drive wheels,
-but the board can drive up to 4 motors. If you are using more than 2 motors,
-override this method to return how many you are using. Never return less than 2.'
-  return 2
+  comment 'Get the number of motors. All 4 are provisioned,
+even if only the standard left and right wheel motors are present.'
+  return 4
 }
 
 to xrp_driveAtSpeed leftSpeed rightSpeed {
@@ -136,45 +122,43 @@ to xrp_driveDistance distance speed {
 
 to xrp_readDistanceSensor {
   comment 'Return the distance (cm) read by the HC-SR04 distance sensor.'
-  return ('distance (cm)' 20 21)
+  return ('distance (cm)' 0 1)
 }
 
 to xrp_readLineSensors {
-  return ('[data:makeList]' (analogReadOp 26) (analogReadOp 27))
+  return ('[data:makeList]' (analogReadOp 44) (analogReadOp 45))
 }
 
 to xrp_readPitchRate {
   comment 'Read pitch (deg/sec) from the gyroscope'
-  if (_xrp__imuAddress == 0) {
-    '_xrp_initGyroscope'
-  }
+  '_xrp_initGyroscope'
   return ('_xrp_scaleRollPitchOrYaw' (i2cGet _xrp__imuAddress 35))
 }
 
 to xrp_readRollRate {
   comment 'Read roll (deg/sec) from the gyroscope'
-  if (_xrp__imuAddress == 0) {
-    '_xrp_initGyroscope'
-  }
+  '_xrp_initGyroscope'
   return ('_xrp_scaleRollPitchOrYaw' (i2cGet _xrp__imuAddress 37))
 }
 
 to xrp_readYawRate {
   comment 'Read yaw (deg/sec) from the gyroscope'
-  if (_xrp__imuAddress == 0) {
-    '_xrp_initGyroscope'
-  }
+  '_xrp_initGyroscope'
   return (0 - ('_xrp_scaleRollPitchOrYaw' (i2cGet _xrp__imuAddress 39)))
 }
 
 to xrp_setServo index angle {
   '_edcmotors_checkSystem'
   if (index == 1) {
-    setServoAngle 16 angle
+    setServoAngle 6 angle
   } (index == 2) {
-    setServoAngle 17 angle
+    setServoAngle 9 angle
+  } (index == 3) {
+    setServoAngle 7 angle
+  } (index == 4) {
+    setServoAngle 8 angle
   } else {
-    sayIt 'Invalid servo index; must be 1 or 2'
+    sayIt 'Invalid servo index ' index 'must be 1, 2, 3, or 4'
   }
 }
 

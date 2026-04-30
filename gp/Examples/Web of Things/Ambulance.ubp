@@ -130,13 +130,14 @@ to 'request method' request {
 
 module NeoPixel Output
 author MicroBlocks
-version 1 11 
+version 1 15 
 description 'Control NeoPixel (WS2812) RGB LED strips and rings.
 '
-variables _np_pixels 
+variables _np_pixels _np_pin _np_haswhite 
 
   spec ' ' 'neoPixelAttach' 'attach _ LED NeoPixel strip to pin _ : has white _' 'num auto bool' 10 '' false
   spec ' ' 'setNeoPixelColors10' 'set NeoPixels _ _ _ _ _ _ _ _ _ _' 'color color color color color color color color color color'
+  spec ' ' 'setNeoPixelColors25' 'set NeoPixels #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _' 'color color color color color color color color color color color color color color color color color color color color color color color color color'
   spec ' ' 'clearNeoPixels' 'clear NeoPixels'
   spec ' ' 'neoPixelSetAllToColor' 'set all NeoPixels color _' 'color'
   spec ' ' 'setNeoPixelColor' 'set NeoPixel _ color _' 'num color' 1
@@ -188,6 +189,10 @@ to '_NeoPixel_ensureInitialized' {
   } ((boardType) == 'D1-Mini') {
     comment 'D1 mini kit'
     neoPixelAttach 7 15 false
+  } ((boardType) == 'Foxbit') {
+    neoPixelAttach 35 '' false
+  } ((boardType) == 'CodingBox') {
+    neoPixelAttach 35 '' false
   } else {
     neoPixelAttach 10 '' false
   }}
@@ -235,6 +240,8 @@ to '_NeoPixel_shift_hue' i delta {
 }
 
 to '_NeoPixel_update' {
+  comment 'NeoPixel pin and hasWhite may have been changed by another library.'
+  '[display:neoPixelSetPin]' _np_pin _np_hasWhite
   '[display:neoPixelSend]' _np_pixels
   waitMicros 300
 }
@@ -253,15 +260,16 @@ to colorFromRGB r g b {
 }
 
 to neoPixelAttach number pinNumber optionalHasWhite {
-  hasWhite = false
+  _np_pin = pinNumber
+  _np_hasWhite = false
   if ((pushArgCount) > 2) {
-    hasWhite = optionalHasWhite
+    _np_hasWhite = optionalHasWhite
   }
   if (or (_np_pixels == 0) (number != (size _np_pixels))) {
     _np_pixels = (newList number)
   }
   atPut 'all' _np_pixels 0
-  '[display:neoPixelSetPin]' pinNumber hasWhite
+  '[display:neoPixelSetPin]' _np_pin _np_hasWhite
 }
 
 to neoPixelSetAllToColor color {
@@ -288,8 +296,12 @@ to randomColor {
 
 to rotateNeoPixelsBy n {
   '_NeoPixel_ensureInitialized'
+  local 'rotateLeft' (n < 0)
+  if (or ((boardType) == 'CircuitPlayground') ((boardType) == 'CircuitPlayground Bluefruit')) {
+    rotateLeft = (n > 0)
+  }
   repeat (absoluteValue n) {
-    '_NeoPixel_rotate' (n > 0)
+    '_NeoPixel_rotate' rotateLeft
   }
   '_NeoPixel_update'
 }
@@ -304,35 +316,16 @@ to setNeoPixelColor i color {
 
 to setNeoPixelColors10 c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 {
   '_NeoPixel_ensureInitialized'
-  if ((size _np_pixels) >= 1) {
-    atPut 1 _np_pixels c1
+  for i (minimum (size _np_pixels) (pushArgCount)) {
+    atPut i _np_pixels (getArg i)
   }
-  if ((size _np_pixels) >= 2) {
-    atPut 2 _np_pixels c2
-  }
-  if ((size _np_pixels) >= 3) {
-    atPut 3 _np_pixels c3
-  }
-  if ((size _np_pixels) >= 4) {
-    atPut 4 _np_pixels c4
-  }
-  if ((size _np_pixels) >= 5) {
-    atPut 5 _np_pixels c5
-  }
-  if ((size _np_pixels) >= 6) {
-    atPut 6 _np_pixels c6
-  }
-  if ((size _np_pixels) >= 7) {
-    atPut 7 _np_pixels c7
-  }
-  if ((size _np_pixels) >= 8) {
-    atPut 8 _np_pixels c8
-  }
-  if ((size _np_pixels) >= 9) {
-    atPut 9 _np_pixels c9
-  }
-  if ((size _np_pixels) >= 10) {
-    atPut 10 _np_pixels c10
+  '_NeoPixel_update'
+}
+
+to setNeoPixelColors25 c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 c11 c12 c13 c14 c15 c16 c17 c18 c19 c20 c21 c22 c23 c24 c25 {
+  '_NeoPixel_ensureInitialized'
+  for i (minimum (size _np_pixels) (pushArgCount)) {
+    atPut i _np_pixels (getArg i)
   }
   '_NeoPixel_update'
 }
@@ -340,7 +333,7 @@ to setNeoPixelColors10 c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 {
 
 module Tone Output
 author MicroBlocks
-version 1 9 
+version 1 10 
 tags tone sound music audio note speaker 
 choices tone_NoteName 'nt;c' 'nt;c#' 'nt;d' 'nt;d#' 'nt;e' 'nt;f' 'nt;f#' 'nt;g' 'nt;g#' 'nt;a' 'nt;a#' 'nt;b' 
 description 'Audio tone generation. Make music with MicroBlocks!
@@ -457,6 +450,8 @@ to 'attach buzzer to pin' pinNumber {
       _tonePin = 25
     } ((boardType) == 'D1-Mini') {
       _tonePin = 12
+    } ((boardType) == 'CodingBox') {
+      _tonePin = 32
     } else {
       _tonePin = -1
     }
@@ -832,13 +827,16 @@ to 'trigger event' 'event name' {
 
 module WiFi Comm
 author MicroBlocks
-version 1 8 
+version 1 10 
 tags communication network 
 description 'Connect to a WiFi network. Used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
 '
 
   spec ' ' 'wifiConnect' 'wifi connect to _ password _ : IP _ gateway _ subnet _' 'str str auto auto auto' 'Network_Name' '' '192.168.1.42' '192.168.1.1' '255.255.255.0'
   spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
+  spec ' ' '[net:stopWiFi]' 'stop wifi'
+  space
+  spec ' ' '[net:setDomainName]' 'wifi set local domain name _ .local' 'str' 'microblocks'
   space
   spec 'r' 'getIPAddress' 'IP address'
   spec 'r' '[net:myMAC]' 'MAC address'
@@ -877,6 +875,7 @@ to wifiConnect ssid password fixedIP gatewayIP subnetIP {
     setUserLED false
     waitMillis 50
   }
+  '[net:setDomainName]' 'microblocks'
   sayIt 'My IP address is:' ('[net:myIPAddress]')
 }
 
@@ -898,6 +897,7 @@ to wifiCreateHotspot ssid password {
     setUserLED false
     waitMillis 50
   }
+  '[net:setDomainName]' 'microblocks'
   sayIt 'My IP address is:' ('[net:myIPAddress]')
 }
 

@@ -314,7 +314,7 @@ function initGPEventHandlers() {
 		evt.preventDefault();
 	}
 	window.onfocus = function(evt) {
-	  GP.events.push([WINDOW_SHOWN]);
+		GP.events.push([WINDOW_SHOWN]);
 	}
 }
 initGPEventHandlers();
@@ -412,7 +412,7 @@ function uploadFiles(files) {
 	var todo = [];
 	if (files && files.length) {
 		for (var i = 0; i < files.length; i++) todo.push(files[i]);
-	    recordFile(todo.shift());
+		recordFile(todo.shift());
 	}
 }
 
@@ -487,7 +487,7 @@ function GP_audioContext() {
 
 	function unsuspendAudioContext () {
 		// On iOS, the audio context is suspended until resumed by a touch event.
-		if (GP.cachedAudioContext &&  ('suspended' === GP.cachedAudioContext.state)) {
+		if (GP.cachedAudioContext && ('suspended' === GP.cachedAudioContext.state)) {
 			GP.cachedAudioContext.resume();
 		}
 	}

@@ -1,6 +1,6 @@
 module Steppers Output
 author 'Joan Guillén'
-version 1 0 
+version 1 1 
 choices sm_stepperSteps turns degrees steps 
 choices sm_motorDirections clockwise 'counter-clockwise' 
 description 'Control (1-4) Stepper Motors with a driver and a unipolar configuration using pins IN1, IN2, IN3 and IN4'
@@ -57,7 +57,7 @@ to 'sm stop motor' n {
 }
 
 to 'sm turn stepper motor' n direction steps units {
-  comment 'Turn a motor. A negative number of steps will indicate a turn in the opposite direction. Using degrees you have to 
+  comment 'Turn a motor. A negative number of steps will indicate a turn in the opposite direction. Using degrees you have to
 be careful with accuracy (it will only move an integer number of steps). With defaults (2048 steps for each turn) 45º and their multiples (90º, 180º) are fine.  '
   '_sm init'
   if (and (and (n >= 1) (n <= 4)) ((size (at n (v '_sm motors'))) == 8)) {
@@ -90,7 +90,7 @@ be careful with accuracy (it will only move an integer number of steps). With de
             atPut 8 (at n (v '_sm motors')) ((at 8 (at n (v '_sm motors'))) - 1)
           }
           steps += -1
-          '_sm step state' (at 8 (at n (v '_sm motors')))
+          '_sm step state' (at 8 (at n (v '_sm motors'))) n
         }
       }
     }

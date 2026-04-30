@@ -179,18 +179,18 @@ if ((v 'paddle 2 x') >= 4) {
 
 module 'ED1 Buttons' Input
 author MicroBlocks
-version 1 0 
+version 1 1 
 tags button capacitive ed1 
 description 'Provides blocks for the six capacitive buttons in the Citilab ED1 board.'
 variables _ED1_buttons_init '_capacitive threshold' 
 
   spec ' ' '_ED1_buttons_init' '_ED1_buttons_init' 'any any any'
-  spec 'r' 'OK button' 'button OK'
-  spec 'r' 'cancel button' 'button X'
-  spec 'r' 'up button' 'button up'
-  spec 'r' 'down button' 'button down'
-  spec 'r' 'left button' 'button left'
-  spec 'r' 'right button' 'button right'
+  spec 'r' 'OK button' '#SVG#button-ok'
+  spec 'r' 'cancel button' '#SVG#button-x'
+  spec 'r' 'up button' '#SVG#button-up'
+  spec 'r' 'down button' '#SVG#button-down'
+  spec 'r' 'left button' '#SVG#button-left'
+  spec 'r' 'right button' '#SVG#button-right'
   spec ' ' 'set capacitive threshold to' 'set capacitive threshold to _' 'auto' 16
 
 to 'OK button' {
@@ -237,7 +237,7 @@ to 'up button' {
 
 module Tone Output
 author MicroBlocks
-version 1 9 
+version 1 10 
 tags tone sound music audio note speaker 
 choices tone_NoteName 'nt;c' 'nt;c#' 'nt;d' 'nt;d#' 'nt;e' 'nt;f' 'nt;f#' 'nt;g' 'nt;g#' 'nt;a' 'nt;a#' 'nt;b' 
 description 'Audio tone generation. Make music with MicroBlocks!
@@ -354,6 +354,8 @@ to 'attach buzzer to pin' pinNumber {
       _tonePin = 25
     } ((boardType) == 'D1-Mini') {
       _tonePin = 12
+    } ((boardType) == 'CodingBox') {
+      _tonePin = 32
     } else {
       _tonePin = -1
     }

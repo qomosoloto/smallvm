@@ -84,10 +84,10 @@ typedef enum {
 
 #ifdef GNUBLOCKS
 	#define STACK_LIMIT 10000 // Task size is 6 + STACK_LIMIT words
-#elif (defined(NRF51) || defined(ESP8266))
+#elif (defined(NRF51) || defined(ESP8266) || defined(DUELink))
 	#define STACK_LIMIT 54 // Task size is 6 + STACK_LIMIT words
 #else
-	#define STACK_LIMIT 100 // Task size is 6 + STACK_LIMIT words
+	#define STACK_LIMIT 125 // Task size is 6 + STACK_LIMIT words
 #endif
 
 typedef struct {
@@ -140,6 +140,8 @@ extern int extraByteDelay;
 #define varValueMsg				21
 #define versionMsg				22
 #define chunkCRCMsg				23
+#define clearGraphMsg			24
+#define codeStoreFullMsg		25
 
 // Serial Protocol Messages: Bidirectional
 
@@ -150,6 +152,7 @@ extern int extraByteDelay;
 #define extendedMsg				30
 #define enableBLEMsg			31
 #define chunkCode16Msg			32
+#define codeStoreUsedMsg		33
 
 // Serial Protocol Messages: CRC Exchange
 
@@ -173,7 +176,7 @@ extern int extraByteDelay;
 #define needsIntegerIndexError	17	// List or string index must be an integer
 #define indexOutOfRangeError	18	// List or string index out of range
 #define byteArrayStoreError		19	// A ByteArray can only store integer values between 0 and 255
-#define hexRangeError			20	// Hexadecimal input must between between -1FFFFFFF and 1FFFFFFF
+#define hexRangeError			20	// Hexadecimal input must between between -40000000 and 3FFFFFFF
 #define i2cDeviceIDOutOfRange	21	// I2C device ID must be between 0 and 127
 #define i2cRegisterIDOutOfRange	22	// I2C register must be between 0 and 255
 #define i2cValueOutOfRange		23	// I2C value must be between 0 and 255
@@ -227,17 +230,25 @@ void sendTaskDone(uint8 chunkIndex);
 void sendTaskError(uint8 chunkIndex, uint8 errorCode, int where);
 void sendTaskReturnValue(uint8 chunkIndex, OBJ returnValue);
 void sendBroadcastToIDE(char *s, int len);
+void sendCodeStoreFull();
 int broadcastMatches(uint8 chunkIndex, char *msg, int byteCount);
 void sendSayForChunk(char *s, int len, uint8 chunkIndex);
 void vmLoop(void);
 void interpretStep();
 void taskSleep(int msecs);
+void taskSleepMicros(int usecs);
 void vmPanic(const char *s);
 int indexOfVarNamed(const char *varName);
 void processFileMessage(int msgType, int dataSize, char *data);
 void waitAndSendMessage(int msgType, int chunkIndex, int dataSize, char *data);
+void deferIDEDisconnect();
 void suspendCodeFileUpdates();
 void resumeCodeFileUpdates();
+
+// Debugging
+
+void consolePrint(const char *s);
+void consoleReportNum(const char *label, int n);
 
 // Integer Evaluation
 
@@ -264,8 +275,13 @@ void runTasksUntilDone(void);
 void interpTests1(void);
 void taskTest(void);
 
-void compactCodeStore();
-void outputRecordHeaders();
+// UTF-8 Utilities (from dataPrims.c)
+
+int countUTF8(char *s);
+OBJ charAt(OBJ stringObj, int i);
+int unicodeCodePoint(char *s);
+char *nextUTF8(char *s);
+int UTF8ToCP437(char* src, char* dst, int dstSize);
 
 // Platform Specific Operations
 
@@ -275,6 +291,8 @@ uint32 millisecs(void);
 uint32 seconds();
 void handleMicosecondClockWrap();
 
+int chunkIndexForFunction(char *functionName);
+
 int ideConnected();
 int recvBytes(uint8 *buf, int count);
 int sendBytes(uint8 *buf, int start, int end);
@@ -282,6 +300,7 @@ void captureIncomingBytes();
 void restartSerial();
 
 const char *boardType();
+int hasPSRAM();
 void hardwareInit(void);
 
 int readI2CReg(int deviceID, int reg);
@@ -331,6 +350,7 @@ OBJ primButtonA(OBJ *args);
 OBJ primButtonB(OBJ *args);
 void primSetUserLED(OBJ *args);
 
+OBJ primI2cExists(int argCount, OBJ *args);
 OBJ primI2cGet(OBJ *args);
 OBJ primI2cSet(OBJ *args);
 OBJ primSPISend(OBJ *args);
@@ -354,9 +374,13 @@ OBJ primNeoPixelSend(int argCount, OBJ *args);
 OBJ primNeoPixelSetPin(int argCount, OBJ *args);
 void turnOffInternalNeoPixels();
 
+OBJ primDeferUpdates(int argCount, OBJ *args);
+OBJ primResumeUpdates(int argCount, OBJ *args);
+
 // TFT Support
 
 extern int useTFT;
+extern int isOLED1106;
 
 void tftInit();
 void tftClear();
@@ -364,6 +388,7 @@ void tftSetHugePixel(int x, int y, int state);
 void tftSetHugePixelBits(int bits);
 
 // CoCube Sensor Support
+
 void cocubeSensorInit();
 void cocubeSensorUpdate();
 
@@ -410,6 +435,7 @@ typedef enum {
 	CameraPrims,
 	OneWirePrims,
 	EncoderPrims,
+	SDCardPrims,
 	PrimitiveSetCount
 } PrimitiveSetIndex;
 
@@ -429,6 +455,7 @@ void addHIDPrims();
 void addCameraPrims();
 void addOneWirePrims();
 void addEncoderPrims();
+void addSDCardPrims();
 
 // Named Primitive Support
 

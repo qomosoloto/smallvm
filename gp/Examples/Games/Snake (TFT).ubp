@@ -177,8 +177,8 @@ d,p,c6,d6,d,8c6,a,8c6,8d6,c,8p.,c,8p.,c,8p.,c,
 
 module Ringtone Output
 author MicroBlocks
-version 1 2 
-depends Tone 
+version 1 3 
+depends _Tone 
 description 'Plays tunes in RTTTL (Ringtone Text Transfer Language) a language developed by Nokia to store ringtones.
 Also known as Nokring.'
 variables '_RTTTL default duration' '_RTTTL default octave' '_RTTTL bpm' '_RTTTL song name' 
@@ -285,7 +285,7 @@ to 'play ringtone' RTTTL {
 
 module TFT Output
 author MicroBlocks
-version 1 11 
+version 1 12 
 description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 
   spec ' ' '[tft:clear]' 'clear TFT display'
@@ -356,6 +356,7 @@ to tft_colorSwatch color {
 }
 
 to tft_drawText s x y color optionalScale optionalBGColor {
+  s = ('[data:convertType]' s 'string')
   local 'scale' (argOrDefault 5 2)
   local 'bgColor' (argOrDefault 6 '')
   local 'lines' ('[data:split]' s ('[data:unicodeString]' 10))
@@ -378,7 +379,7 @@ to tft_drawVector x y angle length color {
 
 module Tone Output
 author MicroBlocks
-version 1 9 
+version 1 10 
 tags tone sound music audio note speaker 
 choices tone_NoteName 'nt;c' 'nt;c#' 'nt;d' 'nt;d#' 'nt;e' 'nt;f' 'nt;f#' 'nt;g' 'nt;g#' 'nt;a' 'nt;a#' 'nt;b' 
 description 'Audio tone generation. Make music with MicroBlocks!
@@ -495,6 +496,8 @@ to 'attach buzzer to pin' pinNumber {
       _tonePin = 25
     } ((boardType) == 'D1-Mini') {
       _tonePin = 12
+    } ((boardType) == 'CodingBox') {
+      _tonePin = 32
     } else {
       _tonePin = -1
     }

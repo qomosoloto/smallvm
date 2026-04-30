@@ -1,8 +1,8 @@
 module 'Scales & Chords' Data
 author MicroBlocks
-version 2 6 
-depends MIDI Rhythm Tone 
-choices sound_dst 'MIDI channel' 'tone pin' 
+version 2 12 
+depends MIDI Rhythm Tone 'Analog Synthesis' 
+choices sound_dst 'MIDI channel' 'tone pin' 'gate trigger' 
 choices scales ionian dorian phrygian lydian mixolydian aeolian locrian chromatic tonal 
 choices pentatonics major minor 
 choices chords major minor diminished 'major 7th' 'minor 7th' Maj7 
@@ -10,7 +10,7 @@ description 'Lists of relative semitone intervals for all Western diatonic scale
 
 It also includes intervals for the most common chords and progressions, an abstraction of the circle of fifths, an arpeggiator and an improviser.
 '
-variables _scales_degrees _scales_circle5ths _scales_delay
+variables _scales_degrees _scales_circle5ths _scales_delay 
 
   spec 'r' 'scales_scale' '_ scale root _ : steps _' 'menu.scales num num' 'ionian' 60 7
   spec 'r' 'scales_pentatonic scale' 'pentatonic _ scale root _ : steps _' 'menu.pentatonics num num' 'major' 60 7
@@ -101,12 +101,14 @@ to '_scales_init_circle' {
   if (_scales_circle5ths == 0) {_scales_circle5ths = ('[data:makeList]' ('[data:makeList]' 'I' 'V' 'II' 'VI' 'III' 'VII' 'bV' 'bII' 'bVI' 'bIII' 'bVII' 'IV') ('[data:makeList]' 'vi' 'iii' 'vii' 'bv' 'bii' 'bvi' 'biii' 'bvii' 'iv' 'i' 'v' 'ii') ('[data:makeList]' 'VIIº' 'bVº' 'bIIº' 'bVIº' 'bIIIº' 'bVIIº' 'IVº' 'Iº' 'Vº' 'IIº' 'VIº' 'IIIº'))}
 }
 
-to scales_arpeggiate 'note list' order duration volume destination channel/pin {
-  if ((v '_scales_delay') == 0) {
+to scales_arpeggiate 'note list' order duration volume destination channel {
+  if (_scales_delay == 0) {
     if ((boardType) == 'Boardie') {
       _scales_delay = 12
-    } else {
-      _scales_delay = 2
+    } ((boardType) == 'micro:bit v2') {
+      _scales_delay = 5
+    } (destination == 'gate trigger') {
+      _scales_delay = 4
     }
   }
   if (isType (v 'note list') 'string') {'note list' = ('_scales parsed shorthand' (v 'note list'))}
@@ -126,12 +128,15 @@ to scales_arpeggiate 'note list' order duration volume destination channel/pin {
       local 'dur' duration
     }
     if (('[data:convertType]' (at i order) 'number') == 0) {
-      waitMillis ((dur - ((millisOp) - start)) - (v '_scales_delay'))
+      waitMillis ((dur - ((millisOp) - start)) - _scales_delay)
     } else {
       if (destination == 'MIDI channel') {
-        'MIDI_play MIDI note' ('[data:convertType]' (at (at i order) (v 'note list')) 'number') ((dur - ((millisOp) - start)) - (v '_scales_delay')) channel/pin volume
+        'MIDI_play MIDI note' ('[data:convertType]' (at (at i order) (v 'note list')) 'number') ((dur - ((millisOp) - start)) - _scales_delay) channel volume
+      } (destination == 'gate trigger') {
+        'asynth trigger gate' channel ('[data:convertType]' (at (at i order) (v 'note list')) 'number')
+        waitMillis ((dur - ((millisOp) - start)) - _scales_delay)
       } else {
-        if (channel/pin != '') {_tonePin = channel/pin}
+        if (channel != '') {_tonePin = channel}
         playMIDIKey ('[data:convertType]' (at (at i order) (v 'note list')) 'number') ((dur - ((millisOp) - start)) - 1)
       }
     }
@@ -195,7 +200,7 @@ to 'scales_circle rotation' n majors minors dims {
   return ('[data:joinStrings]' degrees ',')
 }
 
-to scales_improv scale 'bar count' 'possible durations' destination channel/pin volume {
+to scales_improv scale 'bar count' 'possible durations' destination channel volume {
   if (_rhy_beat_duration == 0) {'rhy_set tempo' 120 4 4}
   local 'next note' (at 'random' scale)
   local 'max jump' 4
@@ -220,9 +225,11 @@ to scales_improv scale 'bar count' 'possible durations' destination channel/pin 
       }
       if (destination == 'MIDI channel') {
         if (isType volume 'list') {'next vol' = (random (at 1 volume) (at 2 volume))}
-        'MIDI_play MIDI note' (v 'next note') (v 'next duration') channel/pin (v 'next vol')
+        'MIDI_play MIDI note' (v 'next note') (v 'next duration') channel (v 'next vol')
+      } (destination == 'gate trigger') {
+        'asynth trigger gate' channel (v 'next note')
       } else {
-        if (channel/pin != '') {_tonePin = channel/pin}
+        if (channel != '') {_tonePin = channel}
         playMIDIKey (v 'next note') (v 'next duration')
       }
       if ((random 1 3) == 3) {

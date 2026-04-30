@@ -18,7 +18,9 @@ method initialize MicroBlocksHelp {
 		// OUTPUT
 		(array 'setUserLED' 'output#set-user-led' 'Turn the user LED on or off.')
 		(array 'sayIt' 'output#say' 'Display a bubble showing the value.')
-		(array 'printIt' 'output#graph' 'Graph the value.')
+		(array 'printIt' 'output#graph' 'Graph the value.') // used in pre-2.0 code
+		(array 'graphIt' 'output#graph' 'Graph the value(s). Multiple values can be graphed.')
+		(array '[misc:clearGraph]' 'output#clear-graph' 'Deletes all graph data and clears the graph window.')
 
 		// INPUT
 		(array 'buttonA' 'input#button-a' 'Report the state of button A ( (-o) or (o-) ).')
@@ -61,6 +63,8 @@ method initialize MicroBlocksHelp {
 		(array '[serial:write]' 'comm#serial-write' 'Send a byte array to the serial port.')
 		(array '[serial:writeBytes]' 'comm#serial-write-starting-at' 'Send a byte array to the serial port, starting at the given byte.')
 		(array '[io:softWriteByte]' 'comm#soft-serial-write' 'Write a byte to the pin at the specified baud rate.')
+		(array '[serial:dueRecv]' 'comm#duelink-receive' 'Report data received from the Duelink device (a byte array).')
+		(array '[serial:dueSend]' 'comm#duelink-send' 'Send a byte array to the Duelink device, starting at the given byte.')
 
 		// CONTROL
 		(array 'whenStarted' 'control#when-started' 'Run when the board powers up or when the IDE start button is clicked.')
@@ -114,12 +118,15 @@ method initialize MicroBlocksHelp {
 		(array '[misc:sqrt]' 'operators#sqrt' 'Returns the square root value of the number input.')
 		(array '[misc:atan2]' 'operators#arctan' 'Calculates the angle from x (adjacent), y (opposite) sides of a right-angled triangle, and returns degrees multiplied by 100.')
 		(array 'hexToInt' 'operators#hex' 'Report the numerical value of a hexadecimal string (range: -0x1FFFFFFF to 0x1FFFFFFF)')
+		(array '[misc:binToInt]' 'operators#binary' 'Converts a binary string to a decimal number. Max number of bits is 30.')
 		(array '&' 'operators#bitwise-and' 'Report bitwise AND of two numbers.')
 		(array '|' 'operators#bitwise-or' 'Report bitwise OR of two numbers.')
 		(array '^' 'operators#bitwise-xor' 'Report bitwise XOR (exclusive OR) of two numbers.')
 		(array '~' 'operators#bitwise-not' 'Report bitwise inverse of the given number.')
 		(array '<<' 'operators#bitwise-left-shift' 'Report the given number shifted left by the given number of bits.')
 		(array '>>' 'operators#bitwise-right-shift' 'Report the given number shifted right by the given number of bits (arithmetic shift; sign is maintained).')
+		(array 'sum' 'operators#sum' 'Returns the sum of the inputs.')
+		(array '[data:toString]' 'operators#to-string' 'Returns the input as a string (e.g. "123" is a three letter string not a number).')
 
 		// VARIABLES
 		(array 'v' 'variables#xxx' '')
@@ -172,6 +179,7 @@ method initialize MicroBlocksHelp {
 		// NEOPIXEL
 		(array 'neoPixelAttach' '/libraries#attach-neopixel-led-to-pin' 'Set Neopixel count and pin number.')
 		(array 'setNeoPixelColors10' '/libraries#set-neopixels' 'Set the colors of the first ten NeoPixels.')
+		(array 'setNeoPixelColors25' '/libraries#set-neopixels' 'Set the colors of the first 25 NeoPixels.')
 		(array 'clearNeoPixels' '/libraries#clear-neopixels' 'Turn off all NeoPixels.')
 		(array 'neoPixelSetAllToColor' '/libraries#set-all-neopixels-color' 'Set all NeoPixels to the given color.')
 		(array 'setNeoPixelColor' '/libraries#set-neopixel-color' 'Set the given NeoPixel to the selected color.')
@@ -300,18 +308,18 @@ method initialize MicroBlocksHelp {
 		(array 'bleScan_hasType' '/network_libraries/ble-scanner#hastype' 'Report (-o) if device name is type 8 or 9.')
 
 		// BLE SERIAL
-		(array '[ble:uartConnected]' '/network_libraries/' 'Report (-o) if BLE serial is connected')
-		(array 'bleSerial_readString' '/network_libraries/' 'Returns a string read from the BLE Serial port.')
-		(array 'bleSerial_readBytes' '/network_libraries/' 'Returns bytes read from the BLE Serial port.')
-		(array 'bleSerial_write' '/network_libraries/' 'Writes any String or ByteArray to the BLE Serial port.')
+		(array '[ble:uartConnected]' '/network_libraries/ble-serial#ble-serial-connected' 'Report (-o) if BLE serial is connected')
+		(array 'bleSerial_readString' '/network_libraries/ble-serial#ble-serial-read-string' 'Returns a string read from the BLE Serial port.')
+		(array 'bleSerial_readBytes' '/network_libraries/ble-serial#ble-serial-read-bytes' 'Returns bytes read from the BLE Serial port.')
+		(array 'bleSerial_write' '/network_libraries/ble-serial#ble-serial-write' 'Writes any String or ByteArray to the BLE Serial port.')
 
 		// UDP
-		(array '[net:udpStart]' '/network_libraries/' '')
-		(array '[net:udpStop]' '/network_libraries/' '')
-		(array '[net:udpSendPacket]' '/network_libraries/' '')
-		(array '[net:udpReceivePacket]' '/network_libraries/' '')
-		(array '[net:udpRemoteIPAddress]' '/network_libraries/' '')
-		(array '[net:udpRemotePort]' '/network_libraries/' '')
+		(array '[net:udpStart]' '/network_libraries/udp#udp-start' 'Starts UDP protocol on selected port.')
+		(array '[net:udpStop]' '/network_libraries/udp#udp-stop' 'Stops UDP protocol.')
+		(array '[net:udpSendPacket]' '/network_libraries/udp#udp-send-packet' 'Sends a packet to designated address and port.')
+		(array '[net:udpReceivePacket]' '/network_libraries/udp#udp-receive-packet' 'Returns the packet received from the UDP remote.')
+		(array '[net:udpRemoteIPAddress]' '/network_libraries/udp#udp-remote-ip-address' 'Returns the IP address of the UDP remote.')
+		(array '[net:udpRemotePort]' '/network_libraries/udp#udp-remote-port' 'Returns the port number of the UDP remote.')
 
 		// WIFI
 		(array 'wifiConnect' '/network_libraries/wifi#wifi-connect-to' 'Connect to the local IP network.')

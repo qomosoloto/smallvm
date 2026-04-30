@@ -30,6 +30,24 @@ extern "C" {
 	#define ESP32_C6 1
 #endif
 
+#if defined(ARDUINO_NUCLEO_C071RB)
+	#define DUELink 1
+
+	// HAS_LED_MATRIX is defined for all boards but display operations ignored if not CincoBit
+	#define HAS_LED_MATRIX 1
+
+	// Return the 24-bit product ID from the OTP area
+	#define DUE_PID (*((uint32 *) 0x1FFF7004) & 0xFFFFFF)
+
+	// These macros use the 24-bit product ID from the OTP area.
+	// CincoBit = 1, PixoBit = 2; ID's 3-15 are reserved for future boards with edge connectors
+	#define DUE_HAS_EDGE_CONNECTOR (DUE_PID < 16)
+	#define IS_DUE_CINCO (DUE_PID == 1)
+	#define IS_DUE_STEM (DUE_PID == 16)
+	#define IS_DUE_CLIPIT (DUE_PID == 17)
+	#define IS_DUE_CHRONO (DUE_PID == 0x0C0004)
+#endif
+
 #if defined(ESP32) && !(defined(ESP32_S2) || defined(ESP32_S3) || defined(ESP32_C3) || defined(ESP32_C6))
 	#define ESP32_ORIGINAL 1
 #endif
@@ -38,13 +56,17 @@ extern "C" {
 	#define RP2040_PHILHOWER 1
 #endif
 
+#if defined(XRP) && defined(PICO_RP2350) && (PICO_RP2350A == 0)
+	#define XRP_2350 1
+#endif
+
 #if defined(BLE_IDE) || defined(BLE_KEYBOARD) || defined(BLE_UART) || defined(BLE_OCTO)
 	#define USE_NIMBLE 1
 #endif
 
 #if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || defined(CALLIOPE_V3) || \
-	defined(ARDUINO_BBC_MICROBIT_V2) || defined(ARDUINO_M5Atom_Matrix_ESP32) || \
-	defined(GNUBLOCKS) || defined(ARDUINO_Mbits) || defined(STEAMaker)
+	defined(ARDUINO_BBC_MICROBIT_V2) || defined(M5Atom_Matrix) || defined(DUELink) || \
+	defined(GNUBLOCKS) || defined(ARDUINO_Mbits) || defined(STEAMaker) || defined(FOXBIT)
 		#define HAS_LED_MATRIX 1
 #endif
 
@@ -59,7 +81,7 @@ typedef signed short int int16;
 
 // Boolean constants for readability (if not already defined)
 
-#if !defined(true) || !defined(false)
+#if !defined(__cplusplus)
 	#define true 1
 	#define false 0
 #endif

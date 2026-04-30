@@ -1,24 +1,24 @@
 {
-  "name": "MicroBlocks",
-  "short_name": "MicroBlocks",
-  "description": "Simple, easy-to-use blocks programming language for the BBC micro:bit and other microcontrollers",
-  "version": "1.2.100",
-  "manifest_version": 2,
-  "permissions": [
-	"clipboardRead",
-	"clipboardWrite",
-	{"fileSystem": ["write"]},
-	"fileSystem",
-	"fullscreen",
-	"serial",
-	"storage"
-  ],
-  "offline_enabled": true,
-  "app": {
-    "background": { "scripts": ["background.js"] }
-  },
-  "icons": { "16": "MicroBlocksIcon16.png", "128": "MicroBlocksIcon128.png" },
-  "file_handlers": {
-	"microblocks_project": { "extensions": ["ubp"] }
-  }
+	"name": "MicroBlocks",
+	"short_name": "MicroBlocks",
+	"description": "Simple, easy-to-use blocks programming language for the BBC micro:bit and other microcontrollers",
+	"version": "1.2.100",
+	"manifest_version": 2,
+	"permissions": [
+		"clipboardRead",
+		"clipboardWrite",
+		{"fileSystem": ["write"]},
+		"fileSystem",
+		"fullscreen",
+		"serial",
+		"storage"
+	],
+	"offline_enabled": true,
+	"app": {
+		"background": { "scripts": ["background.js"] }
+	},
+	"icons": { "16": "MicroBlocksIcon16.png", "128": "MicroBlocksIcon128.png" },
+	"file_handlers": {
+		"microblocks_project": { "extensions": ["ubp"] }
+	}
 }

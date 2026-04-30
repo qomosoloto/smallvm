@@ -104,7 +104,7 @@ static void receiveFile(int id, char *fileName) {
 }
 
 static void sendFile(int id, char *fileName) {
-	const int chunkSize = 960;
+	const int chunkSize = 935;
 	int byteIndex = 0;
 	char buf[1024];
 
@@ -116,6 +116,7 @@ static void sendFile(int id, char *fileName) {
 		writeInt(id, &buf[0]);
 		writeInt(byteIndex, &buf[4]);
 		waitAndSendMessage(FileChunkMsg, 0, byteCount + 8, buf);
+ 		deferIDEDisconnect();
 		byteIndex += byteCount;
 	}
 
@@ -124,6 +125,7 @@ static void sendFile(int id, char *fileName) {
 	writeInt(byteIndex, &buf[4]);
 	waitAndSendMessage(FileChunkMsg, 0, 8, buf);
 	file.close();
+	deferIDEDisconnect();
 }
 
 static void sendFileInfo(char *fileName, int fileSize, int entryIndex) {
@@ -168,6 +170,8 @@ static void sendFileList() {
 			}
 		}
 	#endif
+	fileName[0] = 0; // make empty
+	sendFileInfo(fileName, 0, 0);
 }
 
 void processFileMessage(int msgType, int dataSize, char *data) {

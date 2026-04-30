@@ -1,7 +1,7 @@
 module Turtle Output
 author MicroBlocks
-version 1 4 
-depends TFT 
+version 1 5 
+depends _TFT 
 description 'Draw with turtle geometry on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1, (discontinued) IoT-Bus, or Boardie.
 
 Home is the center of the screen.

@@ -24,8 +24,8 @@ for i 37 {
 
 module Pluck Output
 author MicroBlocks
-version 1 1 
-depends Tone 
+version 1 2 
+depends _Tone 
 description 'Uses a simple algorithm to synthesize a plucked-string sound similar to an acoustic guitar (see https://en.wikipedia.org/wiki/Karplus–Strong_string_synthesis).
 
 Note: This library does NOT work on the original micro:bit or Calliope mini!
@@ -139,7 +139,7 @@ to setPluckPin pin {
 
 module Tone Output
 author MicroBlocks
-version 1 9 
+version 1 10 
 tags tone sound music audio note speaker 
 choices tone_NoteName 'nt;c' 'nt;c#' 'nt;d' 'nt;d#' 'nt;e' 'nt;f' 'nt;f#' 'nt;g' 'nt;g#' 'nt;a' 'nt;a#' 'nt;b' 
 description 'Audio tone generation. Make music with MicroBlocks!
@@ -256,6 +256,8 @@ to 'attach buzzer to pin' pinNumber {
       _tonePin = 25
     } ((boardType) == 'D1-Mini') {
       _tonePin = 12
+    } ((boardType) == 'CodingBox') {
+      _tonePin = 32
     } else {
       _tonePin = -1
     }

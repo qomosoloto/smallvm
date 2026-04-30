@@ -255,6 +255,11 @@ method fixLayout Block {
 			elem = (last each)
 			if (isClass elem 'CommandSlot') {
 				blockWidth = (max blockWidth (56 * scale)) // min size for "forever" and "if"
+				if (and (notNil expression) ('if' == (primName expression)) ((count expression) > 8)) {
+					// expanded "if" block; adjust width for translated "else" label
+					widthOfElse = (width (morph (labelText this (localized 'else'))))
+					blockWidth = (max blockWidth (widthOfElse + (7 * scale))) // min size for "if"
+				}
 			} else {
 				blockWidth = ((max blockWidth ((right (fullBounds (morph elem))) - left)))
 			}
@@ -315,7 +320,7 @@ method fixLayout Block {
 		setHeight (bounds morph) (+ blockHeight (* scale border 4) extraSpace)
 	}
 
-	if ((localized 'RTL') == 'true') { fixLayoutRTL this }
+	if (isRTL (authoringSpecs)) { fixLayoutRTL this }
 
 	nb = (next this)
 	if (notNil nb) {
@@ -599,9 +604,11 @@ method aboutToBeGrabbed Block {
 	removeStackPart (morph tb)
 	removeHighlight (morph tb)
 
-	if (or
-		(commandKeyDown (keyboard page))
-		(controlKeyDown (keyboard page))
+	if (and
+			(or
+				(commandKeyDown (keyboard page))
+				(controlKeyDown (keyboard page)))
+			(not (isPrototypeHat this))
 	) {
 		// duplicate all with control + grab
 		dup = (duplicate this)
@@ -1000,6 +1007,7 @@ method contextMenu Block {
 		addItem menu 'rename...' 'userRenameVariable'
 		addLine menu
 	}
+
 	addItem menu 'duplicate' 'grabDuplicate' 'duplicate this block'
 	if (and ('reporter' != type) (notNil (next this))) {
 		addItem menu 'duplicate all' 'grabDuplicateAll' 'duplicate this block and all blocks below it'
@@ -1009,6 +1017,11 @@ method contextMenu Block {
 		addItem menu 'extract block' 'extractBlock' 'pull out this block'
 	}
 	addLine menu
+	if (isVariadic this) {
+		if (canExpand this) {addItem menu 'expand' 'expand'}
+		if (canCollapse this) {addItem menu 'collapse' 'collapse'}
+		addLine menu
+	}
 	if (hasHelpEntryFor pe this) {
 		addItem menu 'help' (action 'openHelp' pe this) 'show help for this block in a browser'
 		addLine menu
@@ -1024,6 +1037,10 @@ method contextMenu Block {
 	}
 	if (devMode) {
 		addLine menu
+		if (isCallable this) {
+			addItem menu 'copy callable name' 'copyCallableName' 'copy this block''s name for use in a "call" block'
+			addLine menu
+		}
 		addItem menu 'show instructions' (action 'showInstructions' (smallRuntime) this)
 		addItem menu 'show compiled bytes' (action 'showCompiledBytes' (smallRuntime) this)
 		if (and isInPalette (notNil (functionNamed (project pe) (primName expression)))) {
@@ -1203,13 +1220,24 @@ method extractBlock Block whileGrabbing {
 	if (not whileGrabbing) { grabTopLeft morph }
 }
 
+method isCallable Block {
+	primName = (primName expression)
+	return (or
+		(notNil (functionNamed (project (findProjectEditor)) primName))
+		(and (beginsWith primName '[') (endsWith primName ']')))
+}
+
+method copyCallableName Block {
+	setClipboard (primName expression)
+}
+
 method copyToClipboard Block {
 	setClipboard (scriptText this)
 }
 
 method copyToClipboardAsURL Block {
 	setClipboard (join
-		'https://microblocks.fun/run/microblocks.html#scripts='
+		'https://microblocksfun.cn/run/microblocks.html#scripts='
 		(urlEncode (scriptText this) true)
 	)
 }
@@ -1280,7 +1308,11 @@ method exportAsImageScaled Block result isError fName {
 	setGlobal 'blockScale' scale
 
 	if (notNil (function this)) {
+		blockDef = (handler (first (parts morph)))
 		scaledScript = (scriptForFunction (function this))
+		if (detailsHidden blockDef) {
+			hideDetails (editedDefinition scaledScript) // collapse function definition
+		}
 	} else {
 		scaledScript = (toBlock (expression this))
 	}
@@ -1646,7 +1678,13 @@ method labelText Block aString {
 
 	if (and (notNil blockSpec) ('comment' == (blockOp blockSpec))) { labelColor = (gray 80) }
 	if isSVG {
-		return (newSVGImage (substring aString 6) labelColor color scale)
+		colorIndex = (findSubstring '#' aString 6)
+		if (colorIndex > 0) {
+			labelColor = (colorHex (substring aString (colorIndex + 1)))
+		} else {
+			colorIndex = ((count aString) + 1)
+		}
+		return (newSVGImage (substring aString 6 (colorIndex - 1)) labelColor color scale)
 	}
 	if ('Linux' == (platform)) {
 		fontName = 'Noto Sans Bold'
@@ -2235,9 +2273,11 @@ method deleteObsolete Block {
 				(global 'page')
 				nil
 				(join
-					'This block is still being used in '
+					(localized 'This block is still being used in')
+					' '
 					(count (allEntries finder))
-					' scripts or functions.'
+					' '
+					(localized 'scripts or functions.')
 					(newline)
 					(newline)
 					'Are you sure you want to remove this obsolete block definition?'
@@ -2261,9 +2301,11 @@ method deleteBlockDefinition Block {
 	find finder 'users'
 	if (notEmpty (allEntries finder)) {
 		confirmation = (join
-			'This block is still being used in '
+			(localized 'This block is still being used in')
+			' '
 			(count (allEntries finder))
-			' scripts or functions.'
+			' '
+			(localized 'scripts or functions.')
 			(newline)
 			(newline)
 			confirmation

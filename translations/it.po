@@ -3,8 +3,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: interest@microblocks.fun\n"
 "POT-Creation-Date: 2025-01-01 18:45+0200\n"
-"PO-Revision-Date: 2025-01-13 13:19+0000\n"
-"Last-Translator: Michele Zaffalon <michele.zaffalon@gmail.com>\n"
+"PO-Revision-Date: 2025-07-16 13:38+0000\n"
+"Last-Translator: Bernat Romagosa <bernat@romagosa.work>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/microblocks/ide/"
 "it/>\n"
 "Language: it\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.10-dev\n"
+"X-Generator: Weblate 5.13-dev\n"
 
 #. "Output" blocks category label
 msgid "cat;Output"
@@ -97,7 +97,7 @@ msgstr "connesso all'IDE"
 
 #. "Pins" blocks category label
 msgid "cat;Pins"
-msgstr "pins"
+msgstr "Pins"
 
 #. Block in Pins category
 msgid "read digital pin _"
@@ -133,9 +133,8 @@ msgid "cat;Control"
 msgstr "Controllo"
 
 #. Block in Control category
-#, fuzzy
 msgid "when started"
-msgstr "quando partito"
+msgstr "all'avvio"
 
 #. Block in Control category
 msgid "when button _ pressed"
@@ -211,7 +210,7 @@ msgstr "intervallo da _ a _"
 
 #. Block in Control category
 msgid "by _"
-msgstr ""
+msgstr "da _"
 
 #. Block in Control category
 msgid "for _ in _ _"
@@ -243,7 +242,7 @@ msgstr "argomento _ default _"
 
 #. Block in Control category
 msgid "exit loop"
-msgstr ""
+msgstr "esci dal ciclo"
 
 #. Example default value for the ( arg _ default _ ) block
 msgid "default"
@@ -279,15 +278,15 @@ msgstr "valore assoluto _"
 
 #. Block in Operators category
 msgid "min _ _"
-msgstr "minimo _"
+msgstr "minimo _ _"
 
 #. Block in Operators category
 msgid "max _ _"
-msgstr "massimo _"
+msgstr "massimo _ _"
 
 #. Block in Operators category
 msgid "random _ to _"
-msgstr ""
+msgstr "casuale da _ a _"
 
 #. Block in Operators category
 msgid "not _"
@@ -437,7 +436,7 @@ msgstr "copia _ da _"
 #. Example value for the ( copy (smiles) from 2 > ) block, which will become "miles" when run.
 #. You could think of a word that still has meaning when you remove its first character in your language.
 msgid "smiles"
-msgstr ""
+msgstr "porto"
 
 #. Block in Data category
 #, fuzzy
@@ -486,7 +485,7 @@ msgstr "unaListaByteOppureStringa"
 
 #. Block in Data category
 msgid "with all _"
-msgstr ""
+msgstr "con tutti _"
 
 #. Block in Data category
 msgid "free memory"
@@ -533,7 +532,7 @@ msgstr "Aggiungi un blocco reporter"
 
 #. Make a block dialog
 msgid "Enter function name:"
-msgstr ""
+msgstr "Inserisci il nome della funzione:"
 
 #. "Comm" blocks category label
 msgid "cat;Comm"
@@ -662,7 +661,7 @@ msgstr "ha supporto WiFi"
 #. Primitive block. Mostly hidden from end users.
 #, fuzzy
 msgid "start WiFi _ password _"
-msgstr "comincia WiFi _ password _"
+msgstr "attiva WiFi _ password _"
 
 #. Primitive block. Mostly hidden from end users.
 msgid "stop WiFi"
@@ -714,15 +713,15 @@ msgstr "radio tipo ultimo messaggio"
 
 #. Primitive block. Mostly hidden from end users.
 msgid "radio set group _ (0-255)"
-msgstr ""
+msgstr "gruppo radio _ (0-255)"
 
 #. Primitive block. Mostly hidden from end users.
 msgid "radio set channel (0-83) _"
-msgstr ""
+msgstr "canale radio _ (0-83)"
 
 #. Primitive block. Mostly hidden from end users.
 msgid "radio set power (0-7) _"
-msgstr ""
+msgstr "potenza radio _ (0-7)"
 
 #. Primitive block. Mostly hidden from end users.
 msgid "radio last signal strength"
@@ -738,7 +737,7 @@ msgstr "radio invia pacchetto _"
 
 #. Primitive block. Mostly hidden from end users.
 msgid "disable radio"
-msgstr ""
+msgstr "disabilita radio"
 
 #. "Basic Sensors" library label.
 msgid "Basic Sensors"
@@ -746,35 +745,35 @@ msgstr "Sensori Base"
 
 #. Block in Basic Sensors library
 msgid "tilt x"
-msgstr ""
+msgstr "inclinazione x"
 
 #. Block in Basic Sensors library
 msgid "tilt y"
-msgstr ""
+msgstr "inclinazione y"
 
 #. Block in Basic Sensors library
 msgid "tilt z"
-msgstr ""
+msgstr "inclinazione z"
 
 #. Block in Basic Sensors library
 msgid "acceleration"
-msgstr ""
+msgstr "accelerazione"
 
 #. Block in Basic Sensors library
 msgid "light level"
-msgstr ""
+msgstr "intensità della luce"
 
 #. Block in Basic Sensors library
 msgid "temperature (°C)"
-msgstr ""
+msgstr "temperatura (°C)"
 
 #. Block in Basic Sensors library
 msgid "magnetic field"
-msgstr ""
+msgstr "campo magnetico"
 
 #. Block in Basic Sensors library
 msgid "set acceleration range _ g = 100"
-msgstr ""
+msgstr "imposta intervallo accelerazione _ g = 100"
 
 #. NeoPixel library label
 msgid "NeoPixel"
@@ -782,123 +781,123 @@ msgstr ""
 
 #. NeoPixel library block
 msgid "set NeoPixels _ _ _ _ _ _ _ _ _ _"
-msgstr ""
+msgstr "imposta NeoPixels _ _ _ _ _ _ _ _ _ _"
 
 #. NeoPixel library block
 msgid "clear NeoPixels"
-msgstr ""
+msgstr "spegni NeoPixels"
 
 #. NeoPixel library block
 msgid "set NeoPixel _ color _"
-msgstr ""
+msgstr "imposta NeoPixel _ colore _"
 
 #. NeoPixel library block
 msgid "set all NeoPixels color _"
-msgstr ""
+msgstr "colore di tutti i NeoPixels _"
 
 #. NeoPixel library block
 msgid "rotate NeoPixels by _"
-msgstr ""
+msgstr "ruota NeoPixels di _"
 
 #. NeoPixel library block
 msgid "brighten NeoPixel _ by _"
-msgstr ""
+msgstr "aumenta luminosità NeoPixel _ di _"
 
 #. NeoPixel library block
 msgid "brighten all NeoPixels by _"
-msgstr ""
+msgstr "aumenta luminosità tutti i NeoPixel di _"
 
 #. NeoPixel library block
 msgid "shift NeoPixel _ color by _"
-msgstr ""
+msgstr "cambia il colore del NeoPixel _ di _"
 
 #. NeoPixel library block
 msgid "shift all NeoPixel colors by _"
-msgstr ""
+msgstr "cambia colore di tutti i NeoPixel di _"
 
 #. NeoPixel library block
 msgid "attach _ LED NeoPixel strip to pin _"
-msgstr ""
+msgstr "connetti _ LED NeoPixel al pin _"
 
 #. NeoPixel library block
 msgid "has white _"
-msgstr ""
+msgstr "ha il bianco _"
 
 #. NeoPixel library block
 msgid "PIR"
-msgstr ""
+msgstr "PIR"
 
 #. NeoPixel library block
 msgid "PIR at pin _ detected movement"
-msgstr ""
+msgstr "PIR al pin _ rileva movimento"
 
 #. NeoPanel library label
 msgid "NeoPanel"
-msgstr ""
+msgstr "NeoPanel"
 
 #. NeoPanel library block
 msgid "attach NeoPixel panel width _ height _ at pin _"
-msgstr ""
+msgstr "connetti pannello NeoPixel largo _ alto _ al pin _"
 
 #. NeoPanel library block
 msgid "NeoPanel set x _ y _ color _"
-msgstr ""
+msgstr "NeoPanel imposta x _ y _ colore _"
 
 #. NeoPanel library block
 msgid "NeoPanel fill column _ color _"
-msgstr ""
+msgstr "NeoPanel riempi colonna _ colore _"
 
 #. NeoPanel library block
 msgid "NeoPanel fill row _ color _"
-msgstr ""
+msgstr "NeoPanel riempi riga _ colore _"
 
 #. NeoPanel library block
 msgid "NeoPanel fill rectangle x _ y _ width _ height _ color _"
-msgstr ""
+msgstr "NeoPanel riempi rettangolo x _ y _ largo _ alto _ colore _"
 
 #. NeoPanel library block
 msgid "NeoPanel draw text _ at x _ y _ color _"
-msgstr ""
+msgstr "NeoPanel scrivi _ a x _ y _ colore _"
 
 #. NeoPanel library block
 msgid "NeoPanel draw BMP file _ at x _ y _"
-msgstr ""
+msgstr "NeoPanel mostra file BMP _ a x _ y _"
 
 #. Microphone library label
 msgid "Microphone"
-msgstr ""
+msgstr "Microfono"
 
 #. Microphone library block
 msgid "microphone"
-msgstr ""
+msgstr "microfono"
 
 #. Microphone library block
 msgid "turn on microphone"
-msgstr ""
+msgstr "accendi microfono"
 
 #. Microphone library block
 msgid "loudness"
-msgstr ""
+msgstr "volume"
 
 #. Microphone library block
 msgid "clap count"
-msgstr ""
+msgstr "conto battiti"
 
 #. Microphone library block
 msgid "set clap threshold _"
-msgstr ""
+msgstr "imposta soglia battito _"
 
 #. Microphone library block
 msgid "estimate clap threshold"
-msgstr ""
+msgstr "rileva soglia battito"
 
 #. Citilab ED1 Stepper Motor library label
 msgid "ED1 Stepper Motor"
-msgstr ""
+msgstr "ED1 Motore passo-passo"
 
 #. Citilab ED1 Stepper Motor library block
 msgid "move motor _ _ steps _"
-msgstr ""
+msgstr "muovi motore _ _ passi _"
 
 #. Citilab ED1 Stepper Motor library block
 msgid "move motor 1 _ and motor 2 _ _ steps"

@@ -9,6 +9,7 @@
 // Revised by John Maloney, November 2018
 // Revised by Bernat Romagosa & John Maloney, March 2020
 // MQTT primitives added by Wenjie Wu with help from Tom Ming
+// HTTPS support added by Josep Ferràndiz, January 2026
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,13 +29,19 @@
 
 #if defined(ESP8266)
 	#include <ESP8266WiFi.h>
+	#include <ESP8266mDNS.h>
 	#include <WiFiUdp.h>
+	#include <espnow.h>
 #elif defined(ARDUINO_ARCH_ESP32)
 	#include <WiFi.h>
+	#include <ESPmDNS.h>
 	#include <WebSocketsServer.h>
+	#include <esp_now.h>
+	#include <esp_wifi.h> // only for esp_wifi_set_channel()
 #elif defined(PICO_WIFI)
 	#include <WiFi.h>
 	#include <WebSocketsServer.h>
+	#include "lwip/apps/mdns.h"
 	extern bool __isPicoW;
 	#undef NO_WIFI
 	#define NO_WIFI() (!__isPicoW)
@@ -48,11 +55,16 @@
 
 #include "interp.h" // must be included *after* ESP8266WiFi.h
 
+#if (defined(ESP8266) || defined(ARDUINO_ARCH_ESP32))
+	#define ESP_NOW 1
+#endif
+
 #if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(USE_WIFI101) || defined(PICO_WIFI)
 
 static char connecting = false;
 static char serverStarted = false;
 static char allowBLE_and_WiFi = true;
+static char esp_now_started = false;
 
 int serverPort = 80;
 WiFiServer server(serverPort);
@@ -81,8 +93,9 @@ STRING_OBJ_CONST("Failed; bad password?") statusFailed;
 STRING_OBJ_CONST("Unknown network") statusUnknownNetwork;
 STRING_OBJ_CONST("") noDataString;
 
-// Empty byte array constant
-uint32 emptyByteArray = HEADER(ByteArrayType, 0);
+// Empty byte array and string constants
+static uint32 emptyByteArray = HEADER(ByteArrayType, 0);
+static uint32 emptyMBString[2] = { HEADER(StringType, 1), 0 };
 
 static OBJ primHasWiFi(int argCount, OBJ *args) {
 	return NO_WIFI() ? falseObj : trueObj;
@@ -148,6 +161,7 @@ static OBJ primStartWiFi(int argCount, OBJ *args) {
 	#endif
 
 	connecting = true;
+	esp_now_started = false;
 	return falseObj;
 }
 
@@ -159,6 +173,7 @@ static OBJ primStopWiFi(int argCount, OBJ *args) {
 		WiFi.mode(WIFI_OFF);
 	#endif
 	connecting = false;
+	esp_now_started = false;
 	return falseObj;
 }
 
@@ -269,6 +284,50 @@ static OBJ primGetMAC(int argCount, OBJ *args) {
 	#endif
 }
 
+#if PICO_WIFI
+	static int mdnsInitialized = false;
+#endif
+
+static OBJ primSetDomainName(int argCount, OBJ *args) {
+	if (!isConnectedToWiFi()) return fail(wifiNotConnected);
+	if ((argCount < 1) || !IS_TYPE(args[0], StringType)) return fail(needsStringError);
+
+	// Copy arg into mdsnName omitting illegal characters.
+	// mDNS names include only letters, digits, and hyphens and cannot start or end with a hyphen.
+	char mdsnName[64];
+	char *dst = mdsnName;
+	char *src = obj2str(args[0]);
+	int count = strlen(src);
+	if (count > 63) count = 63;
+	for (int i = 0; i < count; i++) {
+		char ch = src[i];
+		if ((('a' <= ch) && (ch <= 'z')) ||
+			(('A' <= ch) && (ch <= 'Z')) ||
+			(('0' <= ch) && (ch <= '9')) ||
+			('-' == ch)) {
+				*dst++ = ch;
+		}
+	}
+	*dst = 0; // null terminator
+
+	#if defined(PICO_WIFI)
+		if (!mdnsInitialized) { // initialize before first use
+			mdnsInitialized = true;
+			mdns_resp_init();
+			mdns_resp_add_netif(netif_default, mdsnName);
+		} else {
+			mdns_resp_rename_netif(netif_default, mdsnName);
+		}
+	#elif defined(USE_WIFI101)
+		// do nothing; MDNS not yet supported on WiFi101
+		// if needed, see https://github.com/arduino-libraries/ArduinoMDNS
+	#else
+		MDNS.end();
+		MDNS.begin(mdsnName);
+	#endif
+	return falseObj;
+}
+
 // HTTP Server
 
 static void startHttpServer() {
@@ -333,6 +392,12 @@ static OBJ primHttpServerGetRequest(int argCount, OBJ *args) {
 			serverPort = port;
 		}
 	}
+
+	#if defined(ESP8266)
+		// MDNS.update() must be called periodically on ESP 8266
+		// This takes care of that when running a MicroBlocks HTTP server.
+		MDNS.update();
+	#endif
 
 	if (!serverHasClient()) return noData; // no client connection
 
@@ -424,30 +489,47 @@ static OBJ primRespondToHttpRequest(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-// HTTP Client
+// HTTP/HTTPS client support (client side only; HTTP server unchanged)
+//
+// HTTPS is supported without certificates by using WiFiClientSecure::setInsecure(),
+// which avoids storing CA certs but does NOT validate the server certificate.
+// WARNING: setInsecure() disables certificate validation (MITM risk).
 
-WiFiClient httpClient;
+static WiFiClient httpClient;
+static Client *activeHttpClient = &httpClient;
+
+#if defined(ARDUINO_ARCH_ESP32) || defined(ESP8266)
+	static WiFiClientSecure httpsClient;
+	#define HAS_HTTPS_CLIENT 1
+#else
+	#define HAS_HTTPS_CLIENT 0
+#endif
 
 static OBJ primHttpConnect(int argCount, OBJ *args) {
-	// Connect to an HTTP server and port.
+	// Connect to an HTTP server. The port number is optional.
 
 	if (NO_WIFI()) return fail(noWiFi);
+	if (argCount < 1) return fail(notEnoughArguments);
+	if (!IS_TYPE(args[0], StringType)) return fail(needsStringError);
 
-	char* host = obj2str(args[0]);
-	int port = ((argCount > 1) && isInt(args[1])) ? obj2int(args[1]) : 80;
+	const char* host = obj2str(args[0]);
+	uint16_t port = 80;
+	if (argCount > 1) {
+		if (isInt(args[1])) port = obj2int(args[1]);
+		if (IS_TYPE(args[1], StringType)) port = atoi(obj2str(args[1]));
+	}
+
+	if (activeHttpClient->connected()) activeHttpClient->stop(); // in case previous connection is still active
+
 	uint32 start = millisecs();
 	const int timeout = 3000;
 	int ok;
-	#ifdef ARDUINO_ARCH_ESP32
-		ok = httpClient.connect(host, port, timeout);
-	#else
-		httpClient.setTimeout(timeout);
-		ok = httpClient.connect(host, port);
-	#endif
 
-	#if defined(ESP8266) // || defined(ARDUINO_ARCH_ESP32)
-		// xxx fais on ESP32 due to an error in their code
-		client.setNoDelay(true);
+	httpClient.setTimeout(timeout);
+	ok = httpClient.connect(host, port);
+
+	#if defined(ESP8266)
+		httpClient.setNoDelay(true); // does not work on ESP32
 	#endif
 
 	while (ok && !httpClient.connected()) { // wait for connection to be fully established
@@ -457,6 +539,58 @@ static OBJ primHttpConnect(int argCount, OBJ *args) {
 		if (elapsed > timeout) break;
 		delay(1);
 	}
+
+	if (ok && httpClient.connected()) {
+		activeHttpClient = &httpClient;
+	} else {
+		httpClient.stop();
+	}
+	processMessage(); // process messages now
+	return falseObj;
+}
+
+static OBJ primHttpSecureConnect(int argCount, OBJ *args) {
+	// Connect to an HTTPS server. The port number is optional.
+
+	if (NO_WIFI()) return fail(noWiFi);
+	if (!HAS_HTTPS_CLIENT) return fail(primitiveNotImplemented);
+	if (argCount < 1) return fail(notEnoughArguments);
+	if (!IS_TYPE(args[0], StringType)) return fail(needsStringError);
+
+	const char* host = obj2str(args[0]);
+	uint16_t port = 443;
+	if (argCount > 1) {
+		if (isInt(args[1])) port = obj2int(args[1]);
+		if (IS_TYPE(args[1], StringType)) port = atoi(obj2str(args[1]));
+	}
+
+	if (activeHttpClient->connected()) activeHttpClient->stop(); // in case previous connection is still active
+
+	#if HAS_HTTPS_CLIENT
+		httpsClient.setInsecure();
+		activeHttpClient = &httpsClient;
+	#endif
+
+	uint32 start = millisecs();
+	const int timeout = 5000; // increased from 3 to 5 secs to try to reduce failed connections
+	int ok;
+
+	activeHttpClient->setTimeout(timeout);
+	ok = activeHttpClient->connect(host, port);
+
+	while (ok && !activeHttpClient->connected()) {
+		processMessage(); // process messages now
+		uint32 now = millisecs();
+		uint32 elapsed = (now >= start) ? (now - start) : now;
+		if (elapsed > timeout) break;
+		delay(1);
+	}
+
+	if (!(ok && activeHttpClient->connected())) {
+		activeHttpClient->stop();
+		activeHttpClient = &httpClient;
+	}
+
 	processMessage(); // process messages now
 	return falseObj;
 }
@@ -467,39 +601,60 @@ static OBJ primHttpIsConnected(int argCount, OBJ *args) {
 
 	if (NO_WIFI()) return fail(noWiFi);
 
-	return (httpClient.connected() || httpClient.available()) ? trueObj : falseObj;
+	return (activeHttpClient->connected() || activeHttpClient->available()) ? trueObj : falseObj;
 }
 
 static OBJ primHttpRequest(int argCount, OBJ *args) {
-	// Send an HTTP request. Must have first connected to the server.
-
 	if (NO_WIFI()) return fail(noWiFi);
+	if (!activeHttpClient->connected()) return falseObj;
 
-	char* reqType = obj2str(args[0]);
-	char* host = obj2str(args[1]);
-	char* path = obj2str(args[2]);
-	char request[256];
-	sprintf(request,
-			"%s /%s HTTP/1.0\r\n\
-Host: %s\r\n\
-Connection: close\r\n\
-User-Agent: MicroBlocks\r\n\
-Accept: */*\r\n",
-			reqType,
-			path,
-			host);
-	if ((argCount > 3) && IS_TYPE(args[3], StringType)) {
-		httpClient.write(request, strlen(request));
-		char length_str[50];
-		char* body = obj2str(args[3]);
-		int content_length = strlen(body);
-		httpClient.write("Content-Type: text/plain\r\n", 26);
-		sprintf(length_str, "Content-Length: %i\r\n\r\n", content_length);
-		httpClient.write(length_str, strlen(length_str));
-		httpClient.write(body, content_length);
+	const char *reqType = obj2str(args[0]);
+	const char *host	= obj2str(args[1]);
+	const char *path	= obj2str(args[2]);
+	const char *body = ((argCount > 3) && IS_TYPE(args[3], StringType)) ? obj2str(args[3]) : "";
+
+	activeHttpClient->write((const uint8_t *) reqType, strlen(reqType));
+	activeHttpClient->write((const uint8_t *) " ", 1);
+
+	if (!path || !path[0]) {
+		activeHttpClient->write((const uint8_t *) "/", 1);
 	} else {
-		strcat(request, "\r\n");
-		httpClient.write(request, strlen(request));
+		if (path[0] != '/') activeHttpClient->write((const uint8_t *) "/", 1);
+		activeHttpClient->write((const uint8_t *) path, strlen(path));
+	}
+
+	// Protocol
+	activeHttpClient->write((const uint8_t *) " HTTP/1.0\r\n", 11);
+
+	// Host
+	activeHttpClient->write((const uint8_t *) "Host: ", 6);
+	activeHttpClient->write((const uint8_t *) host, strlen(host));
+	activeHttpClient->write((const uint8_t *) "\r\n", 2);
+
+	// Other Headers
+	const char *headers =
+	"Connection: close\r\n"
+	"User-Agent: MicroBlocks\r\n"
+	"Accept: */*\r\n";
+	activeHttpClient->write((const uint8_t *) headers, strlen(headers));
+
+	// Body
+	int body_length = strlen(body);
+	if ((body_length > 0) && (strcmp(reqType, "GET") != 0)) {
+		// NOTE: HTTPS fails if the GET request includes a body.
+		// NOTE: WiFiClientSecure.write() fails with a zero-length string/data.
+
+		// Content-Type
+		activeHttpClient->write((const uint8_t *) "Content-Type: text/plain\r\n", 26);
+
+		// Content-Length
+		char lenStr[50];
+		snprintf(lenStr, sizeof(lenStr), "Content-Length: %d\r\n\r\n", body_length);
+		activeHttpClient->write((const uint8_t *) lenStr, strlen(lenStr));
+		activeHttpClient->write((const uint8_t *) body, body_length);
+	} else {
+		// Close headers if no body
+		activeHttpClient->write((const uint8_t *) "\r\n", 2);
 	}
 	return falseObj;
 }
@@ -510,12 +665,28 @@ static OBJ primHttpResponse(int argCount, OBJ *args) {
 	if (NO_WIFI()) return fail(noWiFi);
 
 	uint8_t buf[800];
-	int byteCount = httpClient.read(buf, 800);
+
+	int avail = activeHttpClient->available();
+	if (!avail) {
+		if (!activeHttpClient->connected()) {
+			activeHttpClient->stop();
+			activeHttpClient = &httpClient;
+		}
+		return (OBJ) &noDataString;
+	}
+	if (avail > 800) avail = 800;
+
+	int byteCount = activeHttpClient->readBytes(buf, avail);
 	if (!byteCount) return (OBJ) &noDataString;
 
 	OBJ result = newString(byteCount);
 	if (falseObj == result) return (OBJ) &noDataString; // out of memory
 	memcpy((uint8_t *) obj2str(result), buf, byteCount);
+
+	if (!activeHttpClient->connected() && (activeHttpClient->available() == 0)) {
+		activeHttpClient->stop();
+		activeHttpClient = &httpClient;
+	}
 	return result;
 }
 
@@ -724,9 +895,11 @@ static OBJ primGetIP(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primStartSSIDscan(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primGetSSID(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primGetMAC(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primSetDomainName(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpServerGetRequest(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primRespondToHttpRequest(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpConnect(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primHttpSecureConnect(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpIsConnected(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpRequest(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpResponse(int argCount, OBJ *args) { return fail(noWiFi); }
@@ -745,6 +918,189 @@ static OBJ primUDPRemotePort(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primWebSocketStart(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primWebSocketLastEvent(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primWebSocketSendToClient(int argCount, OBJ *args) { return fail(noWiFi); }
+
+#endif
+
+// ESP Now primitives
+
+#if defined(ESP_NOW)
+
+// MicroBlocks ESP Now header byte format: <version (3 bits)> <header byte count (5 bits)>
+#define ESP_NOW_HEADER_VERSION 1
+#define ESP_NOW_HEADER_LEN 2
+#define ESP_NOW_HEADER ((ESP_NOW_HEADER_VERSION << 5) | ESP_NOW_HEADER_LEN)
+
+// reserve the first N bytes of the 250 payload bytes for the MicroBlocks ESP Now header
+#define ESP_NOW_MAX_MSG (250 - ESP_NOW_HEADER_LEN)
+
+static volatile int esp_now_send_buffers = 10;
+static uint8_t broadcastAddress[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+
+static int esp_now_msg_bytecount = 0;
+static char esp_now_msg[250];
+static uint8_t esp_now_group = 255; // 255 is wildcard; receives messages from all groups
+
+// ESP Now send callback
+
+#if defined(ARDUINO_ARCH_ESP32)
+	void espNow_sendComplete(const uint8_t* mac_addr, esp_now_send_status_t status) {
+#else
+	void espNow_sendComplete(uint8_t* mac_addr, uint8_t status) {
+#endif
+	esp_now_send_buffers++;
+}
+
+// ESP Now receive callback
+
+#if defined(ARDUINO_ARCH_ESP32)
+	void espNow_receivedData(const uint8_t* mac_addr, const uint8_t* data, int length) {
+#else
+	void espNow_receivedData(uint8_t* mac_addr, uint8_t* data, uint8_t length) {
+#endif
+	if (esp_now_msg_bytecount > 0) return; // already have a message
+	if (data[0] != ESP_NOW_HEADER) return; // not a MicroBlocks message
+	if ((data[1] != esp_now_group) && (esp_now_group < 255)) return; // group mismatch and not wildcard group
+
+	// receive the message
+	esp_now_msg_bytecount = length - ESP_NOW_HEADER_LEN;
+	memcpy(esp_now_msg, data + ESP_NOW_HEADER_LEN, esp_now_msg_bytecount);
+}
+
+static void setWiFiChannel(int channel) {
+	// Set the WiFi channel. Assumes that ESP Now has been started.
+
+	// ensure WiFi is on
+	if (WiFi.status() != WL_CONNECTED) {
+		WiFi.mode(WIFI_STA);	// start the WiFi radio
+		WiFi.disconnect();		// ... but do not connect to an access point
+	}
+
+	#if defined(ESP8266)
+		wifi_set_channel(channel);
+	#else
+		esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
+	#endif
+
+	// update the broadcast peer with the new channel
+	esp_now_del_peer(broadcastAddress);
+	#if defined(ESP8266)
+		esp_now_add_peer(broadcastAddress, ESP_NOW_ROLE_SLAVE, channel, NULL, 0);
+	#elif defined(ARDUINO_ARCH_ESP32)
+		esp_now_peer_info_t peerInfo;
+		memset(&peerInfo, 0, sizeof(peerInfo));
+		memcpy(peerInfo.peer_addr, broadcastAddress, 6);
+		peerInfo.ifidx = (WIFI_AP == WiFi.getMode()) ? WIFI_IF_AP : WIFI_IF_STA;
+		peerInfo.channel = channel;
+		esp_now_add_peer(&peerInfo);
+	#endif
+}
+
+static void startESPNow() {
+	if (esp_now_started) return;
+
+	// ensure that the WiFi radio is on (must be turned on before calling esp_now_init())
+	if (WiFi.status() != WL_CONNECTED) {
+		WiFi.mode(WIFI_STA);	// start the WiFi radio
+		WiFi.disconnect();		// ... but do not connect to an access point
+	}
+
+	// initialize ESP-NOW
+	esp_now_deinit(); // in case it was already running...
+	if (esp_now_init() != 0) {
+		outputString("Failed to initialize ESP-NOW");
+		return;
+	}
+
+	// get the WiFi channel (default to channel 1)
+	int channel = (WL_CONNECTED == WiFi.status()) ? WiFi.channel() : 1;
+
+	// add broadcast peer
+	#if defined(ESP8266)
+		esp_now_set_self_role(ESP_NOW_ROLE_COMBO);
+		esp_now_add_peer(broadcastAddress, ESP_NOW_ROLE_SLAVE, channel, NULL, 0);
+	#elif defined(ARDUINO_ARCH_ESP32)
+		esp_now_peer_info_t peerInfo;
+		memset(&peerInfo, 0, sizeof(peerInfo));
+		memcpy(peerInfo.peer_addr, broadcastAddress, 6);
+		peerInfo.ifidx = (WIFI_AP == WiFi.getMode()) ? WIFI_IF_AP : WIFI_IF_STA;
+		peerInfo.channel = channel;
+		esp_now_add_peer(&peerInfo);
+	#endif
+
+	// add callbacks
+	esp_now_register_send_cb(espNow_sendComplete);
+	esp_now_register_recv_cb(espNow_receivedData);
+
+	esp_now_started = true;
+	reportNum("ESP Now started, channel", channel);
+}
+
+static OBJ primESPNowSend(int argCount, OBJ *args) {
+	if ((argCount < 1) || !IS_TYPE(args[0], StringType)) return falseObj;
+	char *msg = obj2str(args[0]);
+	int byteCount = strlen(msg);
+	if (byteCount > ESP_NOW_MAX_MSG) byteCount = ESP_NOW_MAX_MSG;
+
+	if (!esp_now_started) startESPNow();
+
+	if (esp_now_send_buffers < 1) {
+		return falseObj;
+	}
+	esp_now_send_buffers--;
+
+	uint8_t sendBuf[256];
+	sendBuf[0] = ESP_NOW_HEADER;
+	sendBuf[1] = esp_now_group;
+	memcpy(sendBuf + ESP_NOW_HEADER_LEN, msg, byteCount);
+
+	#if defined(ESP8266)
+		int rc = esp_now_send(broadcastAddress, sendBuf, ESP_NOW_HEADER_LEN + byteCount);
+	#elif defined(ARDUINO_ARCH_ESP32)
+		int rc = esp_now_send(broadcastAddress, sendBuf, ESP_NOW_HEADER_LEN + byteCount);
+	#endif
+
+	taskSleep(10);
+	return trueObj;
+}
+
+static OBJ primESPNowReceive(int argCount, OBJ *args) {
+	if (!esp_now_started) startESPNow();
+
+	if (esp_now_msg_bytecount == 0) return (OBJ) &emptyMBString; // no msg received
+
+	OBJ result = newStringFromBytes(esp_now_msg, esp_now_msg_bytecount);
+	esp_now_msg_bytecount = 0;
+	return result;
+}
+
+static OBJ primESPNowChannel(int argCount, OBJ *args) {
+	if (!esp_now_started) startESPNow();
+	return int2obj(WiFi.channel());
+}
+
+static OBJ primESPNowSetChannel(int argCount, OBJ *args) {
+	int channel = ((argCount > 0) && isInt(args[0])) ? obj2int(args[0]) : 1;
+	if (channel < 1) channel = 1;
+	if (channel > 13) channel = 13;
+
+	if (!esp_now_started) startESPNow();
+	setWiFiChannel(channel);
+	return falseObj;
+}
+
+static OBJ primESPNowGroup(int argCount, OBJ *args) {
+	return int2obj(esp_now_group);
+}
+
+static OBJ primESPNowSetGroup(int argCount, OBJ *args) {
+	if ((argCount > 0) && isInt(args[0])) {
+		int newGroup = obj2int(args[0]);
+		if (newGroup < 0) newGroup = 0;
+		if (newGroup > 255) newGroup = 255;
+		esp_now_group = newGroup;
+	}
+	return falseObj;
+}
 
 #endif
 
@@ -999,6 +1355,7 @@ static PrimEntry entries[] = {
 	{"allowWiFiAndBLE", primAllowWiFiAndBLE},
 	{"startWiFi", primStartWiFi},
 	{"stopWiFi", primStopWiFi},
+	{"setDomainName", primSetDomainName},
 	{"wifiStatus", primWiFiStatus},
 	{"myIPAddress", primGetIP},
 	{"startSSIDscan", primStartSSIDscan},
@@ -1007,6 +1364,7 @@ static PrimEntry entries[] = {
 	{"httpServerGetRequest", primHttpServerGetRequest},
 	{"respondToHttpRequest", primRespondToHttpRequest},
 	{"httpConnect", primHttpConnect},
+	{"httpSecureConnect", primHttpSecureConnect},
 	{"httpIsConnected", primHttpIsConnected},
 	{"httpRequest", primHttpRequest},
 	{"httpResponse", primHttpResponse},
@@ -1021,6 +1379,15 @@ static PrimEntry entries[] = {
 	{"webSocketStart", primWebSocketStart},
 	{"webSocketLastEvent", primWebSocketLastEvent},
 	{"webSocketSendToClient", primWebSocketSendToClient},
+
+	#if defined(ESP_NOW)
+	{"ESPNowSend", primESPNowSend},
+	{"ESPNowReceive", primESPNowReceive},
+	{"ESPNowChannel", primESPNowChannel},
+	{"ESPNowSetChannel", primESPNowSetChannel},
+	{"ESPNowGroup", primESPNowGroup},
+	{"ESPNowSetGroup", primESPNowSetGroup},
+	#endif
 
 	{"MQTTConnect", primMQTTConnect},
 	{"MQTTIsConnected", primMQTTIsConnected},

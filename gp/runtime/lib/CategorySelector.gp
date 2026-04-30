@@ -189,7 +189,7 @@ method justReceivedDrop CategorySelector aHandler {
 
 	// accept it if dropping onto the library list or onto the category list,
 	// but only if it's onto My Blocks
-	if (or intoLibrary intoMyBlocks){
+	if (or intoLibrary intoMyBlocks) {
 		block = (handler (at (parts (morph aHandler)) 2))
 		function = (function block)
 		for lib (values (libraries (project scripter))) {
@@ -227,4 +227,3 @@ method justReceivedDrop CategorySelector aHandler {
 	}
 	animateBackToOldOwner (hand (global 'page')) (morph aHandler) (action 'languageChanged' scripter)
 }
-

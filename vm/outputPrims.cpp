@@ -377,7 +377,122 @@ void updateMicrobitDisplay() {
 	displayCycle = (displayCycle + 1) % 5;
 }
 
-#elif defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_Mbits) || defined(STEAMaker)
+#elif defined(DUELink)
+
+#define DUELINK_HAS_LED_DISPLAY (IS_DUE_CINCO || IS_DUE_CLIPIT || IS_DUE_CHRONO)
+
+static int displaySnapshot = 0;
+static uint8 displayCycle = 0;
+static uint8 dueLEDInitialized = 0;
+static int rowPins[5];
+static int columnPins[5];
+
+static void initDUELedPins() {
+	if (IS_DUE_CLIPIT) {
+		rowPins[0] = mapDigitalPinNum(19);
+		rowPins[1] = mapDigitalPinNum(22);
+		rowPins[2] = mapDigitalPinNum(11);
+		rowPins[3] = mapDigitalPinNum(21);
+		rowPins[4] = mapDigitalPinNum(23);
+		columnPins[0] = mapDigitalPinNum(8);
+		columnPins[1] = mapDigitalPinNum(9);
+		columnPins[2] = mapDigitalPinNum(6);
+		columnPins[3] = mapDigitalPinNum(5);
+		columnPins[4] = mapDigitalPinNum(4);
+	} else if (IS_DUE_CHRONO) {
+		rowPins[0] = mapDigitalPinNum(7);
+		rowPins[1] = mapDigitalPinNum(5);
+		rowPins[2] = mapDigitalPinNum(0);
+		rowPins[3] = mapDigitalPinNum(8);
+		rowPins[4] = mapDigitalPinNum(6);
+		columnPins[0] = mapDigitalPinNum(9);
+		columnPins[1] = mapDigitalPinNum(19);
+		columnPins[2] = mapDigitalPinNum(18);
+		columnPins[3] = mapDigitalPinNum(4);
+		columnPins[4] = mapDigitalPinNum(3);
+	} else { // Cinco
+		rowPins[0] = mapDigitalPinNum(22);
+		rowPins[1] = mapDigitalPinNum(23);
+		rowPins[2] = mapDigitalPinNum(24);
+		rowPins[3] = mapDigitalPinNum(27);
+		rowPins[4] = mapDigitalPinNum(28);
+		columnPins[0] = mapDigitalPinNum(4);
+		columnPins[1] = mapDigitalPinNum(7);
+		columnPins[2] = mapDigitalPinNum(3);
+		columnPins[3] = mapDigitalPinNum(6);
+		columnPins[4] = mapDigitalPinNum(10);
+	}
+	dueLEDInitialized = true;
+}
+
+#define DISPLAY_BIT(n) (((displaySnapshot >> n) & 1) ? LOW : HIGH)
+
+static void turnDisplayOn() {
+	if (!DUELINK_HAS_LED_DISPLAY) return;
+	if (!dueLEDInitialized) initDUELedPins();
+
+	for (int i = 0; i < 5; i++) {
+		setPinMode(rowPins[i], INPUT);
+		setPinMode(columnPins[i], OUTPUT);
+	}
+}
+
+static void turnDisplayOff() {
+	if (!DUELINK_HAS_LED_DISPLAY) return;
+	if (!dueLEDInitialized) initDUELedPins();
+
+	for (int i = 0; i < 5; i++) {
+		setPinMode(columnPins[i], INPUT);
+		setPinMode(rowPins[i], INPUT);
+	}
+}
+
+static int updateLightLevel() { // placeholder
+	lightReadingRequested = false;
+	return true;
+}
+
+void updateMicrobitDisplay() {
+	// Update the display by cycling through the three columns, turning on the rows
+	// for each column. To minimize display artifacts, the display bits are snapshot
+	// at the start of each cycle and the snapshot is not changed during the cycle.
+
+	if (!DUELINK_HAS_LED_DISPLAY) return;
+	if (disableLEDDisplay) return;
+	if (!dueLEDInitialized) initDUELedPins();
+
+	if (!microBitDisplayBits && !displaySnapshot) { // display is off
+		if (lightReadingRequested) updateLightLevel();
+		return;
+	}
+
+	if (0 == displayCycle) { // starting a new cycle
+		if (lightReadingRequested && !updateLightLevel()) return; // reading light level
+
+		if (displaySnapshot && !microBitDisplayBits) { // display just became off
+			displaySnapshot = 0;
+			turnDisplayOff();
+			return;
+		}
+
+		// take a snapshot of the display bits for the next cycle
+		displaySnapshot = microBitDisplayBits;
+		turnDisplayOn();
+	}
+	int previousRow = (displayCycle > 0) ? (displayCycle - 1) : 4;
+	setPinMode(rowPins[previousRow], INPUT); // turn off previous row
+
+	for (int i = 0; i < 5; i++) {
+		digitalWrite(columnPins[i], DISPLAY_BIT((5 * displayCycle) + i));
+	}
+	setPinMode(rowPins[displayCycle], OUTPUT);
+	digitalWrite(rowPins[displayCycle], HIGH);
+	displayCycle = (displayCycle + 1) % 5;
+}
+
+#elif defined(HAS_LED_MATRIX)
+
+	#define HAS_NEOPIXEL_MATRIX
 
 	static void updateNeoPixelDisplay(); // forward reference
 
@@ -406,12 +521,12 @@ void updateMicrobitDisplay() {
 // Display Primitives for micro:bit/Calliope (noops on other boards)
 
 OBJ primMBSetColor(int argCount, OBJ *args) {
-	mbDisplayColor = obj2int(args[0]);
-#if defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_Mbits) || defined(STEAMaker)
-	displaySnapshot = 0; // update the display on the next cycle
-#else
-	tftSetHugePixelBits(microBitDisplayBits);
-#endif
+	mbDisplayColor = evalInt(args[0]);
+	#if defined(HAS_NEOPIXEL_MATRIX)
+		displaySnapshot = -1; // update the display on the next cycle
+	#else
+		tftSetHugePixelBits(microBitDisplayBits);
+	#endif
 	return falseObj;
 }
 
@@ -424,7 +539,12 @@ OBJ primMBDisplay(int argCount, OBJ *args) {
 
 OBJ primMBDisplayOff(int argCount, OBJ *args) {
 	microBitDisplayBits = 0;
-	#if !defined(OLED_128_64)
+	#if !defined(HAS_LED_MATRIX)
+		// If the board does not have a built-in LED matrix but does have a TFT display
+		// then it simulates an LED matrix on the TFT display. In that case, this operation
+		// should clear the simulated the simulates an LED matrix on the TFT screen.
+		// If the boards has a built-in LED matrix AND a TFT display just clear the LED matrix
+		// so that the two displays are independent.
 		if (useTFT) tftClear();
 	#endif
 	return falseObj;
@@ -457,7 +577,6 @@ static OBJ primLightLevel(int argCount, OBJ *args) {
 	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
 		OBJ analogPin = int2obj(8);
 		lightLevel = obj2int(primAnalogRead(1, &analogPin));
-		lightLevel = lightLevel;
 	#elif defined(ARDUINO_CITILAB_ED1)
 		lightLevel = analogRead(34) * 1000 / 4095;
 	#elif defined(XESGAME)//学而思游戏机
@@ -471,6 +590,19 @@ static OBJ primLightLevel(int argCount, OBJ *args) {
 	#elif defined(STEAMaker)
 		// log makes the function more linear, 27.684 takes it to a ~0-100 range
 		lightLevel = (int) (log10((float) analogRead(39)) * 27.684);
+	#elif defined(FOXBIT)
+		lightLevel = analogRead(39) * 1000 / 4095; // output range 0-1000
+	#elif defined(DUELink)
+		int lightPin =
+			(DUE_HAS_EDGE_CONNECTOR) ?
+				((IS_DUE_CINCO) ? 9 : 23) :
+				(((IS_DUE_STEM) || (IS_DUE_CLIPIT)) ? 17 : -1);
+		if (lightPin != -1) {
+			OBJ pinArg = int2obj(lightPin);
+			lightLevel = obj2int(primAnalogRead(1, &pinArg));
+		} else {
+			lightLevel = 0;
+		}
 	#else
 		lightReadingRequested = true;
 	#endif
@@ -599,7 +731,7 @@ static void initNeoPixelPin(int pinNum) {
 	// use port0 by default
 	neoPixelPinSet = &NRF_P0->OUTSET; // (int *) GPIO_SET;
 	neoPixelPinClr = &NRF_P0->OUTCLR; // (int *) GPIO_CLR;
-	volatile uint32_t *neoPixelPinSetDir = &NRF_P0->DIRSET; //  (int *) GPIO_SET_DIR;
+	volatile uint32_t *neoPixelPinSetDir = &NRF_P0->DIRSET; // (int *) GPIO_SET_DIR;
 
 	#if defined(ARDUINO_NRF52_PRIMO)
 		neoPixelPinMask = digitalPinToBitMask(pinNum);
@@ -785,12 +917,14 @@ static void initRMT(int pinNum) {
 
 static void initNeoPixelPin(int pinNum) { // ESP32
 	if ((pinNum < 0) || (pinNum >= pinCount())) {
-		#if defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_M5Atom_Lite_ESP32)
+		#if defined(M5Atom_Matrix) || defined(M5Atom_Lite)
 			pinNum = 27; // internal NeoPixel pin
-		#elif defined(ARDUINO_M5Atom_Lite_S3)
+		#elif defined(ARDUINO_M5Stack_ATOMS3)
 			pinNum = 35;
-		#elif defined(ARDUINO_Mbits) || defined(STEAMaker)
+		#elif defined(ARDUINO_Mbits) || defined(STEAMaker) || defined(FOXBIT)
 			pinNum = 13; // internal NeoPixel pin
+		#elif defined(KIDS_BITS)
+			pinNum = 16; // internal NeoPixel pin on Coding Box 2.0
 		#elif defined(DATABOT)
 			pinNum = 2; // internal NeoPixel pin
 		#elif defined(ESP32_S3)
@@ -803,6 +937,7 @@ static void initNeoPixelPin(int pinNum) { // ESP32
 	}
 	setPinMode(pinNum, OUTPUT);
 	initRMT(pinNum);
+	taskSleep(1); // allow RMT time to stabilize
 	neoPixelPinMask = true; // show that NeoPixel are initialized
 }
 
@@ -817,7 +952,7 @@ static void IRAM_ATTR sendNeoPixelData(int val) { // ESP32
 			(rmt_item32_t) {{{T0H, 1, T0L, 0}}};
 		mask >>= 1;
 	}
-	rmt_write_items(RMT_CHANNEL_0, rmt_buffer, neoPixelBits, true);
+	rmt_write_items(RMT_CHANNEL_0, rmt_buffer, neoPixelBits, false);
 }
 
 #elif defined(ARDUINO_ARCH_RP2040) && !defined(__MBED__) // Philhower framework (PicoSDK)
@@ -827,6 +962,20 @@ static int neoPixelPin = -1;
 static void initNeoPixelPin(int pinNum) {
 	#if defined(WUKONG2040)
 		if ((pinNum < 0) || (pinNum > 29)) pinNum = 22;
+	#elif defined(ARDUINO_SEEED_XIAO_RP2040) || defined(ARDUINO_SEEED_XIAO_RP2350)
+		#if defined(ARDUINO_SEEED_XIAO_RP2350)
+			#define PIN_NEOPIXEL 22
+			#define NEOPIXEL_POWER 23
+		#endif
+		if (pinNum < 0) {
+			pinNum = PIN_NEOPIXEL; // use built-in NeoPixel
+		}
+		if (pinNum == PIN_NEOPIXEL) {
+			// built-in NeoPixel; turn on power
+			setPinMode(NEOPIXEL_POWER, OUTPUT);
+			digitalWrite(NEOPIXEL_POWER, 1);
+			taskSleep(1); // give time to power up
+		}
 	#endif
 	// Note: Do not default to pin 0; that pin is used by pico:ed v2 for internal i2c
 	if ((pinNum < 0) || (pinNum > 29)) return;
@@ -856,7 +1005,7 @@ static void __not_in_flash_func(sendNeoPixelData)(int val) { // RP2040 Philhower
 	if (neoPixelPin < 0) return;
 
 	noInterrupts();
- 	gpio_put(neoPixelPin, LOW);
+	gpio_put(neoPixelPin, LOW);
 	for (unsigned int mask = (1 << 23); mask > 0; mask >>= 1) {
 		if (val & mask) { // one bit; timing goal: high 900 nsecs, low 500 nsecs
 			gpio_put(neoPixelPin, HIGH);
@@ -928,6 +1077,7 @@ static void sendNeoPixelData(int val) { }
 #endif // NeoPixel Support
 
 static int neoPixelMax = 40;
+static int neoPixelIsRGB = false;
 
 static inline int gamma(int val) {
 	// This function computes the n^2 gamma curve, where n is a brightness in the range 0.0..1.0,
@@ -937,6 +1087,8 @@ static inline int gamma(int val) {
 	// will also be in the range 0.0..1.0, and that is scaled to 0..neoPixelMax.
 	// neoPixelMax determines the max brightness (and power draw!) of each NeoPixel color channel,
 	// which is about (neoPixelMax / 255) * 20 mA per color channel.
+
+	if (255 == neoPixelMax) return (val & 0xFF); // no gamma correction if max is 255
 
 	#if defined(ARDUINO_Mbits)
 	// The Mbits power supply cannot supply enough current to run both
@@ -965,7 +1117,12 @@ OBJ primNeoPixelSend(int argCount, OBJ *args) {
 			int r = gamma((rgb >> 16) & 0xFF);
 			int g = gamma((rgb >> 8) & 0xFF);
 			int b = gamma(rgb & 0xFF);
-			int val = (g << 16) | (r << 8) | b; // NeoPixel order is GRB
+			int val;
+			if (neoPixelIsRGB) {
+				val = (r << 16) | (g << 8) | b; // NeoPixel order is RGB
+			} else {
+				val = (g << 16) | (r << 8) | b; // NeoPixel order is GRB
+			}
 			if (32 == neoPixelBits) { // send white as the final byte of four
 				val = (val << 8) | whiteTable[(rgb >> 24) & 0x3F];
 			}
@@ -982,6 +1139,12 @@ OBJ primNeoPixelSend(int argCount, OBJ *args) {
 		}
 		sendNeoPixelData(val);
 	}
+
+	#if defined(FOXBIT) || defined(ARDUINO_Mbits) || defined(STEAMaker)
+		// Force a display update of the 5x5 display command after using NeoPixels
+		displaySnapshot = microBitDisplayBits = (1 << 26);
+	#endif
+
 	taskSleep(1); // NeoPixels latch time
 	return falseObj;
 }
@@ -1003,6 +1166,12 @@ OBJ primNeoPixelSetMaxBrightness(int argCount, OBJ *args) {
 	return falseObj;
 }
 
+OBJ primNeoPixelSetRGB(int argCount, OBJ *args) {
+	if ((argCount < 1) || !isBoolean(args[0])) return fail(needsBooleanError);
+	neoPixelIsRGB = (trueObj == args[0]);
+	return falseObj;
+}
+
 void setAllNeoPixels(int pin, int ledCount, int color) {
 	// Note: This will change the current NeoPixel pin.
 
@@ -1021,7 +1190,11 @@ void turnOffInternalNeoPixels() {
 	int count = 0;
 	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
 		count = 10;
-	#elif defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_Mbits) || defined(STEAMaker)
+	#elif defined(FOXBIT)
+		count = 35;
+	#elif defined(KIDS_BITS)
+		if (isOLED1106) count = 12; // this is a CodingBox
+	#elif defined(M5Atom_Matrix) || defined(ARDUINO_Mbits) || defined(STEAMaker)
 		count = 25;
 		// sending neopixel data twice on the Atom Matrix eliminates green pixel at startup
 		for (int i = 0; i < count; i++) sendNeoPixelData(0);
@@ -1042,11 +1215,11 @@ void turnOffInternalNeoPixels() {
 
 // Simulate the micro:bit 5x5 LED display on 5x5 NeoPixel display
 
-#if defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_Mbits) || defined(STEAMaker)
+#if defined(M5Atom_Matrix) || defined(ARDUINO_Mbits) || defined(STEAMaker)
 
-	void updateNeoPixelDisplay() {
+	static void updateNeoPixelDisplay() {
 		int oldPinMask = neoPixelPinMask;
-#if defined(ARDUINO_M5Atom_Matrix_ESP32)
+#if defined(M5Atom_Matrix)
 		initNeoPixelPin(27); // use internal NeoPixels
 #elif defined(ARDUINO_Mbits) || defined(STEAMaker)
 		initNeoPixelPin(13); // use internal NeoPixels
@@ -1067,6 +1240,40 @@ void turnOffInternalNeoPixels() {
 		neoPixelPinMask = oldPinMask; // restore the old NeoPixel pin
 		delay(1); // NeoPixels latch time
 	}
+
+#elif defined(FOXBIT)
+
+// Simulate the micro:bit 5x5 LED display on 7x5 NeoPixel display
+
+	static void updateNeoPixelDisplay() {
+		int oldPinMask = neoPixelPinMask;
+		initNeoPixelPin(13); // use internal NeoPixels
+		delay(1); // make sure NeoPixels are latched and ready for new data
+
+		// compute color RGB value; NeoPixel order is GRB
+		int r = gamma((mbDisplayColor >> 16) & 0xFF);
+		int g = gamma((mbDisplayColor >> 8) & 0xFF);
+		int b = gamma(mbDisplayColor & 0xFF);
+		int pixelValue = (g << 16) | (r << 8) | b;
+
+		// update the NeoPixels
+		for (int y = 0; y < 5; y++) {
+			for (int x = 0; x < 7; x++) {
+				int isOn = false;
+				if ((1 <= x) && (x <= 5)) {
+					int i = (5 * y) + (x - 1);
+					isOn = (microBitDisplayBits & (1 << i));
+				}
+				sendNeoPixelData(isOn ? pixelValue : 0);
+			}
+		}
+		neoPixelPinMask = oldPinMask; // restore the old NeoPixel pin
+		delay(1); // NeoPixels latch time
+	}
+
+#else
+
+	static void updateNeoPixelDisplay() {} // no NeoPixel display
 
 #endif
 
@@ -1133,6 +1340,7 @@ OBJ primMBDrawShape(int argCount, OBJ *args) {
 		return falseObj;
 	#endif
 
+	primDeferUpdates(0, NULL);
 	int srcMask = 1;
 	for (int dstY = y; dstY < (y + 5); dstY++) {
 		for (int dstX = x; dstX < (x + 5); dstX++) {
@@ -1157,6 +1365,7 @@ OBJ primMBDrawShape(int argCount, OBJ *args) {
 			if (useTFT) tftSetHugePixel(5 + x, (i + 1), false);
 		}
 	}
+	primResumeUpdates(0, NULL);
 	return falseObj;
 }
 
@@ -1175,6 +1384,7 @@ static PrimEntry entries[] = {
 	{"neoPixelSend", primNeoPixelSend},
 	{"neoPixelSetPin", primNeoPixelSetPin},
 	{"neoPixelSetMaxBrightness", primNeoPixelSetMaxBrightness},
+	{"neoPixelSetRGB", primNeoPixelSetRGB},
 };
 
 void addDisplayPrims() {

@@ -455,7 +455,7 @@ method editItem MediaItem {
 }
 
 method export MediaItem {
- if (isClass item 'Bitmap') {
+	if (isClass item 'Bitmap') {
 		fName = (fileToWrite (name item) '.png')
 		if ('' == fName) { return }
 

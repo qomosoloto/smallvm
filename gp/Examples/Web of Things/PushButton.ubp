@@ -4,14 +4,14 @@ version 1 0
 description ''
 variables _WoT_definingEvents _useWiFi 
 
-script 57 57 {
+script 54 55 {
 comment 'Web of Things pushbutton example.
 
 To test it, either press, long-press or double-press the A button
 in your board and look at the display.'
 }
 
-script 62 151 {
+script 59 149 {
 whenStarted
 wifiConnect 'Network_Name' ''
 'set thing name to' 'microButton'
@@ -22,7 +22,7 @@ wifiConnect 'Network_Name' ''
 'start WebThing server'
 }
 
-script 470 151 {
+script 467 149 {
 whenCondition ('button double pressed' 'A')
 'trigger event' 'Button double-pressed'
 setUserLED true
@@ -34,7 +34,7 @@ waitMillis 100
 setUserLED false
 }
 
-script 64 369 {
+script 61 367 {
 whenCondition ('button long pressed' 'A')
 'trigger event' 'Button long-pressed'
 setUserLED true
@@ -42,7 +42,7 @@ waitMillis 1500
 setUserLED false
 }
 
-script 298 370 {
+script 295 368 {
 whenCondition ('button pressed' 'A')
 'trigger event' 'Button pressed'
 setUserLED true
@@ -548,13 +548,16 @@ to 'trigger event' 'event name' {
 
 module WiFi Comm
 author MicroBlocks
-version 1 8 
+version 1 10 
 tags communication network 
 description 'Connect to a WiFi network. Used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
 '
 
   spec ' ' 'wifiConnect' 'wifi connect to _ password _ : IP _ gateway _ subnet _' 'str str auto auto auto' 'Network_Name' '' '192.168.1.42' '192.168.1.1' '255.255.255.0'
   spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
+  spec ' ' '[net:stopWiFi]' 'stop wifi'
+  space
+  spec ' ' '[net:setDomainName]' 'wifi set local domain name _ .local' 'str' 'microblocks'
   space
   spec 'r' 'getIPAddress' 'IP address'
   spec 'r' '[net:myMAC]' 'MAC address'
@@ -593,6 +596,7 @@ to wifiConnect ssid password fixedIP gatewayIP subnetIP {
     setUserLED false
     waitMillis 50
   }
+  '[net:setDomainName]' 'microblocks'
   sayIt 'My IP address is:' ('[net:myIPAddress]')
 }
 
@@ -614,6 +618,7 @@ to wifiCreateHotspot ssid password {
     setUserLED false
     waitMillis 50
   }
+  '[net:setDomainName]' 'microblocks'
   sayIt 'My IP address is:' ('[net:myIPAddress]')
 }
 

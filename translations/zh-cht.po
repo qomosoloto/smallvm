@@ -1,19 +1,18 @@
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"Report-Msgid-Bugs-To: \n"
+"Report-Msgid-Bugs-To: interest@microblocks.fun\n"
 "POT-Creation-Date: 2024-10-28 16:36+0200\n"
-"PO-Revision-Date: 2024-10-28 15:36+0000\n"
-"Last-Translator: wwj718 <wuwenjie718@gmail.com>\n"
+"PO-Revision-Date: 2025-06-21 14:01+0000\n"
+"Last-Translator: alex chair <chairalex59@gmail.com>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/"
 "projects/microblocks/ide/zh_Hant/>\n"
 "Language: zh-cht\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: ENCODING\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.8.2-dev\n"
+"X-Generator: Weblate 5.13-dev\n"
 
 #. WebSocket Server library example data to send to a client
 msgid "Hello, Client!"
@@ -1614,7 +1613,7 @@ msgstr "播放 WAV 文件 _"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch Tail _ Red _ Green _ Blue _"
-msgstr "Finch 尾部 紅 _ 綠 _ 藍 _"
+msgstr "Finch 尾部 _ 紅 _ 綠 _ 藍 _"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch _ Encoder"
@@ -1694,7 +1693,7 @@ msgstr "前進"
 
 #. Citilab ED1 Stepper Motor library block
 msgid "move motor _ _ complete turns"
-msgstr "轉動馬達_ _ 整圈"
+msgstr "轉動馬達 _ _ 整圈"
 
 #. OLED Graphics library block
 msgid "draw circle at x _ y _ radius _ erase _"
@@ -1814,7 +1813,7 @@ msgstr "左三角鐵"
 
 #. OLED Graphics library block
 msgid "_flip display top _"
-msgstr "反轉顯示 上 _"
+msgstr "_反轉顯示 上 _"
 
 #. Button Events library block
 msgid "button _ double pressed"
@@ -4261,3 +4260,31 @@ msgstr "用輸入的分隔符分割輸入的字符串，並報告結果（一個
 #. Tip Bar text for a block (at the bottom of the IDE, gives info on the currently hovered block or input)
 msgid "Report a new list of the given length filled with zero or the optional value."
 msgstr "報告一個新的列表，其長度為輸入值，列表元素為 0 或可選數值"
+
+#. Block in Input category
+msgid "seconds"
+msgstr "秒"
+
+#. Block in Input category
+msgid "version"
+msgstr "版本"
+
+#. Block in Input category
+msgid "BLE connected"
+msgstr "已連接 BLE"
+
+#. Block in Operators category
+msgid "if _ then _ else _"
+msgstr "如果 _ 那麼 _ 否則 _"
+
+#. Example value for the ( list < > ) block
+msgid "cat"
+msgstr ""
+
+#. Example value for the ( list < > ) block
+msgid "dog"
+msgstr ""
+
+#. Block in Control category
+msgid "exit loop"
+msgstr "退出循環"

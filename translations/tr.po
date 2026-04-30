@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"Report-Msgid-Bugs-To: \n"
+"Report-Msgid-Bugs-To: interest@microblocks.fun\n"
 "POT-Creation-Date: 2024-10-28 16:36+0200\n"
-"PO-Revision-Date: 2024-11-20 09:02+0000\n"
+"PO-Revision-Date: 2026-02-18 09:09+0000\n"
 "Last-Translator: Turgut Guneysu <t.g.alph@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/microblocks/ide/"
 "tr/>\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.9-dev\n"
+"X-Generator: Weblate 5.16.1-dev\n"
 
 #. Block in Output category
 msgid "set user LED _"
@@ -602,7 +602,7 @@ msgstr "Neopiksel"
 
 #. NeoPixel library block
 msgid "rotate NeoPixels by _"
-msgstr "NeoPixelleri _ döndür"
+msgstr "NeoPixelleri _ kaydır"
 
 #. NeoPixel library block
 msgid "brighten NeoPixel _ by _"
@@ -944,7 +944,7 @@ msgstr "x"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch Tail _ Red _ Green _ Blue _"
-msgstr "Finch Kuyruk Kırmızı _ Yeşil _ Mavi _"
+msgstr "Finch Kuyruk _ Kırmızı _ Yeşil _ Mavi _"
 
 #. 5x5 LED Display library block
 msgid "clear display"
@@ -1320,7 +1320,7 @@ msgstr "bayt dizisi"
 
 #. NeoPixel library block
 msgid "attach _ LED NeoPixel strip to pin _"
-msgstr "_ LED Neopiksel şeridini pin _ bağla"
+msgstr "_ LED Neopiksel şeridini _ pinine bağla"
 
 #. Citilab ED1 Buttons library block
 msgid "capacitive sensor _"
@@ -3151,3 +3151,643 @@ msgstr "BLE bağlandı"
 #. Block in Control category
 msgid "exit loop"
 msgstr "döngüden çık"
+
+#. Lists library block. It takes a list and replaces a few, some, most or (list of indices) items with some other element
+msgid "_ with _ items replaced by _"
+msgstr "_ listesi _ öğeleri _ ile değiştirildi"
+
+#. Lists library block
+msgid "sort _"
+msgstr "_ listesini düzenle"
+
+#. Lists library block
+msgid "shuffled _"
+msgstr "karıştırılmış _"
+
+#. Lists library block
+msgid "sorted _"
+msgstr "düzenlenmiş _"
+
+#. Key name (as in computer keyboard key)
+msgid "kbd;Logo / ⌘"
+msgstr "Logo / ⌘"
+
+#. Key name (as in computer keyboard key)
+msgid "kbd;AltGr"
+msgstr "AltGr"
+
+#. Key name (as in computer keyboard key)
+msgid "kbd;tab"
+msgstr "sekme tuşu"
+
+#. Microphone library block
+msgid "estimate clap threshold"
+msgstr "alkış limitini tahmin et"
+
+#. Lists library label
+#. Extra utilities for list manipulation and access
+msgid "Lists"
+msgstr "Listeler"
+
+#. Keyboard and Mouse library block
+msgid "release mouse buttons"
+msgstr "fare düğmelerini serbest bırakın"
+
+#. Option in ( pick (a few) from (aList) ) block in Lists library
+msgid "a few"
+msgstr "birkaç"
+
+#. Microphone library block
+msgid "microphone"
+msgstr "Mikrofon kütüphane bloğu"
+
+#. Microphone library block
+msgid "clap count"
+msgstr "alkış sayısı"
+
+#. Lists library block
+msgid "reversed _"
+msgstr "tersi _"
+
+#. Mouse button name (as in computer mouse button)
+msgid "mouse;right"
+msgstr "sağ"
+
+#. Key name (as in computer keyboard key)
+msgid "kbd;end"
+msgstr "bitiş tuşu"
+
+#. Lists library block
+msgid "map _ over _"
+msgstr "_ uygula _ üzerine"
+
+#. Keyboard and Mouse library block
+msgid "_ mouse click"
+msgstr "_ fare tıklaması"
+
+#. Pseudorandomness library label
+#. Creates pseudorandom numbers and lists of numbers given a particular seed
+msgid "Pseudorandomness"
+msgstr "Sözde rastgelelik"
+
+#. Keyboard and Mouse library label
+msgid "Keyboard and Mouse"
+msgstr "Klavye ve Fare"
+
+#. NeoPanel library block
+msgid "NeoPanel fill column _ color _"
+msgstr "NeoPanel  kolon _ renkle _  doldur"
+
+#. Lists library block
+msgid "filter _ with _"
+msgstr "_ listesini _ ile filtrele"
+
+#. Keyboard and Mouse library block
+msgid "press key _"
+msgstr "_ tuşuna basın"
+
+#. NeoPanel library block
+msgid "NeoPanel fill rectangle x _ y _ width _ height _ color _"
+msgstr "NeoPanel dikdörtgen x _ y _ genislik _ yükseklik _ renkle _  doldur"
+
+#. Key name (as in computer keyboard key)
+msgid "kbd;PgDown"
+msgstr "PgDown (aşağı sayfa) tuşu"
+
+#. Lists library block
+msgid "pick _ from _"
+msgstr "_ listeden _ seç"
+
+#. Lists library block
+msgid "shuffle _"
+msgstr "_ listesini karıştır"
+
+#. Mouse button name (as in computer mouse button)
+msgid "mouse;left"
+msgstr "sol"
+
+#. Option in ( pick (most) from (aList) ) block in Lists library
+msgid "most"
+msgstr "çoğu"
+
+#. NeoPanel library block
+msgid "attach NeoPixel panel width _ height _ at pin _"
+msgstr "NeoPaneli ekle genişlik _ yükseklik _ pin _"
+
+#. Keyboard and Mouse library block
+msgid "scroll mouse by _"
+msgstr "fareyi _ kaydır"
+
+#. Microphone library block
+msgid "set clap threshold _"
+msgstr "alkış limitini _ yap"
+
+#. Key name (as in computer keyboard key)
+msgid "kbd;enter"
+msgstr "enter (gir) tuşu"
+
+#. Lists library block
+msgid "uniqued _"
+msgstr "özgün _"
+
+#. NeoPanel library block
+msgid "NeoPanel set x _ y _ color _"
+msgstr "NeoPanel renk ayarla x _ y _ renk _"
+
+#. Keyboard and Mouse library block
+msgid "release all keys"
+msgstr "tüm tuşları serbest bırak"
+
+#. Microphone library label
+msgid "Microphone"
+msgstr "Mikrofon"
+
+#. Key name (as in computer keyboard key)
+msgid "kbd;Alt / ⌥"
+msgstr "Alt / ⌥"
+
+#. Option in ( pick (some) from (aList) ) block in Lists library
+msgid "some"
+msgstr "bazı"
+
+#. Key name (as in computer keyboard key)
+msgid "kbd;CapsLock"
+msgstr "Büyük harf kilidi"
+
+#. Lists library block
+msgid "list _ contains _"
+msgstr "liste _ içerir _"
+
+#. Example string. Tells the user this input accepts a function name
+msgid "aFunction"
+msgstr "bir işlev"
+
+#. Microphone library block
+msgid "loudness"
+msgstr "ses yüksekliği"
+
+#. Key name (as in computer keyboard key)
+msgid "kbd;PgUp"
+msgstr "PgUp (yukarı sayfa) tuşu"
+
+#. Keyboard and Mouse library block
+msgid "release key _"
+msgstr "_ tuşu serbest bırak"
+
+#. Microphone library block
+msgid "turn on microphone"
+msgstr "mikrofonu aç"
+
+#. Key name (as in computer keyboard key)
+msgid "kbd;PrintScreen"
+msgstr "Ekranı bastır tuşu"
+
+#. Mouse button name (as in computer mouse button)
+msgid "mouse;both"
+msgstr "ikisi birden"
+
+#. NeoPanel library block
+msgid "NeoPanel draw text _ at x _ y _ color _"
+msgstr "NeoPanel metin çiz x _ y _ renk _"
+
+#. NeoPanel library block
+msgid "NeoPanel draw BMP file _ at x _ y _"
+msgstr "NeoPanel BMP göster dosya _ x _ y _"
+
+#. Keyboard and Mouse library block
+msgid "hold key _"
+msgstr "_ tuşu basılı tutun"
+
+#. Key name (as in computer keyboard key)
+msgid "kbd;Shift"
+msgstr "Shift tuşu"
+
+#. Key name (as in computer keyboard key)
+msgid "kbd;ScrollLock"
+msgstr "Kaydırma Kilidi tuşu"
+
+#. Key name (as in computer keyboard key)
+msgid "kbd;ESC"
+msgstr "ESC tuşu"
+
+#. Infrared Remote library block
+msgid "IR transmit device _ command _"
+msgstr "IR yolla cihaz _ kumanda _"
+
+#. Keyboard and Mouse library block
+msgid "move mouse pointer by _ , _"
+msgstr "fare işaretçisini _ , _ hareket ettir"
+
+#. Lists library block
+#, fuzzy
+msgid "unique _"
+msgstr "özgün _"
+
+#. Keyboard and Mouse library block
+msgid "hold _ mouse button"
+msgstr "_ fare düğmesini basılı tutun"
+
+#. Mouse button name (as in computer mouse button)
+msgid "mouse;middle"
+msgstr "orta"
+
+#. NeoPanel library block
+msgid "NeoPanel fill row _ color _"
+msgstr "NeoPanel  satır _ renkle _ doldur"
+
+#. Keyboard and Mouse library block
+msgid "while holding _"
+msgstr "_ tuşunu basılı tutarken"
+
+#. Key name (as in computer keyboard key)
+msgid "kbd;return"
+msgstr "Return (dönüş) tuşu"
+
+#. Key name (as in computer keyboard key)
+msgid "kbd;backspace"
+msgstr "geri tuşu"
+
+#. Key name (as in computer keyboard key)
+msgid "kbd;NumLock"
+msgstr "numara kilidi"
+
+#. Lists library block
+msgid "reverse _"
+msgstr "_ listenin tersi"
+
+#. Key name (as in computer keyboard key)
+msgid "kbd;insert"
+msgstr "ekle tuşu"
+
+#. Option in dropdown menu of editable input slots on mobile devices:
+msgid "edit"
+msgstr "düzenle"
+
+#. NeoPixel library block
+msgid "set NeoPixels #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _"
+msgstr ""
+"NeoPikselleri yap #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ "
+"_ #BR# _ _ _ _ _"
+
+#. NeoPanel library block
+msgid "NeoPanel draw line from x _ y _ to x _ y _ color _"
+msgstr "NeoPanel çizgi çiz x_y_ noktasından x_y_ noktasına renk _"
+
+#. NeoPanel library block
+msgid "NeoPanel draw circle at x _ y _ radius _ color _"
+msgstr "NeoPanel daire çiz x _ y _  yarıçap  _ renk _"
+
+#. NeoPanel library block
+msgid "NeoPanel draw rectangle at x _ y _ width _ height _ color _"
+msgstr "NeoPanel dikdörtgen çiz x _ y _ genişlik _ yükseklik _ renk _"
+
+#. Microphone library block
+msgid "turn off microphone"
+msgstr "mikrofonu kapa"
+
+#. Pseudorandomness library block
+msgid "pseudorandom _ to _ with seed _"
+msgstr "rastgele sayı _ ile _ arası tohum _"
+
+#. Pseudorandomness library block
+msgid "_ pseudorandom numbers _ to _ with seed _"
+msgstr "_ rastgele sayı üret _ ile _ arası tohum _"
+
+#. BLE Keyboard library label
+msgid "BLE Keyboard"
+msgstr "BLE Klavye"
+
+#. BLE Keyboard library block
+msgid "start BLE Keyboard"
+msgstr "BLE Klavye başlat"
+
+#. Radio library block
+msgid "radio last sender ID"
+msgstr "radyo son gönderici kimliği"
+
+#. Radio library block
+msgid "radio my ID"
+msgstr "radyo benim kimliğim"
+
+#. Example text for Scrolling library.
+#, fuzzy
+msgid "HELLO ROSA!"
+msgstr "HELLO ROSA!"
+
+#. 5x5 LED Display library block
+msgid "display image _"
+msgstr "görüntü göster _"
+
+#. 5x5 LED Display library block
+msgid "set display color _"
+msgstr "ekran rengini _ yap"
+
+#. 5x5 LED Display library block
+msgid "LED image #BR# _"
+msgstr "LED görüntüsü #BR# _"
+
+#. OLED Graphics library block
+msgid "initialize i2c(auto) reset pin# _ flip _"
+msgstr "i2c'yi başlat (otomatik) sıfırlama pin# _ tersle _"
+
+#. OLED Graphics library block
+msgid "_flip display top _"
+msgstr "_ekran tepesini tersle _"
+
+#. OLED Graphics library block
+msgid "set video _"
+msgstr "videoyu _ yap"
+
+#. OLED Graphics library block
+msgid "cursor location"
+msgstr "imleç konumu"
+
+#. OLED Graphics library block
+msgid "defer display updates"
+msgstr "ekran güncellemelerini ertele"
+
+#. TFT display library block
+msgid "clear TFT display"
+msgstr "TFT ekranı sil"
+
+#. TFT Display library block
+msgid "draw vector x _ y _ angle _ length _ color _"
+msgstr "vektör çiz x _ y _ açı _ uzunluk _ renk _"
+
+#. TFT Display library block
+#, fuzzy
+msgid "Hello World!"
+msgstr "Hello World!"
+
+#. TFT Display library block
+msgid "draw text _ on TFT at x _ y _ color _"
+msgstr "TFT ekrana metin çiz _ x _ y _ renk _"
+
+#. TFT Display library block
+msgid "scale _"
+msgstr "ölçek _"
+
+#. TFT Display library block
+msgid "bg color _"
+msgstr "arka renk _"
+
+#. TFT Display library block
+msgid "draw bitmap _ palette _ on TFT at x _ y _"
+msgstr "TFT ekranına bitmap çiz _ palet _ x _ y _"
+
+#. TFT Display library block
+msgid "set TFT backlight _ (0-10)"
+msgstr "TFT arka ışığını ayarla _ (0-10)"
+
+#. TFT Display library block
+msgid "draw pixel row _ x _ y _"
+msgstr "piksel sıra çiz _ x _ y _"
+
+#. TFT Display library and Color library block
+msgid "gray _ %"
+msgstr "gri _ %"
+
+#. BMP library block
+msgid "display BMP file _ at x _ y _"
+msgstr "BMP dosyasını görüntüle _ x _ y _"
+
+#. BMP image example filename
+#, fuzzy
+msgid "image.bmp"
+msgstr "image.bmp"
+
+#. Color library label
+msgid "Color Operators"
+msgstr "Renk Operatörleri"
+
+#. Color library block
+msgid "red _"
+msgstr "kırmızı _"
+
+#. Color library block
+msgid "green _"
+msgstr "yeşil _"
+
+#. Color library block
+msgid "blue _"
+msgstr "mavi _"
+
+#. Color library block
+msgid "color hue _ (0-360) saturation _ % brightness _ %"
+msgstr "renk tonu _ (0-360) doygunluk _ % parlaklık _ %"
+
+#. Color library block
+msgid "hue _"
+msgstr "renk tonu _"
+
+#. Color library block
+msgid "saturation _"
+msgstr "doygunluk _"
+
+#. Color library block
+msgid "brightness _"
+msgstr "parlaklık _"
+
+#. Color library block
+msgid "_ with hue _ (0-360)"
+msgstr "_ renk tonuyla _ (0-360"
+
+#. Color library block
+msgid "_ with saturation _ %"
+msgstr "_ doygunluk ile _ %"
+
+#. Color library block
+msgid "_ with brightness _ %"
+msgstr "_ parlaklıkla _ %"
+
+#. Fractions library label
+msgid "Fractions"
+msgstr "Kesirler"
+
+#. Fractions library block
+msgid "fract _ / _"
+msgstr "kesir _ / _"
+
+#. Fractions library block
+msgid "fract _ + _"
+msgstr "kesir _ + _"
+
+#. Fractions library block
+msgid "fract _ − _"
+msgstr "kesir _ − _"
+
+#. Fractions library block
+msgid "fract _ × _"
+msgstr "kesir _ × _"
+
+#. Fractions library block
+msgid "fract _ = _"
+msgstr "kesir _ = _"
+
+#. Fractions library block
+msgid "fract _ < _"
+msgstr "kesir_ < _"
+
+#. Fractions library block
+msgid "fract _ > _"
+msgstr "kesir _ > _"
+
+#. Fractions library block
+msgid "simplify fraction _"
+msgstr "kesri sadeleştir _"
+
+#. Fractions library block
+msgid "integer part of fraction _"
+msgstr "_ kesrin tam sayı kısmı"
+
+#. Fractions library block
+msgid "numerator of fraction _"
+msgstr "_ kesrin payı"
+
+#. Fractions library block
+msgid "denominator of fraction _"
+msgstr "_ kesrin paydası"
+
+#. Fractions library block
+#, fuzzy
+msgid "gcd _ _"
+msgstr "gcd _ _"
+
+#. Fractions library block
+#, fuzzy
+msgid "lcm _ _"
+msgstr "lcm _ _"
+
+#. Tone library block
+msgid "start tone _ Hz"
+msgstr "ton başlat _ Hz"
+
+#. Tone library block
+msgid "stop tone"
+msgstr "ton durdur"
+
+#. Musical note name
+msgid "nt;c"
+msgstr "c"
+
+#. Musical note name
+msgid "nt;c#"
+msgstr "c#"
+
+#. Musical note name
+msgid "nt;d"
+msgstr "d"
+
+#. Musical note name
+msgid "nt;d#"
+msgstr "d#"
+
+#. Musical note name
+msgid "nt;e"
+msgstr "e"
+
+#. Musical note name
+msgid "nt;f"
+msgstr "f"
+
+#. Musical note name
+msgid "nt;f#"
+msgstr "f#"
+
+#. Musical note name
+msgid "nt;g"
+msgstr "g"
+
+#. Musical note name
+msgid "nt;g#"
+msgstr "g#"
+
+#. Musical note name
+msgid "nt;a"
+msgstr "a"
+
+#. Musical note name
+msgid "nt;a#"
+msgstr "a#"
+
+#. Musical note name
+msgid "nt;b"
+msgstr "b"
+
+#. Ringtone library label
+#. Can play Nokring-formatted music. Also known as RTTTL.
+msgid "Ringtone"
+msgstr "Zil sesi"
+
+#. Ringtone library block
+msgid "play ringtone _"
+msgstr "Zil sesi çal _"
+
+#. Ringtone library block
+msgid "current song name"
+msgstr "mevcut şarkı adı"
+
+#. Pluck library label
+#. Generate music with plucked-string resembling sounds
+msgid "Pluck"
+msgstr "parmakla çal"
+
+#. Pluck library block
+msgid "pluck note _ octave _ for _ ms"
+msgstr "parmakla çal nota _ oktav _ süre _ ms"
+
+#. Pluck library block
+msgid "pluck MIDI key _ for _ msecs"
+msgstr "parmakla çal MIDI tuşu _ süre _ msaniye"
+
+#. Pluck library block
+msgid "set pluck pin _"
+msgstr "parmakla çalma pini _"
+
+#. WAV library block
+msgid "play WAV file _"
+msgstr "WAV dosyasını çal _"
+
+#. Example file name with no extension
+msgid "filename"
+msgstr "dosya adı"
+
+#. Rhythm library label
+#. Useful to create musical patterns
+msgid "Rhythm"
+msgstr "Ritim"
+
+#. Rhythm library block
+msgid "set tempo to _ bpm at _ / _ signature"
+msgstr "tempoyu _ bpm'ye ayarla _ / _ imza"
+
+#. Rhythm library block
+msgid "set pattern to _ bars"
+msgstr "Desen ayarını _ çubuk olarak ayarla"
+
+#. Rhythm library block
+msgid "current beat"
+msgstr "mevcut ritim"
+
+#. Rhythm library block
+msgid "current bar"
+msgstr "mevcut çubuk"
+
+#. Rhythm library block
+#, fuzzy
+msgid "wait until next _ duration"
+msgstr "bir sonraki _ süreye kadar bekle"
+
+#. Rhythm library block
+msgid "wait until beat _"
+msgstr "_ ritime kadar bekle"
+
+#. Rhythm library block
+#, fuzzy
+msgid "wait until bar _"
+msgstr "_ barına kadar bekle"
+
+#. Analog Synthesis library label
+#. Generate synthesized sound waves to play on a DAC, over PWM, or any other analog means
+msgid "Analog Synthesis"
+msgstr "Analog Sentez"

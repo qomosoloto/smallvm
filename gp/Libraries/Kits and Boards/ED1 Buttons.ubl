@@ -1,19 +1,18 @@
 module 'ED1 Buttons' Input
 author MicroBlocks
-version 1 1
+version 1 1 
+tags button capacitive ed1 
 description 'Provides blocks for the six capacitive buttons in the Citilab ED1 board.'
-tags button capacitive ed1
+variables _ED1_buttons_init '_capacitive threshold' 
 
-variables _ED1_buttons_init '_capacitive threshold'
-
-	spec ' ' '_ED1_buttons_init' '_ED1_buttons_init' 'any any any'
-	spec 'r' 'OK button' '#SVG#button-ok'
-	spec 'r' 'cancel button' '#SVG#button-x'
-	spec 'r' 'up button' '#SVG#button-up'
-	spec 'r' 'down button' '#SVG#button-down'
-	spec 'r' 'left button' '#SVG#button-left'
-	spec 'r' 'right button' '#SVG#button-right'
-	spec ' ' 'set capacitive threshold to' 'set capacitive threshold to _' 'auto' 16
+  spec ' ' '_ED1_buttons_init' '_ED1_buttons_init' 'any any any'
+  spec 'r' 'OK button' '#SVG#button-ok'
+  spec 'r' 'cancel button' '#SVG#button-x'
+  spec 'r' 'up button' '#SVG#button-up'
+  spec 'r' 'down button' '#SVG#button-down'
+  spec 'r' 'left button' '#SVG#button-left'
+  spec 'r' 'right button' '#SVG#button-right'
+  spec ' ' 'set capacitive threshold to' 'set capacitive threshold to _' 'auto' 16
 
 to 'OK button' {
   '_ED1_buttons_init'

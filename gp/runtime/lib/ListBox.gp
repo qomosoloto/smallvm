@@ -1,6 +1,6 @@
 // Morphic ListBox handler
 
-defineClass ListBox morph collection onSelect getEntry selection bgColor fontName fontSize txtClrNormal bgClrNormal txtClrReady bgClrReady txtClrSelected bgClrSelected normalAlpha paddingX paddingY itemWidth minWidth onDoubleClick getHint highlighted
+defineClass ListBox morph collection onSelect getEntry selection bgColor fontName fontSize txtClrNormal bgClrNormal txtClrReady bgClrReady txtClrSelected bgClrSelected normalAlpha paddingX paddingY itemWidth minWidth onDoubleClick getHint highlighted onPreselect
 
 to listBox aCollection getEntry onSelect bgColor onDoubleClick getHint normalAlpha {
 	if (isNil getEntry) {getEntry = 'id'}
@@ -8,7 +8,10 @@ to listBox aCollection getEntry onSelect bgColor onDoubleClick getHint normalAlp
 	if (isNil bgColor) {bgColor = (color 255 255 255)}
 	if (isNil normalAlpha) {normalAlpha = 255}
 
+	onPreselect = 'nop'
+
 	lb = (new 'ListBox' nil aCollection onSelect getEntry nil bgColor)
+	onPreselect lb onPreselect
 	onDoubleClick lb onDoubleClick
 	setField lb 'getHint' getHint
 	initialize lb normalAlpha
@@ -37,6 +40,7 @@ method selection ListBox {return selection}
 method isSelecting ListBox anObject {return (selection == anObject)}
 method onSelect ListBox anAction {onSelect = anAction}
 method onDoubleClick ListBox anAction {onDoubleClick = anAction}
+method onPreselect ListBox anAction {onPreselect = anAction}
 method highlighted ListBox {return highlighted}
 method setNormalAlpha ListBox num {normalAlpha = num}
 
@@ -65,6 +69,7 @@ method select ListBox aListItem silently {
 	if (not silently) {
 		if (notNil selection) {call onSelect selection}
 	}
+	if (notNil onPreselect) {call onPreselect this}
 }
 
 method selectedMorph ListBox {
@@ -74,7 +79,9 @@ method selectedMorph ListBox {
 	return nil
 }
 
-method highlightOn ListBox aListItem {highlighted = aListItem}
+method highlightOn ListBox aListItem {
+	highlighted = aListItem
+}
 
 method highlightOff ListBox aListItem {
 	if (highlighted === aListItem) {

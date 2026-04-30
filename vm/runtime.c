@@ -30,7 +30,6 @@ static void softReset(int clearMemoryFlag);
 static void sendMessage(int msgType, int chunkIndex, int dataSize, char *data);
 static void sendChunkCRC(int chunkID);
 static void sendData();
-static void deferIDEDisconnect();
 
 // debugging
 
@@ -49,6 +48,54 @@ static void debugBeep(int count) {
 	}
 	delay(20);
 }
+
+#endif
+
+// DUELink support
+
+#if defined(DUELink)
+
+#include <stm32c0xx.h>
+#include <stm32c071xx.h>
+#include <usbd_cdc_if.h> // for CDC_deInit()
+
+__RAM_FUNC __NOINLINE static void dueLinkEraseFlashAndReset() {
+	// Danger! This function erases all of Flash memory then reboots the board in DFU mode.
+
+	CDC_deInit(); // stop USB serial
+
+	// disable interrupts
+	__disable_irq();
+
+	while (FLASH->SR & FLASH_SR_BSY1_Msk); // wait for any previous operation to complete
+
+	if (__HAL_FLASH_GET_FLAG(FLASH_FLAG_CFGBSY) != 0) {
+		__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
+	}
+
+	// mass erase all of Flash
+	HAL_FLASH_Unlock();
+	FLASH->CR |= (FLASH_CR_STRT | FLASH_CR_MER1);
+	while (FLASH->SR & FLASH_SR_BSY1_Msk); // wait for erase to complete
+
+	// NOTE: Flash has been erased! Do not call any library functions after this point!
+
+	// set the Flash empty flag
+	SET_BIT(FLASH->ACR, 1 << 16);
+
+	// reset
+	SCB->AIRCR = (
+		(0x5FA << SCB_AIRCR_VECTKEY_Pos) | // unlock key
+		(1 << SCB_AIRCR_SYSRESETREQ_Pos)); // reset request
+
+	// wait for reset
+	while (1);
+	// This function never returns because the board resets.
+}
+
+#else
+
+static void dueLinkEraseFlashAndReset() { } // noop on non-DUELink boards
 
 #endif
 
@@ -87,15 +134,16 @@ PrimitiveFunction findPrimitive(char *primName) {
 	strncpy(setName, primName + 1, count);
 	setName[count] = 0;
 
-	// extract primitive  name
+	// extract primitive name
 	count = (primName + len - 1) - (colon + 1);
 	if (count < 1) return NULL;
 	strncpy(opName, colon + 1, count);
 	opName[count] = 0;
 
 	for (int i = 0; i < PrimitiveSetCount; i++) {
-		if (0 == strcmp(primSets[i].setName, setName)) {
+		if ((primSets[i].setName != NULL) && (0 == strcmp(primSets[i].setName, setName))) {
 			PrimEntry *entries = primSets[i].entries;
+			if (!entries) continue; // uninitialized primitive set
 			int entryCount = primSets[i].entryCount;
 			for (int j = 0; j < entryCount; j++) {
 				if (0 == strcmp(entries[j].primName, opName)) {
@@ -110,27 +158,49 @@ PrimitiveFunction findPrimitive(char *primName) {
 OBJ doPrimitiveCall(PrimitiveSetIndex setIndex, const char *primName, int argCount, OBJ *args) {
 	// Call a named primitive with the given primitive set index and name.
 
+	if ((setIndex < 0) || (setIndex >= PrimitiveSetCount)) {
+		return fail(primitiveNotImplemented);
+	}
+
 	PrimEntry *entries = primSets[setIndex].entries;
 	int entryCount = primSets[setIndex].entryCount;
 	for (int i = 0; i < entryCount; i++) {
-		if (0 == strcmp(entries[i].primName, primName)) {
+		if ((entries[i].primName != NULL) && (0 == strcmp(entries[i].primName, primName))) {
 			OBJ result = (entries[i].primFunc)(argCount, args); // call the primitive
 			tempGCRoot = NULL; // clear tempGCRoot in case it was used
 			return result;
 		}
 	}
-
 	char s[200];
-	snprintf(s, sizeof(s), "Unknown primitive [%s:%s]", primSets[setIndex].setName, primName);
+	snprintf(s, sizeof(s), "Unknown primitive %d:%s", setIndex, primName);
 	outputString(s);
 	return fail(primitiveNotImplemented);
-
-	return falseObj;
 }
 
 void primsInit() {
 	// Called at startup to call functions to add named primitive sets.
 
+	memset(primSets, 0, sizeof(primSets));
+
+#if defined(DUELink)
+	addDataPrims();		// ~5600 bytes
+	addDisplayPrims();	// ~1500 bytes
+//	addFilePrims();
+	addIOPrims();		// ~2900 bytes
+	addMiscPrims();		// ~6000 bytes (could be reduced?)
+// 	addNetPrims();
+// 	addBLEPrims();
+// 	addRadioPrims();
+	addSensorPrims();	// ~3000 bytes
+	addSerialPrims();	// ~3500 bytes
+//	addTFTPrims();
+	addVarPrims();		// ~300 bytes
+// 	addHIDPrims();
+//	addOneWirePrims();	// ~200 bytes
+// 	addCameraPrims();
+	addEncoderPrims();	// ~1650 bytes
+//	addSDCardPrims();
+#else
 	addDataPrims();
 	addDisplayPrims();
 	addFilePrims();
@@ -147,6 +217,8 @@ void primsInit() {
 	addOneWirePrims();
 	addCameraPrims();
 	addEncoderPrims();
+	addSDCardPrims();
+#endif
 }
 
 // Task Ops
@@ -207,6 +279,7 @@ static void stopAllTasks() {
 		}
 	}
 	initTasks();
+	fail(0); // clear error flag
 }
 
 void startAll() {
@@ -395,9 +468,9 @@ static void storeCodeChunk(uint8 chunkIndex, int byteCount, uint8 *data) {
 	if (chunkIndex >= MAX_CHUNKS) return;
 	stopTaskForChunk(chunkIndex);
 	int chunkType = data[0]; // first byte is the chunk type
-	int *persistenChunk = appendPersistentRecord(chunkCode, chunkIndex, chunkType, byteCount - 1, &data[1]);
-	chunks[chunkIndex].code = persistenChunk;
-	chunks[chunkIndex].chunkType = chunkType;
+	int *persistentChunk = appendPersistentRecord(chunkCode, chunkIndex, chunkType, byteCount - 1, &data[1]);
+	chunks[chunkIndex].code = persistentChunk;
+	chunks[chunkIndex].chunkType = persistentChunk ? chunkType : unusedChunk;
 }
 
 static void storeVarName(uint8 varIndex, int byteCount, uint8 *data) {
@@ -467,9 +540,6 @@ static void softReset(int clearMemoryFlag) {
 
 	OBJ off = falseObj;
 	if (!useTFT) primSetUserLED(&off);
-	#if defined(OLED_128_64)
-		if (!useTFT) tftInit();
-	#endif
 
 #if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_BBC_MICROBIT_V2) || \
 	defined(ARDUINO_CALLIOPE_MINI) || defined(CALLIOPE_V3)
@@ -581,7 +651,7 @@ static void sendValueMessage(uint8 msgType, uint8 chunkOrVarIndex, OBJ value) {
 	char data[801];
 
 	if (isInt(value)) { // 32-bit integer, little endian
-		data[0] = 1;  // data type (1 is integer)
+		data[0] = 1; // data type (1 is integer)
 		int n = obj2int(value);
 		data[1] = (n & 0xFF);
 		data[2] = ((n >> 8) & 0xFF);
@@ -704,8 +774,10 @@ void outputString(const char *s) {
 	waitForOutbufBytes(byteCount + 50);
 	sendMessage(outputValueMsg, 255, (byteCount + 1), data);
 
-	// when debugging VM crashes, it can be helpful to uncomment the following:
-	// while (outBufStart != outBufEnd) sendData(); // wait for string to be sent
+	// wait for string to be sent:
+	while (ideConnected() && (OUTBUF_BYTES() > 0)) {
+		sendData(); // should eventually create enough room for bytesNeeded
+	}
 }
 
 void sendTaskDone(uint8 chunkIndex) {
@@ -765,8 +837,15 @@ static void setVariableValue(int varID, int byteCount, uint8 *data) {
 	}
 }
 
-static void sendVersionString() {
+static void sendVersionString(int chunkIndex) {
 	char s[100];
+	#if defined(DUELink)
+		if (1 == chunkIndex) { // return the PID as a hex string
+			snprintf(s, sizeof(s), "0x%06X", DUE_PID);
+			sendMessage(versionMsg, 1, strlen(s), s);
+			return;
+		}
+	#endif
 	snprintf(s, sizeof(s), " %s %s", VM_VERSION, boardType());
 	s[0] = 2; // data type (2 is string)
 	sendMessage(versionMsg, 0, strlen(s), s);
@@ -782,11 +861,16 @@ void sendBroadcastToIDE(char *s, int len) {
 		}
 	}
 	sendMessage(broadcastMsg, 0, len, s);
+	taskSleep(1); // avoid Boardie lockup
 }
 
 void sendSayForChunk(char *s, int len, uint8 chunkIndex) {
 	// Used by the "say" primitive. The buffer s includes the string value type byte.
 	sendMessage(outputValueMsg, chunkIndex, len, s);
+}
+
+void sendCodeStoreFull() {
+	sendMessage(codeStoreFullMsg, 0, 0, NULL);
 }
 
 // Code chunk error checking (CRC-32)
@@ -867,7 +951,7 @@ void sendAllCRCs() {
 
 	// send CRC records for chunks in use
 	// each record is 5 bytes: chunkID (one byte) + the CRC for that chunk (four bytes)
-	int delayPerCRC = extraByteDelay / 250;  // msec delay for 4 bytes (extraByteDelay is in usecs)
+	int delayPerCRC = extraByteDelay / 250; // msec delay for 4 bytes (extraByteDelay is in usecs)
 	for (int i = 0; i < MAX_CHUNKS; i++) {
 		if (chunks[i].code) {
 			OBJ code = chunks[i].code;
@@ -1030,18 +1114,18 @@ static int receiveTimeout() {
 
 int ideConnected() {
 	// Return true if the board is connected to the MicroBlocks IDE
-	// (i.e. if it has received a message from the IDE in the past 3 seconds).
+	// (i.e. if it has received a message from the IDE in the past few seconds).
 
 	if (0 == lastRcvTime) return false; // startup - no IDE messages yet
 
 	uint32 now = microsecs();
 	uint32 elapsed = (lastRcvTime > now) ? now : (now - lastRcvTime);
-	return elapsed < 3 * 1000000; // an ide msg was received in the past N seconds
+	return elapsed < (5 * 1000000); // an ide msg was received in the past few seconds
 }
 
 #endif
 
-static void deferIDEDisconnect() {
+void deferIDEDisconnect() {
 	lastRcvTime = microsecs();
 }
 
@@ -1101,7 +1185,7 @@ static void processShortMessage() {
 		sendAllCRCs();
 		break;
 	case getVersionMsg:
-		sendVersionString();
+		sendVersionString(chunkIndex);
 		break;
 	case getAllCodeMsg:
 		if (1 != chunkIndex) break; // ignore msg from 32-bit IDE
@@ -1119,8 +1203,19 @@ static void processShortMessage() {
 	case systemResetMsg:
 		// non-zero chunkIndex is used for debugging operations
 		if (1 == chunkIndex) { outputRecordHeaders(); break; }
-		if (2 == chunkIndex) { compactCodeStore(); break; }
+		if (2 == chunkIndex) {
+			// compact the code store and return the code usage stats
+			char msgBody[8];
+			compactCodeStore((int *) &msgBody[0], (int *) &msgBody[4]);
+			sendMessage(codeStoreUsedMsg, 0, 8, msgBody);
+			sendData();
+			break;
+		}
 		if (3 == chunkIndex) { primMBDisplayOff(0, NULL); } // used by Boardie reset
+		if (199 == chunkIndex) {
+			clearAllVariables(); // do a Flash write operation to enable DFU after reset
+			dueLinkEraseFlashAndReset();
+		}
 		softReset(true);
 		break;
 	case pingMsg:
@@ -1160,6 +1255,9 @@ static void processLongMessage() {
 	switch (cmd) {
 	case chunkCode16Msg: // code chunk from 16-bit IDE
 		sendPingNow(chunkIndex); // send a ping to acknowledge receipt
+		#if defined(ESP32_S3)
+			delay(10); // avoid chunk save glitches on m5atom-lite; less than 5 msecs fails
+		#endif
 		storeCodeChunk(chunkIndex, bodyBytes, &rcvBuf[5]);
 		sendChunkCRC(chunkIndex);
 		break;

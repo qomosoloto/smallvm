@@ -187,7 +187,7 @@ method graphSequence MicroBlocksDataGraph ctx seq aColor {
 	pointCount = (pointCount this)
 	i = (max 1 ((count seq) - pointCount))
 	isFirstPoint = true
-	while (and (i < (count seq)) (x <= right)) {
+	while (and (i <= (count seq)) (x <= right)) {
 		n = (at seq i)
 		y = (yOrigin - (n * yScale))
 		if (y < top) { y = top }

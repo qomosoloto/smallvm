@@ -70,7 +70,7 @@ method installFromURL MicroBlocksFlasher serialPortID url {
 }
 
 method installFromData MicroBlocksFlasher serialPortID fileNameOrURL data {
- 	if ((byteCount data) == 0) { return }
+	if ((byteCount data) == 0) { return }
 
 	if (and ('Browser' == (platform)) (isNil serialPortID)) {
 		// must request a user gesture to open port in browser after long download
@@ -103,6 +103,8 @@ method installFromData MicroBlocksFlasher serialPortID fileNameOrURL data {
 	}
 
 	if (notNil (findSubstring 'databot2.0_' fileNameOrURL)) { setAllInOneBinary espTool true }
+	if (notNil (findSubstring 'waveshare_s3_matrix' fileNameOrURL)) { setAllInOneBinary espTool true }
+	if (notNil (findSubstring '_all.bin' fileNameOrURL)) { setAllInOneBinary espTool true }
 
 	// install the downloaded firmware
 	spinner = (newSpinner (action 'espToolStatus' this) (action 'espToolDone' this))

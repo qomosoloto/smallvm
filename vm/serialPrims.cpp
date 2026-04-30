@@ -15,9 +15,13 @@
 #define TX_BUF_SIZE 128
 static int isOpen = false;
 
+#if defined(ARDUINO_WEACT)
+HardwareSerial Serial2(PC_11, PC_10);
+#endif
+
 #if defined(NRF51) // not implemented (has only one UART)
 
-static OBJ setNRF52SerialPins(uint8 rxPin, uint8 txPin) { return fail(primitiveNotImplemented); }
+static OBJ setSerialPins(uint8 rxPin, uint8 txPin, int baud) { return fail(primitiveNotImplemented); }
 static void serialOpen(int baudRate) { fail(primitiveNotImplemented); }
 static void serialClose() { fail(primitiveNotImplemented); }
 static int serialAvailable() { return -1; }
@@ -30,6 +34,9 @@ static int serialWriteBytes(uint8 *buf, uint32 byteCount) { fail(primitiveNotImp
 #if defined(CALLIOPE_V3)
 	uint8 nrf52PinRx = 16;
 	uint8 nrf52PinTx = 17;
+#elif defined(ARDUINO_SEEED_XIAO_NRF52840_SENSE)
+	uint8 nrf52PinRx = g_ADigitalPinMap[PIN_SERIAL1_RX];
+	uint8 nrf52PinTx = g_ADigitalPinMap[PIN_SERIAL1_TX];
 #else
 	uint8 nrf52PinRx = 0;
 	uint8 nrf52PinTx = 1;
@@ -47,24 +54,25 @@ extern "C" void UARTE1_IRQHandler() { MBSerial.IrqHandler(); }
 
 uint8 txBuf[512]; // extra large output buffer on nRF52 boards
 
-static OBJ setNRF52SerialPins(uint8 rxPin, uint8 txPin) {
-	nrf52PinRx = rxPin;
-	nrf52PinTx = txPin;
-	return trueObj;
-}
-
 static void serialOpen(int baudRate) {
 	if (isOpen) MBSerial.end();
 	MBSerial.setPins(nrf52PinRx, nrf52PinTx);
 	MBSerial.begin(baudRate);
 
 	// enable UART and send zero bytes to initialize
- 	NRF_UARTE1->ENABLE = UARTE_ENABLE_ENABLE_Enabled;
+	NRF_UARTE1->ENABLE = UARTE_ENABLE_ENABLE_Enabled;
 	NRF_UARTE1->TXD.PTR = (uint32_t) txBuf;
 	NRF_UARTE1->TXD.MAXCNT = 0;
 	NRF_UARTE1->TASKS_STARTTX = 1;
 
 	isOpen = true;
+}
+
+static OBJ setSerialPins(uint8 rxPin, uint8 txPin, int baud) {
+	nrf52PinRx = rxPin;
+	nrf52PinTx = txPin;
+	serialOpen(baud);
+	return trueObj;
 }
 
 static void serialClose() {
@@ -106,12 +114,6 @@ uint8 rxBufB[RX_BUF_SIZE];
 #define INACTIVE_RX_BUF() (((void *) NRF_UARTE1->RXD.PTR == rxBufB) ? rxBufA : rxBufB)
 
 uint8 txBuf[TX_BUF_SIZE];
-
-static OBJ setNRF52SerialPins(uint8 rxPin, uint8 txPin) {
-	nrf52PinRx = rxPin;
-	nrf52PinTx = txPin;
-	return trueObj;
-}
 
 static void serialClose() {
 	if (!NRF_UARTE1->ENABLE) return; // already stopped
@@ -156,6 +158,13 @@ static void serialOpen(int baudRate) {
 	isOpen = true;
 }
 
+static OBJ setSerialPins(uint8 rxPin, uint8 txPin, int baud) {
+	nrf52PinRx = rxPin;
+	nrf52PinTx = txPin;
+	serialOpen(baud);
+	return trueObj;
+}
+
 static int serialAvailable() {
 	if (!NRF_UARTE1->EVENTS_RXDRDY) return 0;
 
@@ -193,15 +202,12 @@ static int serialWriteBytes(uint8 *buf, uint32 byteCount) {
 #else // use Serial1 or Serial2
 
 // Use Serial2 on original ESP32 and Pico:ed boards, Serial1 on others
-#if (ESP32_ORIGINAL) || defined(PICO_ED) || defined(COCUBE)
+#if defined(ESP32_ORIGINAL) || defined(ESP32_S3) || defined(PICO_ED) || \
+	defined(COCUBE) || defined(DUELink) || defined(ARDUINO_WEACT)
 	#define SERIAL_PORT Serial2
 #else
 	#define SERIAL_PORT Serial1
 #endif
-
-static OBJ setNRF52SerialPins(uint8 rxPin, uint8 txPin) {
-	return fail(primitiveNotImplemented);
-}
 
 static void serialClose() {
 	isOpen = false;
@@ -221,11 +227,11 @@ static void serialOpen(int baudRate) {
 		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 21, 22);
 	#elif defined(M5CORE2)
 		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 32, 33);
-	#elif defined(ARDUINO_M5Atom_Lite_ESP32) || defined(ARDUINO_M5Atom_Matrix_ESP32)
+	#elif defined(M5Atom_Lite) || defined(M5Atom_Matrix)
 		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 32, 26);
 	#elif defined(ARDUINO_M5Stick_C)
 		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 33, 32);
-	#elif defined(ARDUINO_M5Atom_Lite_S3)
+	#elif defined(ARDUINO_M5Stack_ATOMS3)
 		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 1, 2);
 	#elif defined(TX_FT_BOX)
 		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 44, 43);
@@ -245,12 +251,52 @@ static void serialOpen(int baudRate) {
 		SERIAL_PORT.begin(baudRate);
 		delayMicroseconds(5); // wait for garbage byte when first opening the serial port after a reset (seen at 115200 baud)
 		SERIAL_PORT.begin(baudRate); // reset to discard garbage byte
+	#elif defined(ARDUINO_Labplus_mPython)
+		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 18, 19);
+	#elif defined(ESP32_C3)
+		#if !defined(ARDUINO_USB_MODE)
+		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 18, 19);
+		#else
+			SERIAL_PORT.begin(baudRate, SERIAL_8N1, RX, TX);
+		#endif
 	#elif defined(ESP32_ORIGINAL)
+		if (hasPSRAM()) { // GPIO16 and GPIO17 are used by PSRAM on original ESP32
+			SERIAL_PORT.begin(baudRate, SERIAL_8N1, 21, 22);
+		} else {
+			SERIAL_PORT.begin(baudRate, SERIAL_8N1, 16, 17);
+		}
+	#elif defined(METRO_S3)
+		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 41, 40);
+	#elif defined(ESP32)
+		// all ESP32 boards that do not have cases above
 		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 16, 17);
+	#elif defined(DUELink)
+		if (DUE_HAS_EDGE_CONNECTOR) {
+			// Edge connector pins 0 and 1
+			SERIAL_PORT.setRx(mapDigitalPinNum(0));
+			SERIAL_PORT.setTx(mapDigitalPinNum(1));
+		} else {
+			// DUE standard pins
+			SERIAL_PORT.setRx(2); // PA_10, D2, edge pin 22 is UART1_RX
+			SERIAL_PORT.setTx(8); // PA_9, D8, edge pin 21 is UART1_TX
+		}
+		SERIAL_PORT.begin(baudRate);
 	#else
 		SERIAL_PORT.begin(baudRate);
 	#endif
 	isOpen = true;
+}
+
+static OBJ setSerialPins(uint8 rxPin, uint8 txPin, int baud) {
+	#if defined(ESP32)
+		// ESP32 supports using most pins for serial
+		SERIAL_PORT.end();
+		SERIAL_PORT.begin(baud, SERIAL_8N1, rxPin, txPin);
+		isOpen = true;
+		return falseObj;
+	#else
+		return fail(primitiveNotImplemented);
+	#endif
 }
 
 static int serialAvailable() {
@@ -258,7 +304,7 @@ static int serialAvailable() {
 }
 
 static void serialReadBytes(uint8 *buf, uint32 byteCount) {
-	if (isOpen) SERIAL_PORT.readBytes(buf, byteCount);
+	if (isOpen) SERIAL_PORT.readBytes((char *) buf, byteCount);
 }
 
 static int serialWriteBytes(uint8 *buf, uint32 byteCount) {
@@ -305,7 +351,14 @@ static OBJ primSerialOpen(int argCount, OBJ *args) {
 	if (!isInt(args[0])) return fail(needsIntegerError);
 	int baudRate = obj2int(args[0]);
 	serialOpen(baudRate);
-	taskSleep(5); // leave a litte time for things to settle
+
+	// wait a bit, then discard any initial garbage byte(s)
+	delayMicroseconds(250);
+	uint8 trash[16];
+	uint32 garbageByteCount = serialAvailable();
+	if (garbageByteCount > sizeof(trash)) garbageByteCount = sizeof(trash);
+	serialReadBytes(trash, garbageByteCount);
+
 	return falseObj;
 }
 
@@ -385,7 +438,13 @@ static OBJ primSetPins(int argCount, OBJ *args) {
 	if (argCount < 2) return fail(notEnoughArguments);
 	if (!isInt(args[0]) || !isInt(args[1])) return fail(needsIntegerIndexError);
 
-	return setNRF52SerialPins(obj2int(args[0]), obj2int(args[1]));
+	int rxPin = mapDigitalPinNum(obj2int(args[0]));
+	int txPin = mapDigitalPinNum(obj2int(args[1]));
+	int baud = ((argCount > 2) && isInt(args[2])) ? obj2int(args[2]) : 9600;
+
+	if ((rxPin < 0) || (txPin < 0)) return falseObj; // out of range or reserved pin number
+
+	return setSerialPins(rxPin, txPin, baud);
 }
 
 static OBJ primSerialWriteBytes(int argCount, OBJ *args) {
@@ -475,12 +534,189 @@ static OBJ primMIDIRecv(int argCount, OBJ *args) {
 	return result;
 }
 
+// #elif defined(ESP32_S2) || defined(ESP32_S3)
+// // Not working; commented out
+// // NOTE: Could not get this to work using platformio Arduino, which is IDF v4.4.7-dirty.
+// // It might need a newer version of the Espressive IDF.
+//
+// Note: These #includes cause conflicting library errors when compiling on SAMD21 boards
+// unless you add "lib_ldf_mode = chain+" to their environments in the platformio.ini file.
+// #include <tusb.h>
+// #include <esp32-hal-tinyusb.h>
+// #include <tusb_config.h>
+//
+// static int midiInitialized = false;
+//
+// extern "C" uint16_t tusb_midi_load_descriptor(uint8_t *dst, uint8_t *itf) {
+// 	// NOTE: This never gets called.
+// outputString("tusb_midi_load_descriptor");
+//   uint8_t str_index = tinyusb_add_string_descriptor("TinyUSB MIDI");
+//   uint8_t ep_num = tinyusb_get_free_duplex_endpoint();
+// //  TU_VERIFY(ep_num != 0);
+// reportNum("str_index", ep_num);
+// reportNum("ep_num", ep_num);
+//   uint8_t descriptor[TUD_MIDI_DESC_LEN] = {
+//       // Interface number, string index, EP Out & EP In address, EP size
+//       TUD_MIDI_DESCRIPTOR(*itf, str_index, ep_num, (uint8_t)(0x80 | ep_num), 64)};
+//   *itf += 1;
+//   memcpy(dst, descriptor, TUD_MIDI_DESC_LEN);
+//   return TUD_MIDI_DESC_LEN;
+// }
+//
+// static void initMidi() {
+// 	if (!midiInitialized)  {
+//
+// 		// tusb_desc_interface_t is defined in tusb_types.h:
+// 		tusb_desc_interface_t midiDesc;
+// 		memset(&midiDesc, 0, sizeof(midiDesc));
+// 		midiDesc.bLength = sizeof(midiDesc);
+// 		midiDesc.bDescriptorType = TUSB_DESC_CS_INTERFACE;
+// 		midiDesc.bInterfaceNumber = 0;
+// 		midiDesc.bInterfaceNumber = 1;
+// 		midiDesc.bInterfaceClass = 1;
+// 		midiDesc.bInterfaceSubClass = 3;
+// 		midiDesc.bInterfaceProtocol = 0;
+// 		midiDesc.iInterface = tinyusb_add_string_descriptor("Johns TinyUSB MIDI");
+//
+// 		tinyusb_enable_interface(USB_INTERFACE_MIDI, TUD_MIDI_DESC_LEN, tusb_midi_load_descriptor);
+// 		midid_init();
+//
+// 		midid_open(0, &midiDesc, 64);
+// 	}
+// 	midiInitialized = true;
+// }
+//
+// static OBJ primMIDISend(int argCount, OBJ *args) {
+// 	if (argCount < 1) return fail(notEnoughArguments);
+//
+// 	uint8_t buf[3];
+//
+// 	initMidi();
+// 	buf[0] = obj2int(args[0]);
+// 	buf[1] = (argCount > 1) ? obj2int(args[1]) : 0;
+// 	buf[2] = (argCount > 2) ? obj2int(args[2]) : 0;
+// 	tud_midi_n_stream_write (0, 0, buf, 3);
+//
+// 	return trueObj;
+// }
+//
+// static OBJ primMIDIRecv(int argCount, OBJ *args) {
+// 	// Return a MIDI message packet or false if none is available.
+// 	// Packets are always 3-bytes. The first byte is the MIDI command bytes.
+// 	// The following two bytes are argument bytes. The unused argument bytes
+// 	// of 1-byte and 2-byte MIDI commands are zero.
+//
+// 	uint8_t buf[4];
+//
+// 	initMidi();
+// 	int gotData = tud_midi_n_packet_read(0, buf);
+// 	if (!gotData) return falseObj;
+//
+// 	// allocate 3-byte byte array
+// 	OBJ result = newObj(ByteArrayType, 1, falseObj);
+// 	if (!result) return fail(insufficientMemoryError);
+// 	setByteCountAdjust(result, 3);
+//
+// 	// read MIDI data into result
+// 	uint8 *bytes = (uint8 *) &FIELD(result, 0);
+// 	bytes[0] = buf[0];
+// 	bytes[1] = buf[1];
+// 	bytes[2] = buf[2];
+//
+// 	return result;
+// }
+
 #else // no USB_MIDI
 
 static OBJ primMIDISend(int argCount, OBJ *args) { return falseObj; }
 static OBJ primMIDIRecv(int argCount, OBJ *args) { return falseObj; }
 
 #endif // USB_MIDI
+
+// DUELink Downlink Primitives
+
+#if defined(DUELink)
+
+#define DOWNLINK Serial2
+static int downlinkInitialized = false;
+
+static void initDownlink() {
+	if (downlinkInitialized) return; // already open
+	DOWNLINK.setRx(PA3);
+	DOWNLINK.setTx(PA2);
+	DOWNLINK.begin(115200);
+	downlinkInitialized = true;
+}
+
+static OBJ primIsDUELink(int argCount, OBJ *args) { return trueObj; }
+
+static OBJ primDUELinkSend(int argCount, OBJ *args) {
+	// Send up to 63 bytes to the DUELink downstream link and return the number of bytes sent.
+
+	initDownlink();
+	if (argCount < 2) return fail(notEnoughArguments);
+	if (!isInt(args[1])) return fail(needsIntegerIndexError);
+
+	OBJ buf = args[0];
+	int bufType = objType(buf);
+	if (!((bufType == StringType) || (bufType == ByteArrayType))) return fail(needsByteArray);
+
+	int startIndex = obj2int(args[1]) - 1; // convert to 0-based index
+	if (startIndex < 0) return fail(indexOutOfRangeError);
+
+	// Note: startIndex is 0-based
+	int srcLen = (bufType == StringType) ? strlen(obj2str(buf)) : BYTES(buf);
+	if (startIndex >= srcLen) return fail(indexOutOfRangeError);
+
+	int bytesToWrite = srcLen - startIndex;
+	int spaceAvailable = DOWNLINK.availableForWrite();
+	if (bytesToWrite > spaceAvailable) bytesToWrite = spaceAvailable;
+	if (bytesToWrite == 0) return zeroObj;
+
+	uint8 *src = ((uint8 *) &FIELD(buf, 0)) + startIndex;
+	DOWNLINK.write(src, bytesToWrite);
+
+	taskSleep(-1);
+	return int2obj(bytesToWrite);
+}
+
+static OBJ primDUELinkRecv(int argCount, OBJ *args) {
+	initDownlink();
+
+	int byteCount = DOWNLINK.available();
+	if (byteCount <= 0) return (OBJ) &emptyByteArray;
+
+	int wordCount = (byteCount + 3) / 4;
+	OBJ result = newObj(ByteArrayType, wordCount, falseObj);
+	if (!result) return fail(insufficientMemoryError);
+	DOWNLINK.readBytes((uint8 *) &FIELD(result, 0), byteCount);
+	setByteCountAdjust(result, byteCount);
+
+	taskSleep(-1);
+	return result;
+}
+
+#else
+
+static void initDownlink() {
+	if (isOpen) return;
+	serialOpen(115200);
+	delay(5); // leave a litte time for things to settle
+}
+
+static OBJ primIsDUELink(int argCount, OBJ *args) { return falseObj; }
+
+static OBJ primDUELinkSend(int argCount, OBJ *args) {
+	initDownlink();
+	return primSerialWriteBytes(argCount, args);
+}
+
+static OBJ primDUELinkRecv(int argCount, OBJ *args) {
+	initDownlink();
+	return primSerialRead(0, NULL);
+}
+
+#endif
 
 // Primitives
 
@@ -494,6 +730,9 @@ static PrimEntry entries[] = {
 	{"writeBytes", primSerialWriteBytes},
 	{"midiSend", primMIDISend},
 	{"midiRecv", primMIDIRecv},
+	{"isDUELink", primIsDUELink},
+	{"dueSend", primDUELinkSend},
+	{"dueRecv", primDUELinkRecv},
 };
 
 void addSerialPrims() {

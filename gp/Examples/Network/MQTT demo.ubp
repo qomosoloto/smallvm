@@ -151,13 +151,16 @@ to '_MQTT set will' topic payload retain qos buffer_sizes {
 
 module WiFi Comm
 author MicroBlocks
-version 1 8 
+version 1 10 
 tags communication network 
 description 'Connect to a WiFi network. Used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
 '
 
   spec ' ' 'wifiConnect' 'wifi connect to _ password _ : IP _ gateway _ subnet _' 'str str auto auto auto' 'Network_Name' '' '192.168.1.42' '192.168.1.1' '255.255.255.0'
   spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
+  spec ' ' '[net:stopWiFi]' 'stop wifi'
+  space
+  spec ' ' '[net:setDomainName]' 'wifi set local domain name _ .local' 'str' 'microblocks'
   space
   spec 'r' 'getIPAddress' 'IP address'
   spec 'r' '[net:myMAC]' 'MAC address'
@@ -196,6 +199,7 @@ to wifiConnect ssid password fixedIP gatewayIP subnetIP {
     setUserLED false
     waitMillis 50
   }
+  '[net:setDomainName]' 'microblocks'
   sayIt 'My IP address is:' ('[net:myIPAddress]')
 }
 
@@ -217,6 +221,7 @@ to wifiCreateHotspot ssid password {
     setUserLED false
     waitMillis 50
   }
+  '[net:setDomainName]' 'microblocks'
   sayIt 'My IP address is:' ('[net:myIPAddress]')
 }
 

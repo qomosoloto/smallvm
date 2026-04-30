@@ -14,14 +14,15 @@ method init PNGReader {
 	depth = 32
 }
 
-method getScriptText PNGReader d {
+method getScriptText PNGReader pngData optionalFileName {
 	// Extract a tEXt chunk with the key 'script'. If there isn't one, return nil.
 	init this
-	data = (dataStream d true)
+	data = (dataStream pngData true)
 	unknownChunks = (list)
 	sig = (toArray (nextData data 8))
 	if (sig != (array 137 80 78 71 13 10 26 10)) {
-		error 'Bad PNG file signature'
+		print 'Bad PNG file signature:' optionalFileName
+		return nil
 	}
 	script = nil
 	while (not (atEnd data)) {

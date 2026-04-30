@@ -1,30 +1,24 @@
 module 'Distance (VL6180x)' Input
 author 'José García Yeste'
-version 1 0 
+version 1 1 
 tags sensor distance 
 description 'Support for VL6180x distance sensor.
 
 Based on:
 https://github.com/adafruit/Adafruit_VL6180X'
-
 variables '_vl6180x initalized' 
 
-	spec 'r' 'vl6180x connected' 'vl8161 connected'
-	spec 'r' 'vl6180x read mm' 'vl6180x read (mm)'
-	spec 'r' 'vl6180x status' 'vl6180x status'
-	spec ' ' '_vl6180x setup' '_vl6180x setup'
-	spec ' ' '_vl6180x setup1' '_vl6180x setup1'
-	spec ' ' '_vl6180x setup2' '_vl6180x setup2'
-	spec 'r' '_vl6180x read register' '_vl6180x read register _' 'auto' 0
-	spec ' ' '_vl6180x write byte' '_vl6180x write register _ to _' 'auto auto' 0 0
-
-
-to 'vl6180x status' {
-  return (('_vl6180x read register' (hexToInt '4D')) >> 4)
-}
+  spec 'r' 'vl6180x connected' 'vl6180x connected'
+  spec 'r' 'vl6180x read mm' 'vl6180x read (mm)'
+  spec 'r' 'vl6180x status' 'vl6180x status'
+  spec ' ' '_vl6180x setup' '_vl6180x setup'
+  spec ' ' '_vl6180x setup1' '_vl6180x setup1'
+  spec ' ' '_vl6180x setup2' '_vl6180x setup2'
+  spec 'r' '_vl6180x read register' '_vl6180x read register _' 'auto' 0
+  spec ' ' '_vl6180x write byte' '_vl6180x write register _ to _' 'auto auto' 0 0
 
 to '_vl6180x read register' reg {
-  i2cSet (hexToInt '29') (reg >> 8) reg
+  '[sensors:i2cWrite]' (hexToInt '29') ('[data:makeList]' (reg >> 8) (reg & 255))
   local 'value' ('[data:makeList]' 0)
   '[sensors:i2cRead]' (hexToInt '29') value
   return (at 1 value)
@@ -60,8 +54,12 @@ to '_vl6180x setup2' {
 }
 
 to '_vl6180x write byte' reg value {
-  '[sensors:i2cWrite]' (hexToInt '29') ('[data:makeList]' (reg >> 8) reg value)
+  '[sensors:i2cWrite]' (hexToInt '29') ('[data:makeList]' (reg >> 8) (reg & 255) value)
   waitMicros 10
+}
+
+to 'vl6180x connected' {
+  return (('_vl6180x read register' 0) == 180)
 }
 
 to 'vl6180x read mm' {
@@ -76,7 +74,7 @@ to 'vl6180x read mm' {
   }
 }
 
-to 'vl6180x connected' {
-  return (('_vl6180x read register' 0) == 180)
+to 'vl6180x status' {
+  return (('_vl6180x read register' (hexToInt '4D')) >> 4)
 }
 

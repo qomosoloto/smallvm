@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: interest@microblocks.fun\n"
 "POT-Creation-Date: 2025-01-18 05:53+0200\n"
-"PO-Revision-Date: 2025-01-19 08:58+0000\n"
+"PO-Revision-Date: 2025-08-10 14:01+0000\n"
 "Last-Translator: தமிழ்நேரம் <anishprabu.t@gmail.com>\n"
 "Language-Team: Tamil <https://hosted.weblate.org/projects/microblocks/ide/ta/"
 ">\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.10-dev\n"
+"X-Generator: Weblate 5.13-dev\n"
 
 #. "Output" blocks category label
 msgid "cat;Output"
@@ -160,7 +160,7 @@ msgstr "_ _ வேறு _ என்றால்"
 
 #. Block in Control category
 msgid "else if _ _"
-msgstr "_ _ என்றால் வேறு என்றால்"
+msgstr "இல்லை இதுவேன்றால் _ _"
 
 #. Block in Control category
 msgid "else"
@@ -353,7 +353,7 @@ msgstr "ஃச் _"
 
 #. Block in Operators category
 msgid "sqrt _"
-msgstr "sqrt _"
+msgstr "மூலவர்கம் _"
 
 #. "Variables" blocks category label
 msgid "cat;Variables"
@@ -429,7 +429,7 @@ msgstr "சேர _ _"
 
 #. Block in Data category
 msgid "copy _ from _"
-msgstr "_ இலிருந்து நகலெடு"
+msgstr "_ இலிருந்து நகலெடு _"
 
 #. Example value for the ( copy (smiles) from 2 > ) block, which will become "miles" when run.
 #. You could think of a word that still has meaning when you remove its first character in your language.
@@ -628,7 +628,7 @@ msgstr "புறக்கணிக்கவும்"
 
 #. Primitive block. Mostly hidden from end users.
 msgid "draw shape _ at x _ y _"
-msgstr "ஃச் _ ஒய் _ இல் வடிவத்தை வரையவும்"
+msgstr "ஃச் _ ஒய் _ இல் வடிவத்தை வரையவும் _"
 
 #. Primitive block. Mostly hidden from end users.
 msgid "shape for letter _"
@@ -848,7 +848,7 @@ msgstr "நியோபனெல் நிரப்பு செவ்வகம�
 
 #. NeoPanel library block
 msgid "NeoPanel draw text _ at x _ y _ color _"
-msgstr "ஃச் _ ஒய் _ வண்ணத்தில் நியோபனெல் டிரா உரை _"
+msgstr "ஃச் _ ஒய் _ வண்ணத்தில் நியோபனெல் டிரா உரை _ _"
 
 #. NeoPanel library block
 msgid "NeoPanel draw BMP file _ at x _ y _"
@@ -980,7 +980,7 @@ msgstr "பிஞ்ச் வால் _ சிவப்பு _ பச்ச�
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch Move _ _ cm at _ %"
-msgstr "_ % இல் _ _ செ.மீ."
+msgstr "பின்ச் நகர்வு _ _ செ.மீ. _ % இல்"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch Turn _ _ ° at _ %"
@@ -1317,7 +1317,7 @@ msgstr "மாற்றப்பட்ட _"
 
 #. Lists library block
 msgid "reversed _"
-msgstr "தலைகீழ் _"
+msgstr "தலைகீழாக _"
 
 #. Lists library block
 msgid "sorted _"
@@ -1619,7 +1619,7 @@ msgstr "ஃச் _ ஒய் _ ஆரம் _ அழி _ இல் வட்�
 
 #. OLED Graphics library block
 msgid "draw image _ at x _ y _"
-msgstr "ஃச் _ ஒய் _ இல் படத்தை வரையவும்"
+msgstr "ஃச் _ ஒய் _ இல் படத்தை வரையவும் _"
 
 #. OLED Graphics library block
 msgid "draw line from x _ y _ to x _ y _ erase _"
@@ -1696,7 +1696,7 @@ msgstr ""
 
 #. TFT Display library block
 msgid "draw circle on TFT at x _ y _ radius _ color _"
-msgstr "ஃச் _ ஒய் _ ஆரம் _ வண்ணத்தில் tft இல் வட்டத்தை வரையவும்"
+msgstr "ஃச் _ ஒய் _ ஆரம் _ வண்ணத்தில் tft இல் வட்டத்தை வரையவும் _"
 
 #. TFT Display library block
 msgid "draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _"
@@ -1721,7 +1721,7 @@ msgstr "அளவுகோல் _ மடக்கு _"
 
 #. TFT Display library block
 msgid "draw text _ on TFT at x _ y _ color _"
-msgstr "ஃச் _ ஒய் _ வண்ணத்தில் tft இல் உரையை _ வரையவும்"
+msgstr "ஃச் _ ஒய் _ வண்ணத்தில் tft இல் உரையை _ வரையவும் _"
 
 #. TFT Display library block
 msgid "scale _"
@@ -1813,11 +1813,11 @@ msgstr "பின்னங்கள்"
 
 #. Fractions library block
 msgid "fract _ / _"
-msgstr "பின்னம் _ /"
+msgstr "பின்னம் _ / _"
 
 #. Fractions library block
 msgid "fract _ + _"
-msgstr "பின்னம் _"
+msgstr "பின்னம் _ + _"
 
 #. Fractions library block
 msgid "fract _ - _"
@@ -1833,11 +1833,11 @@ msgstr "பின்னம் _ = _"
 
 #. Fractions library block
 msgid "fract _ < _"
-msgstr "பின்னம் _ <_ _"
+msgstr "பின்னம் _ < _"
 
 #. Fractions library block
 msgid "fract _ > _"
-msgstr "Fract _>"
+msgstr "Fract _ > _"
 
 #. Fractions library block
 msgid "simplify fraction _"
@@ -2586,7 +2586,7 @@ msgstr "5 வது வட்டத்தின் சுழற்சி _ _ M _
 
 #. Chiptune library block
 msgid "kick for _ ms on pin _"
-msgstr "முள் _ இல் _ எம்.எச்."
+msgstr "உதை _ எம்.எச். முள் _ இல்"
 
 #. Chiptune library block
 msgid "tom for _ ms pitch shifted by _ on pin _"
@@ -2610,7 +2610,7 @@ msgstr "DAC முள் _ இல் _ MS க்கான SNARE"
 
 #. Chiptune library block
 msgid "hihat for _ ms on DAC pin _"
-msgstr "டிஏசி முள் _ இல் _ எம்.எச்."
+msgstr "டிஏசி முள் _ இல் _ எம்.எச்"
 
 #. Square Wave Chords library label
 msgid "Square Wave Chords"
@@ -2690,7 +2690,7 @@ msgstr "கோப்பை நீக்கு _"
 
 #. File System library block
 msgid "append line _ to file _"
-msgstr "கோப்பு _"
+msgstr "கோப்பு _ _"
 
 #. File System library block
 msgid "append bytes _ to file _"
@@ -2831,11 +2831,11 @@ msgstr "தூய"
 
 #. Strings library block
 msgid "num2str _"
-msgstr "num2str _"
+msgstr "எண்2சரம் _"
 
 #. Strings library block
 msgid "str2num _"
-msgstr "str2num _"
+msgstr "சரம்2எண் _"
 
 #. WiFi library label
 msgid "WiFi"
@@ -3285,11 +3285,11 @@ msgstr "மைக் டிசிட்டல் டி 8 முதல் _ வ�
 
 #. Shield:bit library block
 msgid "sb LEDs off"
-msgstr "எச்.பி. எல்.ஈ."
+msgstr "எச்.பி. எல்.ஈ. அணை"
 
 #. Shield:bit library block
 msgid "sb set all LEDs to _"
-msgstr "எச்.பி."
+msgstr "sb அனைத்து LED களையும் _ ஆக அமைக்கவும்"
 
 #. Shield:bit library block
 msgid "sb set LED _ (1-4) to _"
@@ -3313,7 +3313,7 @@ msgstr "எச்.பி. டர்ன் 360 சர்வோ எச்- _ (1-8)
 
 #. Shield:bit library block
 msgid "sb turn DC M- _ (1-4) motor _ at _ %"
-msgstr "எச்.பி."
+msgstr "sb டர்ன் DC M- _ (1-4) மோட்டார் _ at _ %"
 
 #. Shield:bit library block
 msgid "sb turn Stepper- _ (1-2) motor _ for _ _"
@@ -3373,7 +3373,7 @@ msgstr "எம்.எச் சூழ்ச்சி ஃச் _ ஒய் _ _ �
 
 #. micro:STEAMakers library block
 msgid "ms unplot x _ y _"
-msgstr "எம்.எச்."
+msgstr "எம்எச் பிளாட் x _ y _"
 
 #. micro:STEAMakers library block
 msgid "ms display character _ with _"
@@ -3397,7 +3397,7 @@ msgstr "எம்.எச் பொத்தான் _?"
 
 #. micro:STEAMakers library block
 msgid "ms touching ?"
-msgstr "எம்.எச்."
+msgstr "எம்.எச் லோகோ தொட்டதா?"
 
 #. micro:STEAMakers library block
 msgid "ms light"
@@ -4589,19 +4589,19 @@ msgstr "பின்னோக்கு"
 
 #. CoCube library block
 msgid "move _ at _ speed (0-50) for _ msecs"
-msgstr "_ msecs க்கு _ வேகத்தில் (0-50) நகர்த்தவும்"
+msgstr "_ msecs க்கு _ வேகத்தில் (0-50) நகர்த்தவும் _"
 
 #. CoCube library block
 msgid "rotate _ at _ speed (0-50) for _ msecs"
-msgstr "_ msecs க்கு _ வேகத்தில் (0-50) சுழற்றுங்கள்"
+msgstr "_ msecs க்கு _ வேகத்தில் (0-50) சுழற்றுங்கள் _"
 
 #. CoCube library block
 msgid "move _ at _ speed (0-50)"
-msgstr "_ வேகத்தில் (0-50) நகர்த்தவும்"
+msgstr "_ வேகத்தில் (0-50) நகர்த்தவும் _"
 
 #. CoCube library block
 msgid "rotate _ at _ speed (0-50)"
-msgstr "_ வேகத்தில் (0-50) சுழற்றுங்கள்"
+msgstr "_ வேகத்தில் (0-50) சுழற்றுங்கள் _"
 
 #. CoCube library block
 msgid "set wheel left _ right _ (-50 to 50)"
@@ -4629,11 +4629,11 @@ msgstr "திசை"
 
 #. CoCube library block
 msgid "move _ at _ speed (0-50) by _ steps"
-msgstr "_ படிகளால் _ வேகத்தில் (0-50) நகர்த்தவும்"
+msgstr "_ படிகளால் _ வேகத்தில் (0-50) நகர்த்தவும் _"
 
 #. CoCube library block
 msgid "rotate _ at _ speed (0-50) by _ degrees"
-msgstr "_ வேகத்தில் (0-50) _ டிகிரி மூலம் சுழற்றுங்கள்"
+msgstr "_ வேகத்தில் (0-50) _ டிகிரி மூலம் சுழற்றுங்கள் _"
 
 #. CoCube library block
 msgid "rotate to angle _ at _ speed (0-50)"
@@ -6388,3 +6388,595 @@ msgid "Report the number of words of memory available. Stop button frees up memo
 msgstr ""
 "கிடைக்கக்கூடிய நினைவக சொற்களின் எண்ணிக்கையைப் புகாரளிக்கவும். நிறுத்து பொத்தான் நினைவகத்தை"
 " விடுவிக்கிறது."
+
+#. Settings menu option
+msgid "inform of new versions"
+msgstr "புதிய பதிப்புகளைத் தெரிவிக்கவும்"
+
+#. Lists library block. It takes a list and replaces a few, some, most or (list of indices) items with some other element
+msgid "_ with _ items replaced by _"
+msgstr "_ மாற்றியமைக்கப்பட்ட _ உருப்படிகளுடன் _"
+
+#. Barometer (LPS331AP) library block
+msgid "numeric (x100) _"
+msgstr "எண் (x100) _"
+
+#. Calliope NeoPixel library block
+msgid "Calliope set NeoPixels _ _ _"
+msgstr "காலியோப் செட் நியோபிக்சல்கள் _ _ _"
+
+#. Calliope NeoPixel library block
+msgid "Calliope set all NeoPixels to _"
+msgstr "காலியோப் அனைத்து நியோபிக்சல்களையும் _ என அமைக்கவும்"
+
+#. Calliope Servoboard library block
+msgid "Calliope stop motor _"
+msgstr "காலியோப் ச்டாப் மின்னோடி _"
+
+#. Calliope Servoboard library block
+msgid "Calliope set motor _ to speed _ (-100~100)"
+msgstr "காலியோப் செட் மின்னோடி _ வேகத்திற்கு _ (-100 ~ 100)"
+
+#. Calliope Servoboard library block
+msgid "Calliope set continous servo _ to speed _ (-100~100)"
+msgstr "காலியோப் தொடர்ச்சியான சர்வோ _ வேகமான _ (-100 ~ 100)"
+
+#. Calliope Servoboard library block
+msgid "Calliope stop servo _"
+msgstr "காலியோப் ச்டாப் சர்வோ _"
+
+#. LCD 16x2 (Seeed) library block
+msgid "LCD init display"
+msgstr "எல்சிடி init காட்சி"
+
+#. LCD 16x2 (Seeed) library block
+msgid "LCD set RGB background _"
+msgstr "எல்சிடி செட் ஆர்சிபி பின்னணி _"
+
+#. LCD 16x2 (Seeed) library block
+msgid "LCD is connected?"
+msgstr "எல்சிடி இணைக்கப்பட்டுள்ளதா?"
+
+#. LCD 16x2 (Seeed) library block
+msgid "LCD write text _ to line _"
+msgstr "எல்சிடி எழுது உரையை _ வரிக்கு _"
+
+#. LCD 16x2 (Seeed) library block
+msgid "LCD custom char _"
+msgstr "எல்சிடி தனிப்பயன் கரி _"
+
+#. Gas (SCD40) library block
+msgid "°F"
+msgstr "° f"
+
+#. Gas (SCD40) library block
+msgid "SCD40 relative humidity (%)"
+msgstr "SCD40 உறவினர் ஈரப்பதம் (%)"
+
+#. Firmware install instruction
+msgid "Do not switch browser tabs!"
+msgstr "உலாவி தாவல்களை மாற்ற வேண்டாம்!"
+
+#. Analog Synthesis library block
+#. only translate "gate _" as in a synthesizer sound gate that can be triggered
+msgid "#SVG#wave-sine gate _"
+msgstr "#எச்.வி.சி#அலை-சைன் கேட் _"
+
+#. Analog Synthesis library block
+#. only translate "gate _" as in a synthesizer sound gate that can be triggered
+msgid "#SVG#wave-noise gate _"
+msgstr "#எச்.வி.சி#அலை-சத்தம் கேட் _"
+
+#. LCD 16x2 (Seeed) library block
+msgid "LCD write field _ to line _ from _ to _"
+msgstr "எல்சிடி எழுதும் புலம் _ வரிக்கு _ முதல் _ வரை _"
+
+#. Gas (SCD40) library block
+msgid "SCD40 is connected?"
+msgstr "SCD40 இணைக்கப்பட்டுள்ளதா?"
+
+#. Foxbit library block
+msgid "fb set NeoPixels #BR# _ _ _ _ _ _ _ #BR# _ _ _ _ _ _ _ #BR# _ _ _ _ _ _ _ #BR# _ _ _ _ _ _ _ #BR# _ _ _ _ _ _ _"
+msgstr ""
+"fb அமை நியோபிக்சல்கள் #BR# _ _ _ _ _ _ _ #BR# _ _ _ _ _ _ _ #BR# _ _ _ _ _ _ _ "
+"#BR# _ _ _ _ _ _ _ #BR# _ _ _ _ _ _ _"
+
+#. Foxbit library block
+msgid "fb current"
+msgstr "FB மின்னோட்டம்"
+
+#. Coding Box library block
+msgid "cb stop fan"
+msgstr "சிபி ச்டாப் ஃபேன்"
+
+#. Coding Box library block
+msgid "cb clear oled"
+msgstr "சிபி தெளிவான OLED"
+
+#. Coding Box library block
+msgid "cb _ ADKey button pressed?"
+msgstr "சிபி _ அட்கி அழுத்தியதா?"
+
+#. Coding Box library block
+msgid "cb ultrasonic distance"
+msgstr "சிபி மீயொலி தூரம்"
+
+#. Coding Box library block
+msgid "cb RFID"
+msgstr "சிபி ஆர்எஃப்ஐடி"
+
+#. Coding Box library block
+msgid "cb altitude (cm)"
+msgstr "சிபி உயரம் (சி.எம்)"
+
+#. Coding Box library block
+msgid "cb speaker beep for _ millisecs"
+msgstr "_ மில்லிசெக்குகளுக்கான சிபி பேச்சாளர் பீப்"
+
+#. Coding Box library block
+msgid "cb clear rainbow colors"
+msgstr "சிபி தெளிவான வானவில் வண்ணங்கள்"
+
+#. Coding Box library block
+msgid "cb temperature"
+msgstr "சிபி வெப்பநிலை"
+
+#. Coding Box library block
+msgid "cb sound"
+msgstr "சிபி ஒலி"
+
+#. Coding Box library block
+msgid "cb set servo to _ degrees (0 to 180)"
+msgstr "சிபி செட் சர்வோ _ டிகிரி (0 முதல் 180 வரை)"
+
+#. Coding Box library block
+msgid "cb humidity"
+msgstr "சிபி ஈரப்பதம்"
+
+#. Examples folder
+msgid "folder;CoCube"
+msgstr "கோகூப்"
+
+#. Library button, abbreviated
+msgid "LIBS"
+msgstr "லிப்ச்"
+
+#. WiFi library block
+msgid "wifi set local domain name _ .local"
+msgstr "வைஃபை உள்ளக டொமைன் பெயரை அமைக்கவும் _ .லோகல்"
+
+#. Barometer (LPS331AP) library dropdown menu option
+msgid "lps331;hPa"
+msgstr "HPA"
+
+#. Barometer (LPS331AP) library dropdown menu option
+msgid "lps331;inHg"
+msgstr "inhg"
+
+#. Barometer (LPS331AP) library block
+msgid "LPS331AP temperature _"
+msgstr "LPS331AP வெப்பநிலை _"
+
+#. LCD 16x2 (Seeed) library block
+msgid "LCD set display on _"
+msgstr "_ இல் எல்சிடி செட் காட்சி"
+
+#. Foxbit library block
+msgid "logo"
+msgstr "சின்னம்"
+
+#. Foxbit library block
+msgid "fb loudness"
+msgstr "fb ஒலி"
+
+#. Coding Box library block
+msgid "cb set _ LED to _"
+msgstr "சிபி செட் _ வழிவகுத்தது _"
+
+#. Coding Box library block
+msgid "cb light"
+msgstr "சிபி ஒளி"
+
+#. Robo ESP32 library block
+msgid "RoboESP32 clear RGB"
+msgstr "Ropoesp32 தெளிவான RGB"
+
+#. Robo ESP32 library block
+msgid "RoboESP32 set motor _ power _ (-100 to 100)"
+msgstr "Ropoesp32 மின்னோடி _ ஆற்றல் _ (-100 முதல் 100 வரை)"
+
+#. Robo ESP32 library block
+msgid "RoboESP32 stop motor _"
+msgstr "Ropoesp32 ச்டாப் மின்னோடி _"
+
+#. Robo ESP32 library block
+msgid "RoboESP32 play Happy Birthday!"
+msgstr "Ropoesp32 பிறந்தநாள் வாழ்த்துக்கள்!"
+
+#. Robo ESP32 library block
+msgid "RoboESP32 button _ is pressed"
+msgstr "Ropoesp32 பொத்தான் _ அழுத்தப்படுகிறது"
+
+#. Robo ESP32 library block
+msgid "RoboESP32 increase RGB brightness by _ %"
+msgstr "Ropoesp32 RGB பிரகாசத்தை _ % அதிகரிக்கவும்"
+
+#. Robo ESP32 library block
+msgid "RoboESP32 set servo _ to _ degrees (-90 to 90)"
+msgstr "Ropoesp32 SERVO _ பெறுநர் _ டிகிரி (-90 முதல் 90 வரை)"
+
+#. Robo ESP32 library block
+msgid "RoboESP32 set RGB _ color _"
+msgstr "Ropoesp32 செட் RGB _ வண்ணம் _"
+
+#. Firmware install instruction
+msgid "Connecting..."
+msgstr "இணைத்தல் ..."
+
+#. Radio library block
+msgid "radio last sender ID"
+msgstr "ரேடியோ கடைசி அனுப்புநர் அடையாளம்"
+
+#. Radio library block
+msgid "radio my ID"
+msgstr "ரேடியோ மை அடையாளம்"
+
+#. 5x5 LED Display library block
+msgid "led image _"
+msgstr "எல்.ஈ.டி படம் _"
+
+#. Barometer (LPS331AP) library
+msgid "Barometer (LPS331AP)"
+msgstr "காற்றழுத்தமானர் (LPS331AP)"
+
+#. Barometer (LPS331AP) library dropdown menu option
+msgid "lps331;ºF"
+msgstr ".F"
+
+#. Analog Synthesis library label
+#. Generate synthesized sound waves to play on a DAC, over PWM, or any other analog means
+msgid "Analog Synthesis"
+msgstr "அனலாக் தொகுப்பு"
+
+#. Analog Synthesis library block
+#. only translate "gate _" as in a synthesizer sound gate that can be triggered
+msgid "#SVG#wave-square gate _"
+msgstr "#எச்.வி.சி#அலை-சதுர வாயில் _"
+
+#. Analog Synthesis library block
+#. only translate "gate _" as in a synthesizer sound gate that can be triggered
+msgid "#SVG#wave-triangle gate _"
+msgstr "#எச்.வி.சி#அலை-முக்கோண வாயில் _"
+
+#. Analog Synthesis library block
+#. only translate "gate _" as in a synthesizer sound gate that can be triggered
+msgid "#SVG#wave-sawtooth gate _"
+msgstr "#எச்.வி.சி#அலை-சாவ்டூத் கேட் _"
+
+#. Analog Synthesis library block
+msgid "set amplitude _ attack _ hold _ release _ for gate _"
+msgstr "வீச்சு _ தாக்குதல் _ பிடி _ வெளியீடு _ வாயிலுக்கு _"
+
+#. Analog Synthesis library block
+msgid "trigger gate _ MIDI key _"
+msgstr "தூண்டுதல் கேட் _ மிடி விசை _"
+
+#. Analog Synthesis library block
+msgid "set frequency ramp from _ % to _ % for gate _"
+msgstr "வாயிலுக்கு _ % முதல் _ % வரை அதிர்வெண் வளைவை அமைக்கவும் _"
+
+#. Analog Synthesis library block
+msgid "amplitude for gate _"
+msgstr "வாயிலுக்கான வீச்சு _"
+
+#. Analog Synthesis library block
+msgid "frequency for gate _"
+msgstr "வாயிலுக்கான அதிர்வெண் _"
+
+#. Analog Synthesis library block
+#. example: output [16320] to [analog pin]
+#. example: output [16320] to [MCP4725 DAC]
+msgid "output _ to _"
+msgstr "வெளியீடு _ முதல் _"
+
+#. Analog Synthesis library block
+#. as in pin number or i2c address
+msgid "number/address _"
+msgstr "எண்/முகவரி _"
+
+#. Analog Synthesis library block
+#. as in digital resolution (8 bit, 16 bit...)
+msgid "asynth;resolution _"
+msgstr "தீர்மானம் _"
+
+#. Analog Synthesis library block menu option
+msgid "asy;pin"
+msgstr "அனலாக்ச் முள்"
+
+#. Analog Synthesis library block menu option
+msgid "asy;MCP4725"
+msgstr "MCP4725 I2C DAC"
+
+#. Barometer (LPS331AP) library dropdown menu option
+msgid "lps331;ºC"
+msgstr ". சி"
+
+#. Calliope NeoPixel library block
+msgid "Calliope clear all NeoPixels"
+msgstr "காலியோப் அனைத்து நியோபிக்சல்களையும் அழிக்கவும்"
+
+#. Calliope NeoPixel library block
+msgid "Calliope rotate NeoPixels by _"
+msgstr "காலியோப் நியோபிக்சல்களை _ மூலம் சுழற்றுங்கள்"
+
+#. Calliope NeoPixel library block
+msgid "Calliope set NeoPixel _ to _"
+msgstr "காலியோப் நியோபிக்சல் _ க்கு _"
+
+#. Calliope Servoboard library block
+msgid "Calliope set _ servo _ to angle _ °"
+msgstr "காலியோப் செட் _ சர்வோ _ கோணத்திற்கு _ °"
+
+#. LCD 16x2 (Seeed) library block
+msgid "LCD generate custom char _ _"
+msgstr "எல்சிடி தனிப்பயன் கரி _ _ ஐ உருவாக்குகிறது"
+
+#. LCD 16x2 (Seeed) library block
+msgid "LCD clear display"
+msgstr "எல்.சி.டி தெளிவான காட்சி"
+
+#. Gas (SCD40) library block
+msgid "°C"
+msgstr ". C."
+
+#. Gas (SCD40) library block
+msgid "SCD40 init sensor"
+msgstr "SCD40 init உணரி"
+
+#. Gas (SCD40) library block
+msgid "SCD40 carbon dioxide (ppm)"
+msgstr "SCD40 கார்பன் டை ஆக்சைடு (பிபிஎம்)"
+
+#. Gas (SCD40) library block
+msgid "SCD40 CO2 (ppm)"
+msgstr "SCD40 CO2 (பிபிஎம்)"
+
+#. Gas (SCD40) library block
+msgid "SCD40 temperature _"
+msgstr "SCD40 வெப்பநிலை _"
+
+#. Robo ESP32 library block
+msgid "RoboESP32 set GPIO _ _"
+msgstr "Ropoesp32 gpio _ _ ஐ அமைக்கவும்"
+
+#. Foxbit library block
+msgid "fb light level"
+msgstr "FB ஒளி நிலை"
+
+#. Foxbit library block
+msgid "fb set all NeoPixels _"
+msgstr "FB அனைத்து நியோபிக்சல்களையும் அமைக்கவும் _"
+
+#. Foxbit library block
+msgid "fb pin _ touched?"
+msgstr "fb முள் _ தொட்டதா?"
+
+#. Foxbit library block
+msgid "fb temperature"
+msgstr "FB வெப்பநிலை"
+
+#. Foxbit library block
+msgid "fb beep for _ millisecs"
+msgstr "_ மில்லிசெக்குகளுக்கான FB பீப்"
+
+#. Foxbit library block
+msgid "fb humidity"
+msgstr "FB ஈரப்பதம்"
+
+#. Coding Box library block
+msgid "cb compass direction"
+msgstr "சிபி திசைகாட்டி திசை"
+
+#. Foxbit library block
+msgid "fb clear NeoPixels"
+msgstr "FB தெளிவான நியோபிக்சல்கள்"
+
+#. Coding Box library block
+msgid "cb PIR motion detected?"
+msgstr "சிபி பி.ஐ.ஆர் இயக்கம் கண்டறியப்பட்டதா?"
+
+#. Coding Box library block
+msgid "cb barometric pressure (mBar)"
+msgstr "சிபி பாரோமெட்ரிக் அழுத்தம் (MBAR)"
+
+#. Coding Box library block
+msgid "cb joystick _"
+msgstr "சிபி சாய்ச்டிக் _"
+
+#. Coding Box library block
+msgid "cb set all rainbow colors to _"
+msgstr "சிபி அனைத்து வானவில் வண்ணங்களையும் _ என அமைக்கவும்"
+
+#. Coding Box library block
+msgid "cb set rainbow #BR# _ _ _ _ _ _ #BR# _ _ _ _ _ _"
+msgstr "சிபி செட் ரெயின்போ # br # _ _ _ _ _ _ # br # _ _ _ _ _ _ _"
+
+#. Coding Box library block
+msgid "cb set fan power _ (-100 to 100)"
+msgstr "சிபி தொகுப்பு விசிறி ஆற்றல் _ (-100 முதல் 100 வரை)"
+
+#. Coding Box library block
+msgid "cb oled write _ at x _ y _ big _"
+msgstr "cb oled write _ at ஃச் _ ஒய் _ பெரிய _"
+
+#. MicroBlocks IDE information
+msgid "Reconnect to the board by clicking the \"Connect\" button."
+msgstr ""
+"\"இணைப்பு\" பொத்தானைக் சொடுக்கு செய்வதன் மூலம் பலகையில் மீண்டும் இணைக்கவும்."
+
+#. Settings menu option
+msgid "when opening the IDE, show a notification if a new version of MicroBlocks has been released"
+msgstr ""
+"IDE ஐ திறக்கும்போது, மைக்ரோபிளாக்சின் புதிய பதிப்பு வெளியிடப்பட்டிருந்தால் அறிவிப்பைக் "
+"காட்டுங்கள்"
+
+#. Barometer (LPS331AP) library block
+msgid "LPS331AP pressure _"
+msgstr "LPS331AP அழுத்தம் _"
+
+#. Calliope NeoPixel library block
+msgid "Calliope set brightness to _ %"
+msgstr "காலியோப் பிரகாசத்தை _ % ஆக அமைக்கவும்"
+
+#. Calliope Servoboard library block
+msgid "Calliope stop all motors and servos"
+msgstr "காலியோப் அனைத்து மோட்டார்கள் மற்றும் சர்வோக்களை நிறுத்துங்கள்"
+
+#. NeoPanel library block
+msgid "NeoPanel draw line from x _ y _ to x _ y _ color _"
+msgstr "ஃச் _ ஒய் _ முதல் ஃச் _ ஒய் _ வண்ணம் _ வரை நியோபனெல் டிரா வரி"
+
+#. NeoPanel library block
+msgid "NeoPanel draw circle at x _ y _ radius _ color _"
+msgstr "ஃச் _ ஒய் _ ஆரம் _ வண்ணத்தில் நியோபனெல் டிரா வட்டம் _"
+
+#. NeoPanel library block
+msgid "NeoPanel draw rectangle at x _ y _ width _ height _ color _"
+msgstr "ஃச் _ ஒய் _ அகலம் _ உயரம் _ வண்ணத்தில் நியோபனெல் டிரா செவ்வகம் _"
+
+#. Microphone library block
+msgid "turn off microphone"
+msgstr "மைக்ரோஃபோனை அணைக்கவும்"
+
+#. micro:STEAMakers library block
+msgid "ms pin _ touched?"
+msgstr "MS முள் _ தொட்டதா?"
+
+#. micro:STEAMakers library block
+msgid "ms accel _ m/s2"
+msgstr "எம்.எச். முடி _ மீ/எச் 2"
+
+#. micro:STEAMakers library block
+msgid "ms gyro _ deg/s"
+msgstr "எம்எஸ் கைரோ _ டிகிரி/வி"
+
+#. Generic robot side input. Used in robot libraries
+#. as in "left" side
+msgid "left"
+msgstr "இடது"
+
+#. Generic robot side input. Used in robot libraries
+#. as in "right" side
+msgid "right"
+msgstr "வலது"
+
+#. Generic robot side input. Used in robot libraries
+#. as in "both" sides
+msgid "both"
+msgstr "இரண்டும்"
+
+#. Octostudio shape names
+msgid "octo;circle"
+msgstr "வட்டம்"
+
+#. Octostudio shape names
+msgid "octo;square"
+msgstr "நாற்கை"
+
+#. Octostudio shape names
+msgid "octo;star"
+msgstr "விண்மீன்"
+
+#. Octostudio shape names
+msgid "octo;heart"
+msgstr "இதயம்"
+
+#. Octostudio shape names
+msgid "octo;triangle"
+msgstr "முக்கோணம்"
+
+#. Octostudio shape names
+msgid "octo;clover"
+msgstr "சீமை மசால்"
+
+#. Octostudio shape names
+msgid "octo;diamond"
+msgstr "வைர"
+
+#. Octostudio shape names
+msgid "octo;moon"
+msgstr "சந்திரன்"
+
+#. LogicLinks library block
+msgid "LogicLinks receive IR code"
+msgstr "லாசிக் லின்க்ச் ஐஆர் குறியீட்டைப் பெறுகிறது"
+
+#. LogicLinks library block
+msgid "LogicLinks IR Code"
+msgstr "லாசிக் லின்க்ச் ஐஆர் குறியீடு"
+
+#. LogicLinks library block
+msgid "LogicLinks button"
+msgstr "லாசிக் லின்க்ச் பொத்தான்"
+
+#. LogicLinks library block
+msgid "LogicLinks potentiometer"
+msgstr "லாசிக் லின்க்ச் பொட்டென்டோமீட்டர்"
+
+#. LogicLinks library block
+msgid "LogicLinks random color"
+msgstr "லாசிக் லிங்க்ச் சீரற்ற நிறம்"
+
+#. LogicLinks library block
+msgid "LogicLinks beep _ ms"
+msgstr "லாசிக் லின்க்ச் பீப் _ எம்.எச்"
+
+#. LogicLinks library block
+msgid "LogicLinks set relay _"
+msgstr "லாசிக் லின்க்ச் செட் ரிலே _"
+
+#. LogicLinks library block
+msgid "LogicLinks IR code received?"
+msgstr "லாசிக் லின்க்ச் ஐஆர் குறியீடு பெறப்பட்டது?"
+
+#. LogicLinks library block
+msgid "LogicLinks color r _ g _ b _ (0-255)"
+msgstr "லாசிக் லின்க்ச் கலர் r _ g _ B _ (0-255)"
+
+#. LogicLinks library block
+msgid "LogicLinks humidity"
+msgstr "லாசிக் லிங்க்ச் ஈரப்பதம்"
+
+#. LogicLinks library block
+msgid "LogicLinks set RGB LED _"
+msgstr "லாசிக் லின்க்ச் செட் ஆர்சிபி எல்இடி _"
+
+#. LogicLinks library block
+msgid "LogicLinks turn off RGB LED"
+msgstr "லாசிக் லின்க்ச் RGB LED ஐ அணைக்கவும்"
+
+#. LogicLinks library block
+msgid "LogicLinks temperature (°C)"
+msgstr "லாசிக் லிங்க்ச் வெப்பநிலை (° C)"
+
+#. LogicLinks library block
+msgid "LogicLinks set red LED _"
+msgstr "லாசிக் லின்க்ச் செட் சிவப்பு எல்.ஈ.டி _"
+
+#. LogicLinks library block
+msgid "LogicLinks light (0-100)"
+msgstr "லாசிக் லிங்க்ச் லைட் (0-100)"
+
+#. NeoPixel library block
+msgid "set NeoPixels #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _"
+msgstr ""
+"நியோபிக்சல்களை அமை #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ "
+"#BR# _ _ _ _ _"
+
+#. MicroBlocks IDE block deletion error message.
+msgid "This block is still being used in"
+msgstr "இந்த தொகுதி இன்னும் பயன்படுத்தப்படுகிறது"
+
+#. MicroBlocks IDE block deletion error message.
+msgid "scripts or functions."
+msgstr "கைஉரைகள் அல்லது செயல்பாடுகள்."

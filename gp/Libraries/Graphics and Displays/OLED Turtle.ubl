@@ -1,7 +1,7 @@
 module 'OLED Turtle' Output
 author 'Turgut Guneysu'
-version 1 12 
-depends 'OLED Graphics' dec2anyBase 
+version 1 13 
+depends '_OLED Graphics' _dec2anyBase 
 choices DegMenu '45' '90' '135' '180' '225' '270' '315' 
 choices SizeMenu small large 
 choices PenMenu up down 

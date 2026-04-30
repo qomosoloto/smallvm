@@ -42,6 +42,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'setUserLED'			'set user LED _' 'bool' true)
 		(array ' ' 'sayIt'				'say _ : _ : ...' 'str str str str str str str str str str str str' 123 '' '')
 		(array ' ' 'graphIt'			'graph _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 100)
+		(array ' ' '[misc:clearGraph]'	'clear graph')
 	'cat;Input'
 		(array 'r' 'buttonA'			'button A')
 		(array 'r' 'buttonB'			'button B')
@@ -93,6 +94,9 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[serial:writeBytes]'	'serial write _ starting at _' 'auto num' 'aStringListOrByteArray' 1)
 		'-'
 		(array ' ' '[io:softWriteByte]'		'soft serial write byte _ pin _ baud _' 'num num num' '85' 2 9600)
+		'-'
+		(array 'r' '[serial:dueRecv]'		'duelink receive')
+		(array 'r' '[serial:dueSend]'		'duelink send _ starting at _' 'auto num' 'aStringListOrByteArray' 1)
 	'cat;Control'
 		(array 'h' 'whenStarted'		'when started')
 		(array 'h' 'whenButtonPressed'	'when button _ pressed' 'menu.buttonMenu' 'A')
@@ -124,9 +128,6 @@ method microBlocksSpecs SmallCompiler {
 		'-'
 		(array 'r' 'getLastBroadcast'	'last message')
 		(array 'r' 'argOrDefault'		'arg _ default _' 'num auto' 1 'default')
-		'-'
-		(array ' ' 'callCustomCommand'	'call _ : with _' 'str.functionNameMenu str' 'function name' 'parameter list')
-		(array 'r' 'callCustomReporter'	'call _ : with _' 'str.functionNameMenu str' 'function name' 'parameter list')
 	'cat;Operators'
 		(array 'r' '+'					'_ + _' 'num num' 10 2)
 		(array 'r' '-'					'_ − _' 'num num' 10 2)
@@ -138,6 +139,7 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'minimum'			'min _ _ : _ : ...' 'num num num' 1 2)
 		(array 'r' 'maximum'			'max _ _ : _ : ...' 'num num num' 1 2)
 		(array 'r' 'random'				'random _ to _' 'num num' 1 10)
+		(array 'r' 'sum'				'sum _ : #BR# + _ : ...' 'num num num' 1 2 3 4 5 6 7 8 9 10)
 		'-'
 		(array 'r' '<'					'_ < _' 'num num' 3 4)
 		(array 'r' '<='					'_ <= _' 'num num' 3 4)
@@ -157,6 +159,7 @@ method microBlocksSpecs SmallCompiler {
 	'cat;Operators-Advanced'
 		(array 'r' 'ifExpression'		'if _ then _ else _' 'bool auto auto' true 1 0)
 		(array 'r' 'hexToInt'			'hex _' 'str' '3F')
+		(array 'r' '[misc:binToInt]'	'binary _' 'str' '1111')
 		'-'
 		(array 'r' '[misc:rescale]'		'rescale _ from ( _ , _ ) to ( _ , _ )' 'num num num num num' 3 0 10 0 100)
 		(array 'r' '[misc:sqrt]'		'sqrt _' 'num' 9)
@@ -187,7 +190,7 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[data:find]'		'find _ in _ : starting at _' 'auto str num' 'a' 'cat' 1)
 		(array 'r' '[data:copyFromTo]'	'copy _ from _ : to _' 'str num num' 'smiles' 2 5)
 		'-'
-		(array 'r' '[data:split]'		'split _ by _' 'str str' 'A,B,C' ',')
+		(array 'r' '[data:split]'		'split _ by _ : convert numbers _' 'str str bool' 'A,B,123' ',' false)
 		(array 'r' '[data:joinStrings]'	'join items of list _ : separator _' 'auto str' 'a list of strings' ' ')
 	'cat;Data-Advanced'
 		(array 'r' 'newList'				'new list length _ : with all _' 'num auto' 10 0)
@@ -208,6 +211,9 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'newArray'				'new list length _' 'num' 10)
 		(array ' ' 'fillArray'				'fill list _ with _' 'str auto' nil 0)
 		(array ' ' 'fillList'				'fill list _ with _' 'str auto' nil 0)
+	'Prims-Control (not in palette)'
+		(array ' ' 'callCustomCommand'	'call _ : with _' 'str.functionNameMenu str' 'function name' 'parameter list')
+		(array 'r' 'callCustomReporter'	'call _ : with _' 'str.functionNameMenu str' 'function name' 'parameter list')
 	'Prims-Display (not in palette)'
 		(array ' ' '[display:mbDisplay]'	'display _' 'microbitDisplay')
 		(array ' ' '[display:mbDisplayOff]'	'clear display')
@@ -219,6 +225,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' '[display:neoPixelSetPin]'	'set NeoPixel pin _ is RGBW _' 'auto bool' '' false)
 		(array ' ' '[display:neoPixelSend]'		'send NeoPixel rgb _' 'num' 5)
 		(array ' ' '[display:neoPixelSetMaxBrightness]' 'set NeoPixel max brightness _ (10-255)' 'num' 40)
+		(array ' ' '[display:neoPixelSetRGB]' 'NeoPixel is RGB _' 'bool' false)
 	'Prims-Sensing (not in palette)'
 		(array 'r' '[sensors:acceleration]'	'acceleration')
 		(array ' ' '[sensors:setAccelerometerRange]' 'set accelerometer range _' 'num' 1)
@@ -240,9 +247,6 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[misc:jsonCount]'	'json count _ . _' 'str str' '[1, [4, 5, 6, 7], 3]' '')
 		(array 'r' '[misc:jsonValueAt]'	'json value _ . _ at _' 'str str num' '{ "x": 1, "y": 42 }' '' 2)
 		(array 'r' '[misc:jsonKeyAt]'	'json key _ . _ at _' 'str str num' '{ "x": 1, "y": 42 }' '' 2)
-	'Prims-Binary Data (not in palette)'
-		(array 'r' '[misc:byteCount]'	'byte count _' 'str' 'binary data')
-		(array 'r' '[misc:byteAt]'		'byte _ of _' 'num str' 1 'binary data')
 	'Prims-Advanced (not in palette)'
 		(array ' ' 'noop'				'no op')
 		(array ' ' 'ignoreArgs'			'ignore : _ : ...' 'auto' 0)
@@ -250,16 +254,19 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'getArg'				'arg _' 'num' 0)
 		(array 'r' 'longMult'			'( _ * _ ) >> _' 'num num num' 1024 2048 10)
 		(array 'r' '[misc:sin]'			'fixed sine _' 'num' 9000)
+		(array 'r' '[misc:hexToInt]'	'hex _' 'str' '3F')
 
-		(array ' ' '[misc:broadcastToIDE]' 'broadcast _ to IDE only' 'str' '')
+		(array ' ' '[misc:broadcastToIDE]'		'broadcast _ to IDE only' 'str' '')
+		(array 'r' '[misc:shapeforChar]'		'shape for character _' 'num' 65)
+		(array 'r' '[misc:pressureToAltitude]'	'altitude diff for pressure change from _ to _' 'num num' 30 29)
+		(array 'r' '[misc:bme680GasResistance]'	'bme680 gas resistance adc _ range _ calibration range error _' 'num num num' 500 0 0)
 
-		(array 'r' '[misc:hsvColor]'		'color hue _ (0-360) saturation _ % brightness _ %' 'num num num' 0 90 100)
+		(array 'r' '[misc:hsvColor]'	'color hue _ (0-360) saturation _ % brightness _ %' 'num num num' 0 90 100)
 		(array 'r' '[misc:hue]' 'hue _'	'color')
 		(array 'r' '[misc:saturation]'	'saturation _' 'color')
 		(array 'r' '[misc:brightness]'	'brightness _' 'color')
 
-		(array 'r' '[misc:pressureToAltitude]' 'altitude diff for pressure change from _ to _' 'num num' 30 29)
-		(array 'r' '[misc:bme680GasResistance]' 'bme680 gas resistance adc _ range _ calibration range error _' 'num num num' 500 0 0)
+		(array 'r' '[misc:dueLinkPID]'	'DUELink PID')
 
 		(array 'r' '[sensors:touchRead]'	'capacitive sensor _' 'num' 1)
 		(array 'r' '[sensors:readDHT]'		'read DHT data pin _' 'num' 1)
@@ -285,7 +292,8 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[net:startSSIDscan]'		'scan SSID list')
 		(array 'r' '[net:getSSID]'				'get SSID number _' 'num' 1)
 
-		(array ' ' '[net:httpConnect]'			'connect to http܃// _ : port _' 'auto num' 'microblocks.fun' 80)
+		(array ' ' '[net:httpConnect]'			'connect to http܃// _ : port _' 'str num' 'microblocks.fun' 80)
+		(array ' ' '[net:httpSecureConnect]'	'connect to https܃// _ : port _' 'str num' 'microblocks.fun' 443)
 		(array 'r' '[net:httpIsConnected]'		'is HTTP connected?')
 		(array ' ' '[net:httpRequest]'			'_ request http܃// _ / _ : body _' 'menu.requestTypes auto auto str' 'GET' 'microblocks.fun' 'example.txt' '')
 		(array 'r' '[net:httpResponse]'			'HTTP response')
@@ -384,6 +392,33 @@ method microBlocksSpecs SmallCompiler {
 	)
 }
 
+method exportSpecsAsJavascript SmallCompiler {
+	// setClipboard (exportSpecsAsJavascript (initialize (new 'SmallCompiler')))
+	result = (list)
+	for specLine (microBlocksSpecs this) {
+		if (isClass specLine 'Array') {
+			add result '			['
+			itemCount = (count specLine)
+			for i itemCount {
+				item = (at specLine i)
+				if (isClass item 'String') {
+					add result (join '"' (escapeDoubleQuotes item) '"')
+				} (isNil item) {
+					add result '""'
+				} else {
+					add result (toString item)
+				}
+				if (i < itemCount) { add result ', ' }
+			}
+			add result '],'
+			add result (newline)
+		} else { // category name or separator
+			add result (join '		' (join '"' specLine '",' (newline)))
+		}
+	}
+	return (joinStrings result)
+}
+
 method initMicroBlocksSpecs SmallCompiler {
 	authoringSpecs = (authoringSpecs)
 	if (isEmpty (specsFor authoringSpecs 'cat;Output')) {
@@ -465,7 +500,7 @@ method initOpcodes SmallCompiler {
 		> 66
 		not 67
 	RESERVED 68
-	RESERVED 69
+		sum 69
 		longMult 70
 		absoluteValue 71
 		minimum 72
@@ -555,7 +590,8 @@ method initPrimsets SmallCompiler {
 		hid
 		camera
 		1wire
-		encoder'
+		encoder
+		sd'
 
 	primsets = (dictionary)
 	primSetIndex = 0
@@ -1073,13 +1109,7 @@ method incrementVar SmallCompiler varName {
 }
 
 method globalVarIndex SmallCompiler varName {
-	varNames = (allVariableNames (project (scripter (smallRuntime))))
-	id = (indexOf varNames varName)
-	if (isNil id) {
-		error 'Unknown variable' varName
-	}
-	if (id >= 128) { error 'Id' id 'for variable' varName 'is out of range' }
-	return (id - 1) // VM uses zero-based index
+	return (indexForVar (project (scripter (smallRuntime))) varName)
 }
 
 // function calls

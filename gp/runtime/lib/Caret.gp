@@ -10,6 +10,7 @@ method initialize Caret aText initialSlot {
 	morph = (newMorph this)
 	setFPS morph 2
 	if (notNil aText) {
+		if ('Browser' == (platform)) { setEditText (text aText) }
 		edit this aText initialSlot
 		showKeyboard true
 	}
@@ -90,6 +91,11 @@ method keyDown Caret evt keyboard {
 
 	if (8 == code) { deleteLeft this // delete
 	}  (9 == code) { tabToNextEntryField this shiftDown // tab
+	} (and (13 == code) shiftDown (isClass parent 'InputSlot') (isAuto parent)) {
+		// allow shift + enter to insert a new line in 'auto' slots
+		// effectively, turn it into a 'string' slot
+		switchType parent 'editable'
+		enterKey this
 	} (13 == code) { enterKey this // enter
 	} (27 == code) { // escape
 		cancel this

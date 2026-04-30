@@ -22,7 +22,7 @@ method exportScripts MicroBlocksExchange aMicroBlocksScripter blockList {
 	result = (list)
 
 	analyzeCalls this blockList
-	add result (libraryDepencies this)
+	add result (libraryDependencies this)
 	add result (newline)
 	addAll result (functionDefinitions this)
 
@@ -45,7 +45,7 @@ method exportScripts MicroBlocksExchange aMicroBlocksScripter blockList {
 	return (joinStrings result)
 }
 
-method libraryDepencies MicroBlocksExchange {
+method libraryDependencies MicroBlocksExchange {
 	// Return a string listing the library dependencies, if any.
 
 	if (isEmpty libsUsed) { return '' }
@@ -253,13 +253,10 @@ method addGlobalsFor MicroBlocksExchange script parameterNames {
 			if (isOneOf (primName b) 'local' 'for') { add localVars varName }
 		}
 	}
-	varsChanged = false
 	for v varRefs {
 		if (and (not (contains globalVars v)) (not (contains localVars v))) {
 			// add new global variable
 			addVariable (main mbProject) v
-			varsChanged = true
 		}
 	}
-	if varsChanged { variablesChanged (smallRuntime) }
 }

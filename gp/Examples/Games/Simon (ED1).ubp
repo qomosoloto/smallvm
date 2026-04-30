@@ -93,7 +93,7 @@ whenStarted
 sendBroadcast 'go!'
 }
 
-script 202 105 {
+script 221 117 {
 whenBroadcastReceived 'go!'
 'current index' = 1
 'initialize letters'
@@ -101,7 +101,7 @@ waitMillis 1500
 sendBroadcast 'play sequence'
 }
 
-script 51 234 {
+script 57 282 {
 whenBroadcastReceived 'play sequence'
 if ((v 'current index') > 10) {
   '[tft:clear]'
@@ -126,18 +126,18 @@ if ((v 'current index') > 10) {
 
 module 'ED1 Buttons' Input
 author MicroBlocks
-version 1 0 
+version 1 1 
 tags button capacitive ed1 
 description 'Provides blocks for the six capacitive buttons in the Citilab ED1 board.'
 variables _ED1_buttons_init '_capacitive threshold' 
 
   spec ' ' '_ED1_buttons_init' '_ED1_buttons_init' 'any any any'
-  spec 'r' 'OK button' 'button OK'
-  spec 'r' 'cancel button' 'button X'
-  spec 'r' 'up button' 'button up'
-  spec 'r' 'down button' 'button down'
-  spec 'r' 'left button' 'button left'
-  spec 'r' 'right button' 'button right'
+  spec 'r' 'OK button' '#SVG#button-ok'
+  spec 'r' 'cancel button' '#SVG#button-x'
+  spec 'r' 'up button' '#SVG#button-up'
+  spec 'r' 'down button' '#SVG#button-down'
+  spec 'r' 'left button' '#SVG#button-left'
+  spec 'r' 'right button' '#SVG#button-right'
   spec ' ' 'set capacitive threshold to' 'set capacitive threshold to _' 'auto' 16
 
 to 'OK button' {
@@ -184,7 +184,7 @@ to 'up button' {
 
 module TFT Output
 author MicroBlocks
-version 1 11 
+version 1 12 
 description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 
   spec ' ' '[tft:clear]' 'clear TFT display'
@@ -255,6 +255,7 @@ to tft_colorSwatch color {
 }
 
 to tft_drawText s x y color optionalScale optionalBGColor {
+  s = ('[data:convertType]' s 'string')
   local 'scale' (argOrDefault 5 2)
   local 'bgColor' (argOrDefault 6 '')
   local 'lines' ('[data:split]' s ('[data:unicodeString]' 10))
@@ -277,7 +278,7 @@ to tft_drawVector x y angle length color {
 
 module Tone Output
 author MicroBlocks
-version 1 9 
+version 1 10 
 tags tone sound music audio note speaker 
 choices tone_NoteName 'nt;c' 'nt;c#' 'nt;d' 'nt;d#' 'nt;e' 'nt;f' 'nt;f#' 'nt;g' 'nt;g#' 'nt;a' 'nt;a#' 'nt;b' 
 description 'Audio tone generation. Make music with MicroBlocks!
@@ -394,6 +395,8 @@ to 'attach buzzer to pin' pinNumber {
       _tonePin = 25
     } ((boardType) == 'D1-Mini') {
       _tonePin = 12
+    } ((boardType) == 'CodingBox') {
+      _tonePin = 32
     } else {
       _tonePin = -1
     }

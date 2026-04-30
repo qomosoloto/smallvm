@@ -60,7 +60,7 @@ method initialize PartsBin loc proj {
 
 	listBox = (listBox (array) 'name' (action 'select' this) (color 255 255 255))
 	setFont listBox 'Arial' 14
- 
+
 	listPane = (scrollFrame listBox (clientColor window))
 
 	addPart morph (morph listPane)
@@ -104,8 +104,8 @@ method listOfProjectNames PartsBin {
 }
 
 method updateSelection PartsBin {
- scale = (global 'scale')
- if (isNil selection) {
+	scale = (global 'scale')
+	if (isNil selection) {
 		setText (contents notePane) ''
 	}
 	str = (notes selection location)

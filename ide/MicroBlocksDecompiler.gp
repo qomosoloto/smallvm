@@ -96,6 +96,10 @@ method decompileProject MicroBlocksDecompiler {
 	updatePrimitives project
 	fixFunctionLocals project
 
+	for varName (unusedGlobals project) {
+		deleteVariable project varName
+	}
+
 	return project
 }
 
@@ -148,15 +152,18 @@ method addFunctionToProject MicroBlocksDecompiler aFunc chunkID project {
 
 method addEmbeddedLibrary MicroBlocksDecompiler libName project {
 	// Try to add the embedded library with the given name.
-	// Return true if successful, false if embedded library was not found.
 
-	libFileName = (join libName '.ubl')
+	isImplementation = false
+	if (beginsWith libName '_') {
+		libName = (substring libName 2)
+		isImplementation = true
+	}
+	libFileName = (join '/' libName '.ubl')
 	if ('Browser' == (platform)) {
 		for filePath (allFilesInDir (scripter (smallRuntime)) 'Libraries') {
-			if (endsWith filePath (substring filePath 3)) {
+			if (endsWith filePath libFileName) {
 				data = (readEmbeddedFile filePath)
 				addLibraryFromString project (toString data) libName filePath
-				return true
 			}
 		}
 	} else {
@@ -164,7 +171,15 @@ method addEmbeddedLibrary MicroBlocksDecompiler libName project {
 			if (endsWith filePath libFileName) {
 				data = (readEmbeddedFile filePath)
 				addLibraryFromString project (toString data) libName filePath
-				return true
+			}
+		}
+	}
+	lib = (libraryNamed project libName)
+	if (notNil lib) { // add dependencies
+		if isImplementation { beImplementation lib }
+		for dependency (dependencies lib) {
+			if (isNil (libraryNamed project dependency)) { // dependent lib not yet loaded
+				addEmbeddedLibrary this dependency project
 			}
 		}
 	}
@@ -287,6 +302,11 @@ method extractOpcodes MicroBlocksDecompiler chunkData {
 			} else { // arg is 8-bit signed offset
 				if (arg > 127) { arg = (arg - 256) }
 			}
+		} ('exitLoop' == op) {
+				arg = (at chunkData i)
+				arg = (arg | ((at chunkData (i + 1)) << 8))
+				if (arg > 32767) { arg = (arg - 65536) }
+				extraWords += 1
 		} (isOneOf op 'commandPrimitive' 'reporterPrimitive') { // 24 bit arg
 			arg = (arg | ((at chunkData i) << 8))
 			arg = (arg | ((at chunkData (i + 1)) << 16))
@@ -1011,6 +1031,8 @@ method decodeCmd MicroBlocksDecompiler i {
 		} else {
 			add code (newCommand 'if' (removeLast stack) ifPart true elsePart)
 		}
+	} ('exitLoop' == op) {
+		add code (newCommand 'exitLoop')
 	} ('for' == op) {
 		body = (codeForSequence this (at cmd 3) (at cmd 4))
 		indexVarName = (localVarName this (at cmd 5))

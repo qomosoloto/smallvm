@@ -4,7 +4,7 @@ version 1 0
 description ''
 variables count _OctoAdvertising shape 
 
-script 327 50 {
+script 324 50 {
 comment 'When this project was created, OctoStudio on Android
 phones was not yet stable. After running for some time, 
 the beam and wait for blocks sometimes stopped working 
@@ -12,14 +12,14 @@ If you experience this, try restarting the OctoStudio app
 on your Android phone. (This issue may be fixed by now...)'
 }
 
-script 53 57 {
+script 50 57 {
 whenStarted
 comment 'Set the Octo group used when
 sending and receiving beams.'
 octoSetGroup 0
 }
 
-script 54 173 {
+script 51 173 {
 whenCondition (octoBeamReceived)
 comment 'Show incoming beams sent to
 the current group'
@@ -28,7 +28,7 @@ count += 1
 sayIt shape count
 }
 
-script 53 355 {
+script 50 355 {
 whenButtonPressed 'A'
 comment 'Send a beam to the current group'
 octoSendBeam 'heart'
@@ -37,13 +37,13 @@ octoSendBeam 'heart'
 
 module OctoStudio Comm
 author wwj718
-version 1 10 
-choices octo_shapes circle square star heart triangle clover diamond moon 
+version 1 11 
+choices octo_shapes 'octo;circle' 'octo;square' 'octo;star' 'octo;heart' 'octo;triangle' 'octo;clover' 'octo;diamond' 'octo;moon' 
 description 'Communicate with OctoStudio (https://octostudio.org/)
 '
 variables _octoGroup _octoLastBeamShape _octoLastBeamGroup _octoShapes _octoIsBeaming 
 
-  spec ' ' 'octoSendBeam' 'Octo beam to phones _ : duration _ ms : group _' 'menu.octo_shapes num num' 'heart' 200 0
+  spec ' ' 'octoSendBeam' 'Octo beam to phones _ : duration _ ms : group _' 'menu.octo_shapes num num' 'octo;heart' 200 0
   space
   spec 'r' 'octoBeamReceived' 'Octo beam received?'
   spec 'r' 'octoLastBeam' 'Octo last beam'
@@ -53,7 +53,7 @@ variables _octoGroup _octoLastBeamShape _octoLastBeamGroup _octoShapes _octoIsBe
   space
   spec ' ' '_octoInit' '_octoInit'
   spec 'r' '_octoShapeForID' '_octoShapeForID _' 'num' 1
-  spec 'r' '_octoMakeMessage' '_octoMakeMessage _' 'menu.octo_shapes' 'heart'
+  spec 'r' '_octoMakeMessage' '_octoMakeMessage _' 'menu.octo_shapes' 'octo;heart'
   spec 'r' '_octoHexDigit' '_octoHexDigit _' 'num' 10
 
 to '_octoHexDigit' n {
@@ -61,7 +61,7 @@ to '_octoHexDigit' n {
 }
 
 to '_octoInit' {
-  if (_octoShapes == 0) {_octoShapes = ('[data:makeList]' 'circle' 'square' 'star' 'heart' 'triangle' 'clover' 'diamond' 'moon')}
+  if (_octoShapes == 0) {_octoShapes = ('[data:makeList]' 'octo;circle' 'octo;square' 'octo;star' 'octo;heart' 'octo;triangle' 'octo;clover' 'octo;diamond' 'octo;moon')}
 }
 
 to '_octoMakeMessage' shape group {

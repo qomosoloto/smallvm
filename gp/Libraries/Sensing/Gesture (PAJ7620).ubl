@@ -1,6 +1,6 @@
 module 'Gesture (PAJ7620)' Input
 author 'José García'
-version 1 0 
+version 1 1 
 tags sensor gesture 
 description 'Support for PAJ7620 gesture sensor.
 The "read" block returns the name of the detected gesture.

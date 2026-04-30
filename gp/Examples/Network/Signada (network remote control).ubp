@@ -264,7 +264,7 @@ savewifi 'MySSID' 'MyPassword' ''
 
 module 'Basic Sensors' Input
 author MicroBlocks
-version 1 1 
+version 1 2 
 tags tilt acceleration light sensor 
 choices accelerometerRange '1' '2' '4' '8' 
 description 'Provides blocks to read tilt in the three axes, acceleration, temperature and light level. Many boards come with this particular set of sensors, such as the micro:bit, the Circuit Playground Express, the Calliope or the Citilab ED1.'
@@ -275,27 +275,29 @@ description 'Provides blocks to read tilt in the three axes, acceleration, tempe
   spec 'r' '[sensors:acceleration]' 'acceleration'
   spec 'r' '[display:lightLevel]' 'light level'
   spec 'r' '[sensors:temperature]' 'temperature (°C)'
-  spec ' ' '_setAccelRange' 'set acceleration range _ g = 100' 'menu.accelerometerRange' '1'
+  spec 'r' '[sensors:magneticField]' 'magnetic field'
+  advanced
+  spec ' ' 'setAccelRange' 'set acceleration range _ g = 100' 'menu.accelerometerRange' '1'
 
-to '_setAccelRange' n {
+to setAccelRange n {
   '[sensors:setAccelerometerRange]' (0 + n)
 }
 
 
 module 'ED1 Buttons' Input
 author MicroBlocks
-version 1 0 
+version 1 1 
 tags button capacitive ed1 
 description 'Provides blocks for the six capacitive buttons in the Citilab ED1 board.'
 variables _ED1_buttons_init '_capacitive threshold' 
 
   spec ' ' '_ED1_buttons_init' '_ED1_buttons_init' 'any any any'
-  spec 'r' 'OK button' 'button OK'
-  spec 'r' 'cancel button' 'button X'
-  spec 'r' 'up button' 'button up'
-  spec 'r' 'down button' 'button down'
-  spec 'r' 'left button' 'button left'
-  spec 'r' 'right button' 'button right'
+  spec 'r' 'OK button' '#SVG#button-ok'
+  spec 'r' 'cancel button' '#SVG#button-x'
+  spec 'r' 'up button' '#SVG#button-up'
+  spec 'r' 'down button' '#SVG#button-down'
+  spec 'r' 'left button' '#SVG#button-left'
+  spec 'r' 'right button' '#SVG#button-right'
   spec ' ' 'set capacitive threshold to' 'set capacitive threshold to _' 'auto' 16
 
 to 'OK button' {
@@ -493,7 +495,7 @@ to 'stop steppers' {
 
 module Files Data
 author MicroBlocks
-version 1 3 
+version 1 4 
 description 'Flash file system operations. Currently supports the LittleFS file system on ESP8266 and ESP32 boards. The GnuBlocks virtual machine (Linux and Raspberry Pi) supports the native system.'
 
   spec ' ' '[file:open]' 'open file _' 'str'
@@ -503,17 +505,19 @@ description 'Flash file system operations. Currently supports the LittleFS file 
   spec ' ' '[file:appendLine]' 'append line _ to file _' 'str str'
   spec ' ' '[file:appendBytes]' 'append bytes _ to file _' 'str str'
   space
-  spec 'r' '[file:endOfFile]' 'end of file _' 'str'
+  spec 'r' '[file:fileSize]' 'size of file _' 'str'
+  spec 'r' 'file_contents' 'contents of file _ : binary _' 'str bool' '' false
+  space
   spec 'r' '[file:readLine]' 'next line of file _' 'str'
   spec 'r' '[file:readBytes]' 'next _ bytes of file _ : starting at _' 'num str num' 100 '' 0
   spec 'r' '[file:readInto]' 'read into _ from file _' 'str str' 'a ByteArray' ''
+  spec 'r' '[file:endOfFile]' 'end of file _' 'str'
   space
   spec 'r' '[file:readPosition]' 'read position of file _' 'str'
   spec ' ' '[file:setReadPosition]' 'set read position _ of file _' 'num str' 0 ''
   spec ' ' 'file_SkipBytes' 'skip _ bytes of file _' 'num str' 4 ''
   space
   spec 'r' 'file names' 'file names : in directory _' 'str'
-  spec 'r' '[file:fileSize]' 'size of file _' 'str'
   spec 'r' '[file:systemInfo]' 'file system info'
 
 to 'file names' dir {
@@ -530,6 +534,19 @@ to 'file names' dir {
 to file_SkipBytes offset file {
   local 'newPosition' (('[file:readPosition]' file) + offset)
   '[file:setReadPosition]' newPosition file
+}
+
+to file_contents fileName optionBinary {
+  local 'binary' (argOrDefault 2 (booleanConstant false))
+  local 'byteCount' ('[file:fileSize]' fileName)
+  local 'result' ('[data:newByteArray]' byteCount)
+  local 'i' 1
+  '[file:open]' fileName
+  repeatUntil (i > byteCount) {
+    i += ('[file:readInto]' result fileName)
+  }
+  '[file:close]' fileName
+  return (ifExpression binary result ('[data:convertType]' result 'string'))
 }
 
 
@@ -618,9 +635,10 @@ description 'Very fast and efficient primitives to parse JSON strings.'
 
 module 'LED Display' Output
 author MicroBlocks
-version 1 9 
+version 1 14 
 choices led_imageMenu heart 'small heart' yes no happy sad confused angry asleep surprised silly fabulous meh 't-shirt' 'roller skate' duck house tortoise butterfly 'stick figure' ghost sword giraffe skull umbrella snake rabbit cow 'quarter note' 'eight note' pitchfork target triangle 'left triangle' 'chess board' diamond 'small diamond' square 'small square' scissors 
-description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) support these primitives with a simulated "fat pixel" display.'
+description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) support these primitives with a simulated "fat pixel" display.
+'
 variables _stop_scrolling_text 
 
   spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
@@ -633,16 +651,12 @@ variables _stop_scrolling_text
   spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
   spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
   spec ' ' 'stopScrollingText' 'stop scrolling'
+  advanced
+  spec ' ' 'set display color' 'set display color _' 'color'
+  spec 'r' 'led_image' 'LED image #BR# _' 'microbitDisplay' 15237440
   space
-  spec 'r' '_led_image' 'led image _' 'microbitDisplay' 15237440
   spec 'r' '_led_namedImage' '_led_namedImage _' 'menu.led_imageMenu' 'happy'
   spec 'r' '_led_imageData' '_led_imageData'
-  spec ' ' 'set display color' 'set display color _' 'color'
-
-to '_led_image' twentyFiveBitInt {
-  comment 'An LED image is a 25-bit integer'
-  return twentyFiveBitInt
-}
 
 to '_led_imageData' {
   return 'heart:4685802,small heart:145728,yes:2269696,no:18157905,happy:15237440,sad:18284864,confused:22348096,angry:23036241,asleep:459616,surprised:4526090,silly:25984017,fabulous:15008639,meh:2236443,t-shirt:15154043,roller skate:11534104,duck:489702,house:10976708,tortoise:359872,butterfly:29332475,stick figure:18158564,ghost:23068334,sword:4657284,giraffe:10946627,skull:15171246,umbrella:6460398,snake:469859,rabbit:16104613,cow:4685361,quarter note:7573636,eight note:7590276,pitchfork:4357813,target:4681156,triangle:1026176,left triangle:32805985,chess board:11184810,diamond:4539716,small diamond:141440,square:33080895,small square:469440,scissors:20287859,'
@@ -666,7 +680,7 @@ to displayCharacter s {
     '[display:mbDisplayOff]'
     return 0
   }
-  '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at 1 s))
+  '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at 1 s)) 1 1
 }
 
 to led_displayImage imageName optionalX optionalY {
@@ -675,6 +689,11 @@ to led_displayImage imageName optionalX optionalY {
     image = ('_led_namedImage' imageName)
   }
   '[display:mbDrawShape]' image (argOrDefault 2 1) (argOrDefault 3 1)
+}
+
+to led_image twentyFiveBitInt {
+  comment 'An LED image is a 25-bit integer'
+  return twentyFiveBitInt
 }
 
 to scroll_text text optionalDelay {
@@ -691,6 +710,15 @@ to scroll_text text optionalDelay {
       '[tft:text]' text (17 - position) 0 (colorSwatch 125 125 125 255) 1 true
       waitMillis (delay / 2)
     }
+  } ('kidsIOT' == (boardType)) {
+    for position (((size text) * 6) + 21) {
+      if _stop_scrolling_text {return 0}
+      '[tft:deferUpdates]'
+      '[tft:clear]'
+      '[tft:text]' text (128 - (6 * position)) 6 (colorSwatch 255 255 255 255) 6 false
+      '[tft:resumeUpdates]'
+      waitMillis (delay / 8)
+    }
   } else {
     for position (((size text) * 6) + 6) {
       if _stop_scrolling_text {return 0}
@@ -703,7 +731,7 @@ to scroll_text text optionalDelay {
 }
 
 to 'set display color' color {
-  callCustomCommand '[display:mbSetColor]' ('[data:makeList]' color)
+  '[display:mbSetColor]' color
 }
 
 to stopScrollingText {
@@ -715,7 +743,7 @@ to stopScrollingText {
 
 module TFT Output
 author MicroBlocks
-version 1 11 
+version 1 12 
 description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 
   spec ' ' '[tft:clear]' 'clear TFT display'
@@ -786,6 +814,7 @@ to tft_colorSwatch color {
 }
 
 to tft_drawText s x y color optionalScale optionalBGColor {
+  s = ('[data:convertType]' s 'string')
   local 'scale' (argOrDefault 5 2)
   local 'bgColor' (argOrDefault 6 '')
   local 'lines' ('[data:split]' s ('[data:unicodeString]' 10))
@@ -808,7 +837,7 @@ to tft_drawVector x y angle length color {
 
 module Tone Output
 author MicroBlocks
-version 1 9 
+version 1 10 
 tags tone sound music audio note speaker 
 choices tone_NoteName 'nt;c' 'nt;c#' 'nt;d' 'nt;d#' 'nt;e' 'nt;f' 'nt;f#' 'nt;g' 'nt;g#' 'nt;a' 'nt;a#' 'nt;b' 
 description 'Audio tone generation. Make music with MicroBlocks!
@@ -925,6 +954,8 @@ to 'attach buzzer to pin' pinNumber {
       _tonePin = 25
     } ((boardType) == 'D1-Mini') {
       _tonePin = 12
+    } ((boardType) == 'CodingBox') {
+      _tonePin = 32
     } else {
       _tonePin = -1
     }
@@ -1028,13 +1059,16 @@ to 'ws event type' event {
 
 module WiFi Comm
 author MicroBlocks
-version 1 8 
+version 1 10 
 tags communication network 
 description 'Connect to a WiFi network. Used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
 '
 
   spec ' ' 'wifiConnect' 'wifi connect to _ password _ : IP _ gateway _ subnet _' 'str str auto auto auto' 'Network_Name' '' '192.168.1.42' '192.168.1.1' '255.255.255.0'
   spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
+  spec ' ' '[net:stopWiFi]' 'stop wifi'
+  space
+  spec ' ' '[net:setDomainName]' 'wifi set local domain name _ .local' 'str' 'microblocks'
   space
   spec 'r' 'getIPAddress' 'IP address'
   spec 'r' '[net:myMAC]' 'MAC address'
@@ -1073,6 +1107,7 @@ to wifiConnect ssid password fixedIP gatewayIP subnetIP {
     setUserLED false
     waitMillis 50
   }
+  '[net:setDomainName]' 'microblocks'
   sayIt 'My IP address is:' ('[net:myIPAddress]')
 }
 
@@ -1094,6 +1129,7 @@ to wifiCreateHotspot ssid password {
     setUserLED false
     waitMillis 50
   }
+  '[net:setDomainName]' 'microblocks'
   sayIt 'My IP address is:' ('[net:myIPAddress]')
 }
 

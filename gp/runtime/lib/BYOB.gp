@@ -53,6 +53,7 @@ to blockType blockSpecType {
 }
 
 method op BlockDefinition {return op}
+method detailsHidden BlockDefinition {return isShort}
 
 method initializeSections BlockDefinition aBlockSpec firstSection argNames {
 	if (isNil aBlockSpec) {return}
@@ -776,11 +777,11 @@ method setType InputDeclaration typeStr defaultValue {
 		}
 	} ('num' == typeStr) {
 		if (and
-			(isClass defaultValue  'String')
+			(isClass defaultValue 'String')
 			(representsAnInteger defaultValue)) {
 				defaultValue = (toInteger defaultValue)
 		}
-		if (not (isClass defaultValue  'Integer')) {
+		if (not (isClass defaultValue 'Integer')) {
 			defaultValue = 10
 		}
 
@@ -788,12 +789,16 @@ method setType InputDeclaration typeStr defaultValue {
 		if (isClass defaultValue 'Integer') {
 			defaultValue = (join '' defaultValue)
 		}
-		if (not (isClass defaultValue  'String')) {
+		if (not (isClass defaultValue 'String')) {
 			defaultValue = 'text'
 		}
 	} ('bool' == typeStr) {
-		if (not (isClass defaultValue  'Boolean')) {
+		if (not (isClass defaultValue 'Boolean')) {
 			defaultValue = true
+		}
+	} ('color' == typeStr) {
+		if (not (isClass defaultValue 'Color')) {
+			defaultValue = nil
 		}
 	}
 	removeAllParts morph

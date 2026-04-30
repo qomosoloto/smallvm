@@ -1,19 +1,20 @@
 module 'Encoded DC Motors' Output
 author 'Russell Owen'
-version 0 13 
-depends PID 
+version 1 0 
+depends _PID 
 description 'Drive DC motors with encoders'
-variables _edcmotors__initialized _edcmotors__running _edcmotors__numMotors _edcmotors__timeoutMillis _edcmotors__maxSpeed _edcmotors__accel _edcmotors__pinDutyCycle _edcmotors__pinEncoderA _edcmotors__pinEncoderB _edcmotors__pinDirection _edcmotors__targetStartMillis _edcmotors__targetList _edcmotors__pCoeff _edcmotors__iCoeff _edcmotors__dCoeff _edcmotors__deadband _edcmotors__minEffort _edcmotors__maxEffort _edcmotors__maxIntegral 
+variables _edcmotors__initialized _edcmotors__running _edcmotors__numMotors _edcmotors__timeoutMillis _edcmotors__maxSpeed _edcmotors__accel _edcmotors__pinDutyCycle _edcmotors__pinReverseDutyCycle _edcmotors__pinDirection _edcmotors__pinEncoderA _edcmotors__pinEncoderB _edcmotors__targetStartMillis _edcmotors__targetList _edcmotors__pCoeff _edcmotors__iCoeff _edcmotors__dCoeff _edcmotors__deadband _edcmotors__minEffort _edcmotors__maxEffort _edcmotors__maxIntegral 
 
   spec ' ' 'edcmotors_moveMotorAtSpeed' 'move motor _ at speed _ (encoder counts/sec)' 'num num' 1 500
   spec ' ' 'edcmotors_moveMotorDistance' 'move motor _ distance _ (encoder counts) at max speed _ (counts/sec)' 'num num num' 1 100 500
-  spec ' ' 'edcmotors_moveMotorWithEffort' 'move motor _ with effort _ (-1023 to 1023)' 'num num' 1 250
+  spec ' ' 'edcmotors_moveMotorWithEffort' 'move motor _ with effort _ (-1023 to 1023)' 'num num' 1 500
   spec ' ' 'edcmotors_resetMotorEncoders' 'reset motor encoders _ : _ : ...' 'num num num num' 1 2 3 4
+  spec 'r' 'edcmotors_motorEncoderCount' 'motor encoder count _' 'num' 1
   spec ' ' 'edcmotors_stopAllMotors' 'stop all motors'
   spec ' ' 'edcmotors_stopMotors' 'stop motors _ : _ : ...' 'num num num num' 1 2 3 4
   spec ' ' 'edcmotors_waitForMotorsToStop' 'wait for motors to stop _ : _ : ...' 'num num num num' 1 2 3 4
   space
-  spec 'r' 'edcmotors_isRunning' 'is motor _ running?' 'num' 1
+  spec 'r' 'edcmotors_isMotorRunning' 'is motor _ running?' 'num' 1
   space
   spec ' ' '_edcmotors_basicMoveMotorWithEffort' '_basic move motor _ with effort _ (-1023 to 1023)' 'num num' 1 250
   spec 'r' '_edcmotors_computePointToPointTargetList' '_compute a target list for a move of distance _ (encoder counts) max speed _ (counts/sec) accel _ (counts/sec^2)' 'num num num' 2000 1000 100
@@ -39,8 +40,18 @@ to '_edcmotors_addTime' time duration {
 
 to '_edcmotors_basicMoveMotorWithEffort' index effort {
   comment 'Implement edcmotors_moveMotorWithEffort. Assumes that _edcmotors_initLibrary has been called'
-  analogWriteOp (at index _edcmotors__pinDutyCycle) (absoluteValue effort)
-  digitalWriteOp (at index _edcmotors__pinDirection) (effort > 0)
+  if ((at index _edcmotors__pinReverseDutyCycle) >= 0) {
+    if (effort >= 0) {
+      analogWriteOp (at index _edcmotors__pinReverseDutyCycle) 0
+      analogWriteOp (at index _edcmotors__pinDutyCycle) (absoluteValue effort)
+    } else {
+      analogWriteOp (at index _edcmotors__pinDutyCycle) 0
+      analogWriteOp (at index _edcmotors__pinReverseDutyCycle) (absoluteValue effort)
+    }
+  } else {
+    analogWriteOp (at index _edcmotors__pinDutyCycle) (absoluteValue effort)
+    digitalWriteOp (at index _edcmotors__pinDirection) (effort > 0)
+  }
 }
 
 to '_edcmotors_computePointToPointTargetList' distance maxSpeed accel {
@@ -59,11 +70,11 @@ The target list consists of 1-4 path segments
 • A short segment of constant position, to make sure the loop sees it and let the motor settle
 Segments may be omitted if the move is short enough that they are not needed.'
   if (maxSpeed == 0) {
-    sayIt 'maxSpeed=' maxSpeed 'must be nonzero'
+    sayIt 'Error: maxSpeed is 0'
     return ('[data:makeList]')
   }
   if (accel == 0) {
-    sayIt 'accel must be nonzero'
+    sayIt 'Error: accel is 0'
     return ('[data:makeList]')
   }
   maxSpeed = (absoluteValue maxSpeed)
@@ -119,7 +130,7 @@ in order for edcmotors_moveMotorAtSpeed and edcmotors_moveMotorDistance to work.
     for index _edcmotors__numMotors {
       if ((at index _edcmotors__targetStartMillis) >= 0) {
         targetPositionSpeedDurationState = ('_edcmotors_getTargetPositionSpeedDurationState' index (millisOp))
-        if (and ((at 4 targetPositionSpeedDurationState) > 0) (edcmotors_isRunning index)) {
+        if (and ((at 4 targetPositionSpeedDurationState) > 0) (edcmotors_isMotorRunning index)) {
           comment 'Either we are still in the path (state=1) or the path has ended (state=2) and we have not yet arrived'
           comment 'Note: simple subtraction handles encoder wraparound automatically'
           positionError = ((at 1 targetPositionSpeedDurationState) - ('[encoder:count]' index))
@@ -198,8 +209,7 @@ Assumes that _edcmotors_initLibrary has been called.'
 
 to '_edcmotors_initLibrary' {
   comment 'Initialize the DC Motors library.
-Check motor power and initialize variables (if not already initialized).
-Defaults to an XRP robot kit with 2 motors; change this code for other systems'
+Check motor power and initialize variables, if not already initialized.'
   if (not _edcmotors__initialized) {
     _edcmotors__numMotors = (edcmotors_getNumMotors)
     _edcmotors__timeoutMillis = 1000
@@ -239,10 +249,11 @@ and to specify the speed for constant-speed moves.'
   _edcmotors__maxIntegral = (newList _edcmotors__numMotors 0)
   _edcmotors__maxSpeed = (newList _edcmotors__numMotors 0)
   _edcmotors__accel = (newList _edcmotors__numMotors 0)
-  _edcmotors__pinEncoderA = (newList _edcmotors__numMotors 0)
-  _edcmotors__pinEncoderB = (newList _edcmotors__numMotors 0)
-  _edcmotors__pinDirection = (newList _edcmotors__numMotors 0)
-  _edcmotors__pinDutyCycle = (newList _edcmotors__numMotors 0)
+  _edcmotors__pinEncoderA = (newList _edcmotors__numMotors -1)
+  _edcmotors__pinEncoderB = (newList _edcmotors__numMotors -1)
+  _edcmotors__pinDutyCycle = (newList _edcmotors__numMotors -1)
+  _edcmotors__pinReverseDutyCycle = (newList _edcmotors__numMotors -1)
+  _edcmotors__pinDirection = (newList _edcmotors__numMotors -1)
 }
 
 to '_edcmotors_moveMotorAlongPathList' index pathList {
@@ -253,7 +264,7 @@ Note that if acceleration is 0, the segment has constant speed,
 and if acceleration and startSpeed are both 0, the segment has constant position.'
   '_edcmotors_initLibrary'
   if (not (isType pathList 'list')) {
-    sayIt 'pathList=' pathList 'must be a list'
+    sayIt 'Error: pathList=' pathList 'must be a list'
     return
   }
   atPut index _edcmotors__targetStartMillis -1
@@ -273,16 +284,23 @@ to '_edcmotors_setRunning' index running {
 }
 
 to '_edcmotors_stopOneMotor' index {
-  '_edcmotors_initLibrary'
   atPut index _edcmotors__targetStartMillis -1
   atPut index _edcmotors__targetList ('[data:makeList]')
   analogWriteOp (at index _edcmotors__pinDutyCycle) 0
-  '_edcmotors_setRunning' index (booleanConstant false)
+  if ((at index _edcmotors__pinReverseDutyCycle) >= 0) {
+    analogWriteOp (at index _edcmotors__pinReverseDutyCycle) 0
+  }
 }
 
-to edcmotors_isRunning index {
+to edcmotors_isMotorRunning index {
   comment 'Return true if the specified motor is running.'
   return ('[data:convertType]' (_edcmotors__running & (1 << (index - 1))) 'boolean')
+}
+
+to edcmotors_motorEncoderCount index {
+  comment 'Return the encoder count for the specified motor.'
+  '_edcmotors_initLibrary'
+  return ('[encoder:count]' index)
 }
 
 to edcmotors_moveMotorAtSpeed index speed {
@@ -296,14 +314,18 @@ to edcmotors_moveMotorDistance index distance maxSpeed {
   comment 'Move the specified motor the specified distance (encoder counts) at the specified maximum speed (counts/sec).
 Specify distance < 0 for a negative move. The sign of maxSpeed is ignored, but the value must be nonzero.'
   '_edcmotors_initLibrary'
+  if (maxSpeed == 0) {
+    sayIt 'Error: maxSpeed is 0'
+    return
+  }
   maxSpeed = ('_edcmotors_constrainSpeed' index maxSpeed)
   if (maxSpeed == 0) {
-    sayIt 'maxSpeed=' maxSpeed 'must be non-zero'
+    sayIt 'Error: max speed is 0; set variable _edcmotors__maxSpeed'
     return
   }
   local 'accel' (at index _edcmotors__accel)
   if (accel == 0) {
-    sayIt 'accel is 0; set variable _edcmotors__accel'
+    sayIt 'Error: accel is 0; set variable _edcmotors__accel'
     return
   }
   '_edcmotors_moveMotorAlongPathList' index ('_edcmotors_computePointToPointTargetList' distance maxSpeed accel)
@@ -314,7 +336,7 @@ to edcmotors_moveMotorWithEffort index effort {
 Effort is the duty cycle of the drive signal to the motor (plus a sign signal),
 and is roughly proportional to speed, at least if the motor has no load.
 Warning:  geared motors have enough friction that they may not reliably move at low speeds.
-For example the XRP wheels may not reliably move if the absolute value of effort is less than about 200.
+For example the XRP wheels may not reliably move if the absolute value of effort is less than about 300.
 Thus the usable range of effort is usually rather small.'
   '_edcmotors_initLibrary'
   comment 'Prevent _edcmotors_driveMotorsToFollowTarget from moving the motor'
@@ -331,6 +353,7 @@ to edcmotors_resetMotorEncoders {
 }
 
 to edcmotors_stopAllMotors {
+  '_edcmotors_initLibrary'
   for index _edcmotors__numMotors {
     '_edcmotors_stopOneMotor' index
   }
@@ -338,6 +361,7 @@ to edcmotors_stopAllMotors {
 
 to edcmotors_stopMotors {
   comment 'Stop the specified motors'
+  '_edcmotors_initLibrary'
   for index (pushArgCount) {
     '_edcmotors_stopOneMotor' (getArg index)
   }
@@ -345,6 +369,9 @@ to edcmotors_stopMotors {
 
 to edcmotors_waitForMotorsToStop {
   comment 'Wait for the specified motors to stop moving.'
+  if (_edcmotors__numMotors == 0) {
+    return
+  }
   local 'mask' 0
   for index (pushArgCount) {
     mask = (mask | (1 << ((getArg index) - 1)))

@@ -1,6 +1,6 @@
 module 'MP3 Player' Output
 author MicroBlocks
-version 1 13 
+version 1 14 
 choices mp3PlayerType MakerPort 'MakerBit/HyperDuino' DFRobot Octopus 
 description 'Support for Octopus (FN-M16P and YX6300 chips) and DFRobot/HyperDuino/MakerBit/MakerPort) MP3 Players (YX5300, A19HFA440, and GD3300B chips).
 
@@ -87,7 +87,7 @@ to mp3_initialize type pin optionalRxPin {
       _mp3Status = 'no card'
       return 0
     }
-    waitMillis 100
+    waitMillis 500
     comment 'Try to play a non-existent track; should respond in under 800 msecs.
 Times out when MP3 switch is in "files" mode.'
     mp3_playTrack 87 87

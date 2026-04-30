@@ -56,8 +56,11 @@ to openMicroBlocksEditor devMode {
 	applyUserPreferences editor
 	developerModeChanged editor
 	if ('Browser' == (platform)) {
-		// attempt to extra project or scripts from URL; does nothing if absent
-		importFromURL editor (browserURL)
+		url = (browserURL)
+		langCode = (urlParameter url 'lang')
+		if (notNil langCode) { setLanguage editor langCode }
+		// attempt to open a project or scripts from URL; does nothing if absent
+		importFromURL editor url
 	}
 	startSteppingSafely page
 }
@@ -134,9 +137,9 @@ method addTopBarParts MicroBlocksEditor {
 	leftItems = (list)
 	add leftItems (175 * scale)
 	add leftItems (addSVGIconButtonOldStyle this 'icon-globe' 'languageMenu' 'Language')
-	add leftItems (12 * scale)
+	add leftItems (8 * scale)
 	add leftItems (addSVGIconButtonOldStyle this 'icon-gear' 'settingsMenu' 'MicroBlocks')
-	add leftItems (12 * scale)
+	add leftItems (8 * scale)
 	add leftItems (addSVGIconButtonOldStyle this 'icon-file' 'projectMenu' 'File')
 	// if (isChineseWebApp this) {
 		add leftItems (12 * scale)
@@ -155,7 +158,7 @@ method addTopBarParts MicroBlocksEditor {
 	progressIndicator = (newImageBox (newBitmap progressW progressW))
 	addPart morph (morph progressIndicator)
 	add rightItems progressIndicator
-	add rightItems (12 * scale)
+	add rightItems (24 * scale)
 
 	addFrameRate = (contains (commandLine) '--allowMorphMenu')
 	if addFrameRate {
@@ -169,17 +172,17 @@ method addTopBarParts MicroBlocksEditor {
 	addPart morph (morph connectionWidget)
 
 	add rightItems (addTwoStateSVGIconButton this 'icon-graph' 'showGraph' 'Graph')
-	add rightItems (12 * scale)
+	add rightItems (24 * scale)
 	add rightItems (vSeparator this)
-	add rightItems (12 * scale)
+	add rightItems (24 * scale)
 	add rightItems connectionWidget
-	add rightItems (12 * scale)
+	add rightItems (24 * scale)
 	add rightItems (vSeparator this)
-	add rightItems (12 * scale)
+	add rightItems (24 * scale)
 	add rightItems (addSVGIconButton this 'icon-start' 'startAll' 'Start')
-	add rightItems (12 * scale)
+	add rightItems (8 * scale)
 	add rightItems (addSVGIconButton this 'icon-stop' 'stopAndSyncScripts' 'Stop')
-	add rightItems (7 * scale)
+	add rightItems (24 * scale)
 }
 
 method vSeparator MicroBlocksEditor {
@@ -239,7 +242,9 @@ method addZoomButtonHints MicroBlocksEditor {
 }
 
 method restoreZoom MicroBlocksEditor {
-	setBlockScalePercent this 100
+	normalPercent = 100
+	if (isMobile) { normalPercent = 125 }
+	setBlockScalePercent this normalPercent
 }
 
 method zoomIn MicroBlocksEditor {
@@ -266,6 +271,8 @@ method zoomOut MicroBlocksEditor {
 
 method setBlockScalePercent MicroBlocksEditor newPercent {
 	setCursor 'wait'
+	// invalidate SVG cache
+	setGlobal 'svgCache' (dictionary)
 	setBlockScalePercent (scriptEditor scripter) newPercent
 	syncScripts (smallRuntime)
 	setCursor 'default'
@@ -426,9 +433,9 @@ method urlPrefix MicroBlocksEditor {
 	}
 
 	// stand-alone app
-	urlPrefix = 'https://microblocks.fun/run/microblocks.html'
+	urlPrefix = 'https://microblocksfun.cn/run/microblocks.html'
 	if (isPilot this) {
-		urlPrefix = 'https://microblocks.fun/run-pilot/microblocks.html'
+		urlPrefix = 'https://microblocksfun.cn/dev/microblocks.html'
 	}
 	return urlPrefix
 }
@@ -442,7 +449,7 @@ method copyProjectURLToClipboard MicroBlocksEditor {
 		projName = (text title)
 		codeString = (join 'projectName ''' projName '''' (newline) (newline) codeString)
 	}
-	setClipboard (join (urlPrefix this) '#project='(urlEncode codeString true))
+	setClipboard (join (urlPrefix this) '?project='(urlEncode codeString true))
 }
 
 method saveProject MicroBlocksEditor fName {
@@ -554,8 +561,10 @@ method step MicroBlocksEditor {
 		// launch (global 'page') (newCommand 'checkLatestVersion' this) // start version check
 		// newerVersion = nil
 	} (notNil newerVersion) {
-		reportNewerVersion this
-		newerVersion = nil
+		if versionCheckOnStartup {
+			reportNewerVersion this
+			newerVersion = nil
+		}
 	}
 	if (notNil frameRate) {
 		updateFPS this
@@ -676,7 +685,7 @@ method processBrowserDroppedFile MicroBlocksEditor {
 	data = (last pair)
 	if putNextDroppedFileOnBoard {
 		putNextDroppedFileOnBoard = false // clear flag
-		sendFileData (smallRuntime) fName data
+		writeFileToBoard (smallRuntime) fName data
 	} else {
 		processDroppedFile this fName data
 	}
@@ -716,7 +725,7 @@ method processDroppedFiles MicroBlocksEditor {
 
 method processDroppedFile MicroBlocksEditor fName data {
 	lcFilename = (toLowerCase fName)
-	if (endsWith lcFilename '.ubp') {
+	if (or (endsWith lcFilename '.ubp') (endsWith lcFilename '.ubp.txt')) {
 		if (not (canReplaceCurrentProject this)) { return }
 		openProject this data fName
 	} (endsWith lcFilename '.ubl') {
@@ -786,28 +795,25 @@ method processDroppedText MicroBlocksEditor text {
 }
 
 method importFromURL MicroBlocksEditor url {
-	i = (findSubstring 'scripts=' url)
-	if (notNil i) { // import scripts embedded in URL
-		scriptString = (urlDecode (substring url (i + 8)))
+	scripts = (urlParameter url 'scripts')
+	if (notNil scripts) { // import scripts embedded in URL
+		scriptString = (urlDecode scripts)
 		pasteScripts scripter scriptString
 		return
 	}
-	i = (findSubstring 'project=' url)
-	if (notNil i) { // open a complete project
-		urlOrData = (substring url (i + 8))
-		if (beginsWith urlOrData 'http') {
-			// project link
-			fileName = (substring urlOrData ((findLast urlOrData '/') + 1) ((findLast urlOrData '.') - 1))
-			if (not (canReplaceCurrentProject this)) { return }
-			openProject this (httpBody (httpGetInBrowser urlOrData)) fileName
+	proj = (urlParameter url 'project')
+	if (not (canReplaceCurrentProject this)) { return }
+	if (notNil proj) { // open a complete project
+		if (beginsWith proj 'http') {
+			// proj is a project link
+			projectString = (toString (httpBody (httpGetInBrowser proj)))
+			projName = (substring proj ((findLast proj '/') + 1) ((findLast proj '.') - 1))
 		} else {
-			// project embedded in URL
-			projectString = (urlDecode (substring url (i + 8)))
-			if (not (canReplaceCurrentProject this)) { return }
+			// proj is a project embedded in the URL
+			projectString = (urlDecode proj)
 			projName = (extractProjectName this projectString)
-			if (not (canReplaceCurrentProject this)) { return }
-			openProject this projectString projName
 		}
+		openProject this projectString projName
 		return
 	}
 }
@@ -1019,7 +1025,17 @@ method toggleAutoDecompile MicroBlocksEditor {
 }
 
 method autoDecompileEnabled MicroBlocksEditor {
-	return (autoDecompile == true)
+	return false // this feature is disabled; always return false
+//	return (autoDecompile == true)
+}
+
+method openVMFolder MicroBlocksEditor {
+	if isPilot {
+		url = 'https://microblocks.fun/downloads/pilot/vm/'
+	} else {
+		url = 'https://microblocks.fun/downloads/latest/vm/'
+	}
+	openURL url
 }
 
 method toggleShowHiddenBlocks MicroBlocksEditor {
@@ -1152,12 +1168,14 @@ method fixScripterLayout MicroBlocksEditor {
 // gear menu
 
 method gearMenu MicroBlocksEditor {
+	isConnected = ('connected' == (updateConnection (smallRuntime)))
 	menu = (menu 'MicroBlocks' this)
 	setIsTopMenu menu true
 	addItem menu 'about...' (action 'showAboutBox' (smallRuntime))
 	addLine menu
 	addItem menu 'update firmware on board' (action 'installVM' (smallRuntime) false false) // do not wipe flash, do not download VM from server
 	addLine menu
+	addItem menu 'inform of new versions' (action 'toggleVersionCheck' this false) 'when opening the IDE, show a notification if a new version of MicroBlocks has been released' (newCheckmark this versionCheckOnStartup)
 	addItem menu 'dark mode' (action 'toggleDarkMode' this false) 'make the IDE darker' (newCheckmark this (darkModeEnabled this))
 	addItem menu 'advanced mode' 'toggleAdvancedMode' 'show advanced blocks, menu items and editor functionalities' (newCheckmark this (devMode))
 	addItem menu 'keyboard event' (action 'toggleKeyboardEvent' this false) 'broadcast keyboard event(for debugging only)' (newCheckmark this (keyboardEventEnabled this))
@@ -1167,18 +1185,24 @@ method gearMenu MicroBlocksEditor {
 		addItem menu 'show implementation blocks' (action 'toggleShowHiddenBlocks' this) 'show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)' (newCheckmark this (showHiddenBlocksEnabled this))
 		addItem menu 'autoload board libraries' (action 'toggleBoardLibAutoLoad' this) nil (newCheckmark this (not (boardLibAutoLoadDisabled this)))
 // Does anyone ever enable 'PlugShare when project empty'?
-		addItem menu 'PlugShare when project empty' (action 'toggleAutoDecompile' this) 'when plugging a board, automatically read its contents into the IDE if the current project is empty' (newCheckmark this (autoDecompileEnabled this))
+//		addItem menu 'PlugShare when project empty' (action 'toggleAutoDecompile' this) 'when plugging a board, automatically read its contents into the IDE if the current project is empty' (newCheckmark this (autoDecompileEnabled this))
+		addLine menu
+		addItem menu 'open vm folder on microblocks.fun' (action 'openVMFolder' this)
 		addLine menu
 		addItem menu 'install ESP firmware from URL' (action 'installESPFirmwareFromURL' (smallRuntime))
 		addItem menu 'install ESP firmware from microblocks.fun' (action 'installESPFirmwareFromRepo' (smallRuntime))
 		addItem menu 'erase flash and update firmware on ESP board' (action 'installVM' (smallRuntime) true false) // wipe flash first, do not download VM from server
 		addLine menu
-		addItem menu 'compact code store' (action 'sendMsg' (smallRuntime) 'systemResetMsg' 2 nil)
-
-		if (boardIsBLECapable (smallRuntime)) {
-			addLine menu
-			addItem menu 'enable or disable BLE' (action 'setBLEFlag' (smallRuntime))
+		if (and
+				isConnected
+				(boardIsBLECapable (smallRuntime))
+				(not (connectedViaBLE (smallRuntime)))
+			) {
+				addLine menu
+				addItem menu 'enable or disable BLE' (action 'setBLEFlag' (smallRuntime))
 		}
+		addLine menu
+		addItem menu 'show program size on board' (action 'sendMsg' (smallRuntime) 'systemResetMsg' 2 nil) nil nil true (not isConnected)
 
 // Let's deprecate the HTTP server since it doesn't work in browser?
 // Don't think anyone is using it now that we have so many other ways to communicate.
@@ -1380,7 +1404,7 @@ method addLanguangeMenuEntry MicroBlocksEditor langCode menu {
 	language = (languageNameForCode (authoringSpecs) langCode)
 	if (language == (language (authoringSpecs))) {
 		addItem menu language (action 'setLanguage' this langCode) nil (newCheckmark this true)
-	} else {
+	} (notNil language) {
 		addItem menu language (action 'setLanguage' this langCode)
 	}
 }
@@ -1490,7 +1514,7 @@ method projectMenu MicroBlocksEditor {
 	if ('connected' != (updateConnection (smallRuntime))) {
 		addItem menu 'Open from board' 'openFromBoard'
 	} else {
-			checkBoardType (smallRuntime)
+		checkBoardType (smallRuntime)
 	}
 	addLine menu
 	addItem menu 'Copy project URL to clipboard' 'copyProjectURLToClipboard'
@@ -1538,35 +1562,126 @@ method redrawnMorphs MicroBlocksEditor {
 
 // Script image utility
 
-method fixScriptsInFolderTree MicroBlocksEditor language countryCode rootPath {
-	scriptEditor = (scriptEditor scripter)
-	setBlockScalePercent this 150
-	setExportScale scriptEditor 200
-	setLanguage this language
+method fixScriptsInFolderTree MicroBlocksEditor rootPath defaultCountryCode {
+	// Replaces all PNG files with one or multiple scripts with new ones with blocks re-drawn.
+	// The language will extracted from the locale in the file path (e.g. ".../locales/ca/...").
+	// If the path does not have a locale, defaultCountryCode will be used.
+	//
+	// Note: This script will remove any result bubbles shown in the original PNG file.
+	// Thus, before running this script, you may want to identify the scripts that
+	// have result bubbles using the findScriptsWithResults method, allowing those PNG's
+	// to be manually updated.
+	//
+	// fixScriptsInFolderTree (first (allInstances 'MicroBlocksEditor')) '/Users/johnmaloney/Projects-2022/microblocks-learn/data'
 
-	pattern = (join 'locales/' countryCode '/files/')
+	if (isNil defaultCountryCode) { defaultCountryCode = 'en' }
+	setBlockScalePercent this 125 // scale for multiple script PNG images
+	setExportScale (scriptEditor scripter) 200 // scale for single script PNG images
+
 	for pngFilePath (allFiles rootPath '.png') {
-		if (notNil (findSubstring pattern pngFilePath)) {
-			fixPNGScriptImage this pngFilePath
+		if (isNil (findSubstring '/reference_manual' pngFilePath)) {
+			pngData = (readFile pngFilePath true)
+			pngReader = (new 'PNGReader')
+			scriptString = (getScriptText pngReader pngData pngFilePath)
+			if (notNil scriptString) {
+				fixPNGScriptImage this pngFilePath scriptString defaultCountryCode
+			}
 		}
 	}
+	setLanguage this 'en'
 }
 
-method fixPNGScriptImage MicroBlocksEditor pngFile {
+method fixPNGScriptImage MicroBlocksEditor pngFilePath scriptString countryCode {
 	scriptEditor = (scriptEditor scripter)
 
 	// load scripts from file
 	clearProject this
-	importFromPNG this (readFile pngFile true)
+	code = (extractCountryCode this pngFilePath countryCode)
+	setLanguage this code
 
+	importFromScriptString this scriptString
 	scriptCount = (count (parts (morph scriptEditor)))
 	if (0 == scriptCount) { return }
 
 	updateLibraryList scripter
+	cleanUp scriptEditor
+
+	gc
 	if (1 == scriptCount) {
 		block = (handler (first (parts (morph scriptEditor))))
-		exportAsImageScaled block nil false pngFile
+print '   ' pngFilePath
+		exportAsImageScaled block nil false pngFilePath
 	} else {
-		saveScriptsImage scriptEditor pngFile true
+print '* multiple scripts:' pngFilePath scriptCount
+		saveScriptsImage scriptEditor pngFilePath true
 	}
+	gc
+}
+
+method extractCountryCode MicroBlocksEditor filePath defaultCountryCode {
+	if (isNil defaultCountryCode) { defaultCountryCode = 'en' }
+	i = (findSubstring 'locales/' filePath)
+	if (isNil i) { return defaultCountryCode }
+	start = (i + 8)
+	end = (findSubstring '/' filePath start)
+	result = (substring filePath start (end - 1))
+	if ('cn' == result) { result = 'zh-chs' } // map 'cn' to Simplified Chinese
+	return result
+}
+
+method importFromScriptString MicroBlocksEditor scriptString {
+	if (isNil scriptString) { return } // no script in this PNG file
+	i = (find (letters scriptString) (newline))
+	scriptString = (substring scriptString i)
+	pasteScripts scripter scriptString
+}
+
+method findScriptsWithResults MicroBlocksEditor rootPath {
+	// Prints a list of script PNG files that have result bubbles in the given folder hierarchy.
+	// findScriptsWithResults (first (allInstances 'MicroBlocksEditor')) '/Users/johnmaloney/Projects-2022/microblocks-learn/data'
+
+	for pngFilePath (allFiles rootPath '.png') {
+		pngData = (readFile pngFilePath true)
+		pngReader = (new 'PNGReader')
+		scriptString = (getScriptText pngReader pngData pngFilePath)
+		if (notNil scriptString) {
+			gc
+			bm = (readFrom pngReader pngData)
+			grayCount = (countTalkBubblePixels this bm)
+			if (grayCount > 100) {
+				print pngFilePath (width bm) 'x' (height bm) 'grays:' grayCount
+			}
+		}
+	}
+}
+
+method countTalkBubblePixels MicroBlocksEditor bm {
+	talkBubbleGray = (pixelRGB (gray 140))
+	result = 0
+	pixelData = (pixelData bm)
+	pixelCount = ((width bm) * (height bm))
+	for i pixelCount {
+		if ((getPixelRGB pixelData i) == talkBubbleGray) {
+			result += 1
+		}
+	}
+	return result
+}
+
+method countScriptPNGs MicroBlocksEditor rootPath {
+	// Prints a list of script PNG files that have result bubbles in the given folder hierarchy.
+	// findScriptsWithResults (first (allInstances 'MicroBlocksEditor')) '/Users/johnmaloney/Projects-2022/microblocks-learn/data'
+
+	pngCount = 0
+	pngWithScriptCount = 0
+	for pngFilePath (allFiles rootPath '.png') {
+		pngCount += 1
+		pngData = (readFile pngFilePath true)
+		scriptString = (getScriptText (new 'PNGReader') pngData pngFilePath)
+		if (notNil scriptString) {
+print pngFilePath
+			pngWithScriptCount += 1
+		}
+	}
+	print pngWithScriptCount 'PNG files have scripts out of' pngCount
 }

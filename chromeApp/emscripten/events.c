@@ -126,14 +126,14 @@ static void initialize() {
 // Emscripten event types:
 
 #define MOUSE_DOWN		1
-#define MOUSE_UP		2
+#define MOUSE_UP			2
 #define MOUSE_MOVE		3
 #define MOUSE_WHEEL		4
-#define KEY_DOWN		5
-#define KEY_UP			6
-#define TEXTINPUT		7
+#define KEY_DOWN			5
+#define KEY_UP				6
+#define TEXTINPUT			7
 #define TOUCH_DOWN		8
-#define TOUCH_UP		9
+#define TOUCH_UP			9
 #define TOUCH_MOVE		10
 #define WINDOW_SHOWN	11
 

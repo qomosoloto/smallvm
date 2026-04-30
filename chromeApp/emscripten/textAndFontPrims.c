@@ -826,6 +826,7 @@ static void drawString(char *s, FontRef font, OBJ bm, OBJ color, int x, int y, O
 		n = FIELD(color, 3);
 		if (isInt(n)) a = clip(obj2int(n), 0, 255);
 	}
+	if (a == 0) return;
 
 	y -= lastFontSize / 10; // adjust y offset to match other platforms
 	EM_ASM_({

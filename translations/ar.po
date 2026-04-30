@@ -1,20 +1,19 @@
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"Report-Msgid-Bugs-To: \n"
+"Report-Msgid-Bugs-To: interest@microblocks.fun\n"
 "POT-Creation-Date: 2024-10-28 16:36+0200\n"
-"PO-Revision-Date: 2024-10-28 15:36+0000\n"
-"Last-Translator: Mel Azzi\n"
+"PO-Revision-Date: 2025-07-08 14:01+0000\n"
+"Last-Translator: Raghad Abu Wadi <raghad.abuwadi@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/microblocks/ide/"
 "ar/>\n"
 "Language: ar\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: ENCODING\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 5.8.2-dev\n"
+"X-Generator: Weblate 5.13-dev\n"
 
 #. Block in Input category
 msgid "button B"
@@ -701,3 +700,235 @@ msgstr "اسم الملف:"
 #. Tip Bar label or text (at the bottom of the IDE, gives info on the currently hovered element)
 msgid "Input"
 msgstr "المدخلات"
+
+#. Block in Input category
+msgid "seconds"
+msgstr "ثواني"
+
+#. Block in Input category
+msgid "version"
+msgstr "إصدار"
+
+#. Block in Control category
+msgid "last message"
+msgstr "الرسالة الأخيرة"
+
+#. Block in Input category
+msgid "timer"
+msgstr "مؤقت"
+
+#. Block in Operators category
+msgid "rescale _ from ( _ , _ ) to ( _ , _ )"
+msgstr "إعادة تحديد النطاق _ من( _ , _ )الى ( _ , _ )"
+
+#. Block in Data category
+msgid "copy _ from _"
+msgstr "انسخ _ من _"
+
+#. Example value for the ( list < > ) block
+msgid "fish"
+msgstr "سمكة"
+
+#. Example value for the ( list < > ) block
+msgid "bird"
+msgstr "طائر"
+
+#. Example value for the ( list < > ) block
+msgid "dog"
+msgstr "كلب"
+
+#. Block in Operators category
+msgid "sqrt _"
+msgstr "الجذر التربيعي _"
+
+#. Block in Output category
+msgid "graph _"
+msgstr "مخطط _"
+
+#. Block in Input category
+msgid "connected to IDE"
+msgstr "متصل ببيئة التطوير المتكاملة"
+
+#. Block in Control category
+msgid "stop other tasks"
+msgstr "أوقف المهام الأخرى"
+
+#. Block in Operators category
+msgid "min _ _"
+msgstr "الحد الأدنىo _ _"
+
+#. Block in Operators category
+msgid "max _ _"
+msgstr "الحد الأقصى _ _"
+
+#. Block in Operators category
+msgid "convert _ to _"
+msgstr "تحويل _ إلى _"
+
+#. Example message for [ when _ received ] and [ broadcast _ ] blocks
+msgid "go!"
+msgstr "ابدأ!"
+
+#. Name of data type, as in the dropdown menu in the ( (123) is a ( number v ) ) block
+msgid "number"
+msgstr "رقم"
+
+#. Tip Bar label or text (at the bottom of the IDE, gives info on the currently hovered element)
+msgid "Library"
+msgstr "مكتبة"
+
+#. Block in Operators category
+msgid "_ is a _"
+msgstr "_ هو _"
+
+#. Block in Basic Sensors library
+msgid "acceleration"
+msgstr "تسارع"
+
+#. Example value for the ( list < > ) block
+msgid "cat"
+msgstr "قط"
+
+#. Block in Data category
+msgid "to _"
+msgstr "إلى _"
+
+#. Name of data type, as in the dropdown menu in the ( (123) is a ( number v ) ) block
+msgid "byte array"
+msgstr "مصفوفة بايتات"
+
+#. Block in Data category
+msgid "add _ to list _"
+msgstr "أضف _ إلى القائمة _"
+
+#. Option in dropdown menu of blocks:
+#. [ replace item ( all v ) of list ( aList ) with ( 10 ) ]
+#. [ delete item ( all v ) of list ( aList ) ]
+msgid "all"
+msgstr "جميع"
+
+#. "Advanced" label for advanced blocks in the palette
+msgid "cat;Advanced:"
+msgstr "متقدم:"
+
+#. Block in Comm category
+msgid "mode _"
+msgstr "جميع _"
+
+#. Block in Basic Sensors library
+msgid "magnetic field"
+msgstr "مجال مغناطيسي"
+
+#. Block in Data category
+msgid "join _ _"
+msgstr "انضم _ _"
+
+#. Example value for the ( copy (smiles) from 2 > ) block, which will become "miles" when run.
+#. You could think of a word that still has meaning when you remove its first character in your language.
+msgid "smiles"
+msgstr "ابتسامات"
+
+#. New variable dialog
+msgid "New variable name?"
+msgstr "اسم المتغير الجديد؟"
+
+#. BirdBrain Technologies Hummingbird kit library block
+msgid "humm;Distance (cm)"
+msgstr "المسافة (سم)"
+
+#. BirdBrain Technologies Hummingbird kit library block
+msgid "humm;Light"
+msgstr "ضوء"
+
+#. BirdBrain Technologies Hummingbird kit library block
+msgid "humm;Sound"
+msgstr "صوت"
+
+#. Block in Input category
+msgid "reset timer"
+msgstr "إعادة ضبط المؤقت"
+
+#. Block in Control category
+msgid "by _"
+msgstr "بواسطة _"
+
+#. Block in Operators category
+msgid "if _ then _ else _"
+msgstr "إذا _ فإن _ وإلا _"
+
+#. Name of data type, as in the dropdown menu in the ( (123) is a ( number v ) ) block
+msgid "string"
+msgstr "سلسلة"
+
+#. Block in Data category
+msgid "replace item _ of list _ with _"
+msgstr "استبدال العنصر _ من القائمة _ بـ _"
+
+#. Name of data type, as in the dropdown menu in the ( (123) is a ( number v ) ) block
+msgid "boolean"
+msgstr "منطقي"
+
+#. Example content for the comment block
+msgid "How this works..."
+msgstr "كيف يعمل هذا..."
+
+#. Block in Control category
+msgid "with _"
+msgstr "مع _"
+
+#. "Data" blocks category label
+msgid "cat;Data"
+msgstr "بيانات"
+
+#. "Basic Sensors" library label.
+msgid "Basic Sensors"
+msgstr "أجهزة الاستشعار الأساسية"
+
+#. Name of data type, as in the dropdown menu in the ( (123) is a ( number v ) ) block
+#. Also label of ( list < > ) block in Data category
+msgid "list"
+msgstr "قائمة"
+
+#. Block in Data category
+msgid "delete item _ of list _"
+msgstr "حذف العنصر _ من القائمة _"
+
+#. Block in Input category
+msgid "milliseconds since _"
+msgstr "ميليثانية _ منذ"
+
+#. Block in Input category
+msgid "end time _"
+msgstr "وقت _ النهاية"
+
+#. Block in Input category
+msgid "microseconds since _"
+msgstr "ميليثانية _ منذ"
+
+#. Block in Input category
+msgid "BLE connected"
+msgstr "تم_شبكBLE"
+
+#. Block in Pins category
+msgid "pullup _"
+msgstr "سحب _ لأعلى"
+
+#. Block in Control category
+msgid "range _ to _"
+msgstr "_ مدى _ إلى"
+
+#. Block in Control category
+msgid "exit loop"
+msgstr "الخروج-من_الحلقة"
+
+#. Example default value for the ( arg _ default _ ) block
+msgid "default"
+msgstr "تلقائي"
+
+#. Block in Control category
+msgid "call _"
+msgstr "اتصال _"
+
+#. Example value for ( call _ ) block
+msgid "function name"
+msgstr "اسم الدالة"

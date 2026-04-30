@@ -1,6 +1,6 @@
 module Servo Output
 author MicroBlocks
-version 1 3 
+version 1 4 
 tags servo motor angle rotation position 
 description 'Control both positional (angle) and rotational servo motors.
 '
@@ -23,7 +23,7 @@ to '_servoIndex' which {
   if (i < 0) {
     comment 'Add new pin'
     '[data:addLast]' which _servoPin
-    '[data:addLast]' '1500' _servoPulseWidth
+    '[data:addLast]' 1500 _servoPulseWidth
     i = (size _servoPin)
   }
   return i
@@ -34,7 +34,7 @@ to '_servoPulse' pin usecs {
     comment 'Servo stopped; do nothing'
     return 0
   }
-  usecs = (maximum 850 (minimum usecs 2150))
+  usecs = (maximum 500 (minimum usecs 2900))
   comment 'Split wait into a long wait followed by a wait of <= 30 usecs for greater accuracy'
   local 'endTime' ((microsOp) + usecs)
   digitalWriteOp pin true

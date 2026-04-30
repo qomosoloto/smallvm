@@ -3,7 +3,7 @@
 defineClass ToolTip morph contents
 
 to newToolTip aString tipWidth {
-  return (initialize (new 'ToolTip') aString tipWidth)
+	return (initialize (new 'ToolTip') aString tipWidth)
 }
 
 method morph ToolTip { return morph }
