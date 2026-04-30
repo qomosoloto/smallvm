@@ -138,8 +138,10 @@ method addTopBarParts MicroBlocksEditor {
 	add leftItems (addSVGIconButtonOldStyle this 'icon-gear' 'settingsMenu' 'MicroBlocks')
 	add leftItems (12 * scale)
 	add leftItems (addSVGIconButtonOldStyle this 'icon-file' 'projectMenu' 'File')
-	add leftItems (12 * scale)
-	add leftItems (addIconButton this (projectButtonIcon this) 'LoadMenu' 'Load')
+	// if (isChineseWebApp this) {
+		add leftItems (12 * scale)
+		add leftItems (addSVGIconButtonOldStyle this 'icon-load' 'loadProjectMenu' 'Load')
+	// }
 
 	if (isNil title) {
 		// only add title the first time
@@ -959,7 +961,7 @@ method applyUserPreferences MicroBlocksEditor {
 	// } else {
 	// 	setLanguage this 'en'
 	// }
-	setLanguage this 'zh_chs'
+	setLanguage this 'zh-chs'
 
 	if (notNil (at prefs 'boardLibAutoLoadDisabled')) {
 		boardLibAutoLoadDisabled = (at prefs 'boardLibAutoLoadDisabled')
@@ -1338,7 +1340,7 @@ method languageMenu MicroBlocksEditor {
 			if (isNil (findSubstring 'template' fn)) {
 				langCode = (withoutExtension fn)
 				if (or 
-					(beginsWith langCode '简体中文')  
+					(beginsWith langCode 'zh-chs')  
 					(beginsWith langCode 'English')) {
 					addLanguangeMenuEntry this langCode menu
 					// addItem menu langCode (action 'setLanguage' this langCode)
@@ -1353,8 +1355,9 @@ method languageMenu MicroBlocksEditor {
 			if (and (beginsWith fn 'translations/')
 					(isNil (findSubstring 'template' fn))) {
 				langCode = (withoutExtension (substring fn 14))
+				print langCode
 				if (or 
-					(beginsWith langCode '简体中文')  
+					(beginsWith langCode 'zh-chs')  
 					(beginsWith langCode 'English')) {
 					addLanguangeMenuEntry this langCode menu
 				}
@@ -1383,6 +1386,7 @@ method addLanguangeMenuEntry MicroBlocksEditor langCode menu {
 }
 
 method setLanguage MicroBlocksEditor langCode {
+	print 'setLanguage: ' langCode
 	saveToUserPreferences this 'locale' langCode
 	setLanguage (authoringSpecs) langCode
 	// localizable user libraries
@@ -1443,6 +1447,7 @@ method addTwoStateSVGIconButton MicroBlocksEditor iconName selector hint {
 }
 
 method addSVGIconButtonOldStyle MicroBlocksEditor iconName selector hint {
+	print 'addSVGIconButtonOldStyle' iconName
 	highlightColor = (microBlocksColor 'yellow')
 	bgColor = (topBarBlue this)
 	iconScale = (global 'scale')
@@ -1463,6 +1468,17 @@ method newCheckmark MicroBlocksEditor isOn {
 	}
 	return (readSVGIcon 'checkmark' color)
 }
+// 发布管理菜单
+method loadProjectMenu MicroBlocksEditor {
+	menu = (menu 'Load' this)
+	setIsTopMenu menu true
+	addItem menu 'Load Project' 'loadProject'
+	addLine menu
+	addItem menu 'Publish Project' 'publishProject'
+	popUpAtHand menu (global 'page')
+}
+method loadProject MicroBlocksEditor {}
+method publishProject MicroBlocksEditor {}
 
 method projectMenu MicroBlocksEditor {
 	menu = (menu 'File' this)

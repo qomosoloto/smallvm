@@ -4655,3 +4655,15 @@ msgstr "右"
 #. CoCube library block
 msgid "cocube;backward"
 msgstr "后"
+
+#. Load
+msgid "Load"
+msgstr "发布管理"
+
+#. Load Project
+msgid "Load Project'
+msgstr "加载项目"
+
+#. Publish Project
+msgid "Publish Project"
+msgstr "发布项目"
