@@ -4658,7 +4658,7 @@ msgid "Load"
 msgstr "发布管理"
 
 #. Load Project
-msgid "Load Project'
+msgid "Load Project"
 msgstr "加载项目"
 
 #. Publish Project
